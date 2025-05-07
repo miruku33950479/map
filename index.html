@@ -28,7 +28,7 @@
           padding: 20px;
           transition: right 0.3s ease; /* 添加 transition 效果 */
           z-index: 1000;
-          border-radius: 10px; /* 圓角 */
+          border-radius: 40px; /* 圓角 */
       }
       #sidebar.closed {
           right: -500px; /* 確保關閉時完全隱藏 */
@@ -86,9 +86,12 @@
 <div id="map"></div>
 
 <div id="sidebar">
-    <button onclick="closeSidebar()" style="float: right;">關閉</button>
+    <button onclick="closeSidebar()" style="float: right;">收藏</button>
     <h3 id="sidebar-title"></h3>
-    <img id="sidebar-img" src="" style="width: 100%; height: auto;">
+    <div id="sidebar-img-container" style="width: 100%; height: 200px; overflow: hidden; background-color: #f0f0f0; display: flex; justify-content: center; align-items: center;">
+        <img id="sidebar-img" src="" style="width: 100%; height: auto; display: block; object-fit: cover;">
+        <span id="sidebar-img-placeholder" style="position: absolute; color: #ccc;">圖片載入中...</span>
+    </div>
     <p id="sidebar-content"></p>
     <p id="sidebar-price"></p>
     <p id="sidebar-city"></p>

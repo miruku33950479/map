@@ -16,49 +16,49 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // 陽光公寓的測試資料
   const sunshineApartmentData = {
-      coverImage: "https://www.adaymag.com/wp-content/uploads/2021/11/taipei-rent-house-diary-10.jpg",
-      name: "陽光公寓 (測試)",
-      cityName: "台北市",
-      coordinates: {
-          latitude: 23.7029651,
-          longitude: 120.4287316
-      },
-      mainContent: "這是一個預設標註在地圖上的地點，主要用途是作為系統功能測試與展示之用。透過這個地點，使用者可以驗證地圖定位、圖釘標記、資料讀取與互動功能是否正常運作，同時也方便開發者在開發過程中進行除錯與優化。這個測試點不代表真實場域，只作為示範與測試用途，請使用者依實際需求新增或修改地圖上的地點資料。",
-      rentStatus: 1,
-      vacantRooms: 2,
-      upcomingVacancies: 0,
-      posts: [
-          {
-              id: "test1",
-              postContent: "測試房源 1",
-              imageResources: [],
-              rentMoney: 10000,
-              leaseEndDates: [],
-              publicArea: false,
-              roomName: "測試房A",
-              totalQuantity: 1,
-              rentPostStatus: "可預約"
-          },
-          {
-              id: "test2",
-              postContent: "測試房源 2",
-              imageResources: [],
-              rentMoney: 15000,
-              leaseEndDates: [],
-              publicArea: false,
-              roomName: "測試房B",
-              totalQuantity: 1,
-              rentPostStatus: "已出租"
-          }
-      ],
-      id: "test_id",
-      ringColor: "#CCCCCC",
-      urlPhone: "tel:+886123456789",
-      urlLine: "https://line.me/ti/p/testline",
-      urlMail: "mailto:test@test.com",
-      rentPriceRange: "10000-15000",
-      userID: "test_user"
-  };
+    coverImage: "https://media.gq.com.tw/photos/61e134dac128c151658f7506/16:9/w_1920,c_limit/casas%20caras%20cover.jpeg",
+    name: "陽光公寓 (測試)",
+    cityName: "台北市",
+    coordinates: {
+        latitude: 23.7029651,
+        longitude: 120.4287316
+    },
+    mainContent: "這是一個預設標註在地圖上的地點，主要用途是作為系統功能測試與展示之用。透過這個地點，使用者可以驗證地圖定位、圖釘標記、資料讀取與互動功能是否正常運作，同時也方便開發者在開發過程中進行除錯與優化。這個測試點不代表真實場域，只作為示範與測試用途，請使用者依實際需求新增或修改地圖上的地點資料。",
+    rentStatus: 1,
+    vacantRooms: 2,
+    upcomingVacancies: 0,
+    posts: [
+        {
+            id: "test1",
+            postContent: "測試房源 1",
+            imageResources: [],
+            rentMoney: 10000,
+            leaseEndDates: [],
+            publicArea: false,
+            roomName: "測試房A",
+            totalQuantity: 1,
+            rentPostStatus: "可預約"
+        },
+        {
+            id: "test2",
+            postContent: "測試房源 2",
+            imageResources: [],
+            rentMoney: 15000,
+            leaseEndDates: [],
+            publicArea: false,
+            roomName: "測試房B",
+            totalQuantity: 1,
+            rentPostStatus: "已出租"
+        }
+    ],
+    id: "test_id",
+    ringColor: "#CCCCCC",
+    urlPhone: "tel:+886123456789",
+    urlLine: "https://line.me/ti/p/testline",
+    urlMail: "mailto:test@test.com",
+    rentPriceRange: "10000-15000",
+    userID: "test_user"
+};
 
   let rent10Marker; // 用於儲存 Rent10 的標記
 
@@ -147,35 +147,54 @@ document.addEventListener("DOMContentLoaded", function () {
   map.on('click', closeSidebar); // 點擊地圖空白處也關閉側邊欄
 
   function openSidebar(property) {
-      sidebar.classList.remove('closed'); // 移除 closed class，滑出側邊欄
-      document.getElementById('sidebar-title').innerText = property.name || '未提供名稱';
-      document.getElementById('sidebar-img').src = property.coverImage || '';
-      document.getElementById('sidebar-content').innerText = property.mainContent || '';
-      document.getElementById('sidebar-price').innerText = '租金範圍: ' + (property.rentPriceRange || '未提供');
-      document.getElementById('sidebar-city').innerText = '城市: ' + (property.cityName || '未提供');
+    sidebar.classList.remove('closed');
+    document.getElementById('sidebar-title').innerText = property.name || '未提供名稱';
 
-      const postsList = document.getElementById('sidebar-posts');
-      postsList.innerHTML = '';
+    const sidebarImg = document.getElementById('sidebar-img');
+    const sidebarImgPlaceholder = document.getElementById('sidebar-img-placeholder');
 
-      if (property.posts && property.posts.length > 0) {
-          property.posts.forEach(post => {
-              const listItem = document.createElement('li');
-              listItem.textContent = `${post.roomName || '未提供房名'} - ${post.rentMoney !== undefined ? post.rentMoney : '未提供租金'} - ${post.rentPostStatus || '未提供狀態'}`;
-              postsList.appendChild(listItem);
-          });
-      } else {
-          const listItem = document.createElement('li');
-          listItem.textContent = '暫無房源資訊';
-          postsList.appendChild(listItem);
-      }
+    sidebarImg.style.display = 'none'; // 預設隱藏圖片
+    sidebarImgPlaceholder.style.display = 'flex'; // 預設顯示載入中文字
 
-      document.getElementById('sidebar-phone').href = property.urlPhone ? `tel:${property.urlPhone}` : '#';
-      document.getElementById('sidebar-phone').innerText = property.urlPhone ? '撥打電話' : '未提供電話';
-      document.getElementById('sidebar-line').href = property.urlLine || '#';
-      document.getElementById('sidebar-line').innerText = property.urlLine ? '聯繫 Line' : '未提供 Line';
-      document.getElementById('sidebar-mail').href = property.urlMail ? `mailto:${property.urlMail}` : '#';
-      document.getElementById('sidebar-mail').innerText = property.urlMail ? '發送電子郵件' : '未提供電子郵件';
-  }
+    sidebarImg.onload = () => {
+        sidebarImg.style.display = 'block';
+        sidebarImgPlaceholder.style.display = 'none';
+    };
+
+    sidebarImg.onerror = () => {
+        sidebarImg.src = 'https://via.placeholder.com/300x200?text=No+Image'; // 載入失敗時顯示預設圖片
+        sidebarImg.style.display = 'block';
+        sidebarImgPlaceholder.style.display = 'none';
+    };
+
+    sidebarImg.src = property.coverImage || ''; // 設定圖片來源
+
+    document.getElementById('sidebar-content').innerText = property.mainContent || '';
+    document.getElementById('sidebar-price').innerText = '租金範圍: ' + (property.rentPriceRange || '未提供');
+    document.getElementById('sidebar-city').innerText = '城市: ' + (property.cityName || '未提供');
+
+    const postsList = document.getElementById('sidebar-posts');
+    postsList.innerHTML = '';
+
+    if (property.posts && property.posts.length > 0) {
+        property.posts.forEach(post => {
+            const listItem = document.createElement('li');
+            listItem.textContent = `${post.roomName || '未提供房名'} - ${post.rentMoney !== undefined ? post.rentMoney : '未提供租金'} - ${post.rentPostStatus || '未提供狀態'}`;
+            postsList.appendChild(listItem);
+        });
+    } else {
+        const listItem = document.createElement('li');
+        listItem.textContent = '暫無房源資訊';
+        postsList.appendChild(listItem);
+    }
+
+    document.getElementById('sidebar-phone').href = property.urlPhone ? `tel:${property.urlPhone}` : '#';
+    document.getElementById('sidebar-phone').innerText = property.urlPhone ? '撥打電話' : '未提供電話';
+    document.getElementById('sidebar-line').href = property.urlLine || '#';
+    document.getElementById('sidebar-line').innerText = property.urlLine ? '聯繫 Line' : '未提供 Line';
+    document.getElementById('sidebar-mail').href = property.urlMail ? `mailto:${property.urlMail}` : '#';
+    document.getElementById('sidebar-mail').innerText = property.urlMail ? '發送電子郵件' : '未提供電子郵件';
+}
 
   function closeSidebar() {
       sidebar.classList.add('closed'); // 添加 closed class，滑入隱藏側邊欄

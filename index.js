@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }).addTo(map);
 
   var markers = L.featureGroup().addTo(map); // 用於存放從 API 載入的標記
+  var sidebar = document.getElementById('sidebar');
 
   // API endpoint
   const baseUrl = 'https://7590-203-69-229-71.ngrok-free.app';
@@ -59,6 +60,8 @@ document.addEventListener("DOMContentLoaded", function () {
       userID: "test_user"
   };
 
+  let rent10Marker; // 用於儲存 Rent10 的標記
+
   // 預先設置陽光公寓的圖釘
   L.marker([sunshineApartmentData.coordinates.latitude, sunshineApartmentData.coordinates.longitude])
       .addTo(map)
@@ -83,16 +86,13 @@ document.addEventListener("DOMContentLoaded", function () {
           if (rent10DataArray && rent10DataArray.length > 0) {
               const rent10Data = rent10DataArray[0];
               const { coordinates, name } = rent10Data;
-              L.marker([coordinates.latitude, coordinates.longitude])
+              rent10Marker = L.marker([coordinates.latitude, coordinates.longitude])
                   .addTo(map)
                   .on('click', function () {
                       openSidebar(rent10Data);
                   })
                   .bindTooltip(name || 'Rent10 物件');
 
-              // 可以將地圖的中心點調整到 Rent10 的位置或包含兩個圖釘的範圍
-              // map.setView([coordinates.latitude, coordinates.longitude], 14);
-              // 或者使用 fitBounds 來適應兩個圖釘
               const bounds = L.latLngBounds([
                   [sunshineApartmentData.coordinates.latitude, sunshineApartmentData.coordinates.longitude],
                   [coordinates.latitude, coordinates.longitude]
@@ -131,7 +131,7 @@ document.addEventListener("DOMContentLoaded", function () {
                   L.marker([coordinates.latitude, coordinates.longitude])
                       .addTo(markers)
                       .on('click', function () {
-                          fetchRentData(id);
+                          fetchRentDataAndOpenSidebar(id); // 使用新的函數
                       })
                       .bindTooltip(name);
               });
@@ -144,10 +144,10 @@ document.addEventListener("DOMContentLoaded", function () {
   loadMarkersInView();
   map.on('moveend', loadMarkersInView);
 
-  map.on('click', closeSidebar);
+  map.on('click', closeSidebar); // 點擊地圖空白處也關閉側邊欄
 
   function openSidebar(property) {
-      document.getElementById('sidebar').style.right = '0';
+      sidebar.classList.remove('closed'); // 移除 closed class，滑出側邊欄
       document.getElementById('sidebar-title').innerText = property.name || '未提供名稱';
       document.getElementById('sidebar-img').src = property.coverImage || '';
       document.getElementById('sidebar-content').innerText = property.mainContent || '';
@@ -178,10 +178,10 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function closeSidebar() {
-      document.getElementById('sidebar').style.right = '-100%';
+      sidebar.classList.add('closed'); // 添加 closed class，滑入隱藏側邊欄
   }
 
-  function fetchRentData(rentId) {
+  function fetchRentDataAndOpenSidebar(rentId) {
       const rentUrl = `${baseUrl}/Rent/${rentId}`;
       fetch(rentUrl, {
           headers: {
@@ -205,4 +205,7 @@ document.addEventListener("DOMContentLoaded", function () {
               console.error('獲取房產詳細資料時發生錯誤:', error);
           });
   }
+
+  // 初始時將側邊欄隱藏
+  sidebar.classList.add('closed');
 });

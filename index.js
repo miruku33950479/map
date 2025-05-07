@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", function () {
           latitude: 23.7029651,
           longitude: 120.4287316
       },
-      mainContent: "這是一個預設在地圖上的地點，用於功能測試。",
+      mainContent: "這是一個預設標註在地圖上的地點，主要用途是作為系統功能測試與展示之用。透過這個地點，使用者可以驗證地圖定位、圖釘標記、資料讀取與互動功能是否正常運作，同時也方便開發者在開發過程中進行除錯與優化。這個測試點不代表真實場域，只作為示範與測試用途，請使用者依實際需求新增或修改地圖上的地點資料。",
       rentStatus: 1,
       vacantRooms: 2,
       upcomingVacancies: 0,

@@ -17,7 +17,7 @@
       #sidebar {
           position: fixed;
           top: 50%; /* 垂直方向置中 */
-          right: -420px; /* 預設隱藏在右側 */
+          right: -500px; /* 預設完全隱藏在右側 */
           transform: translateY(-50%); /* 配合 top: 50% 實現真正的垂直置中 */
           width: 400px;
           max-width: 90%; /* 在小螢幕上不要超出 */
@@ -31,13 +31,16 @@
           border-radius: 10px; /* 圓角 */
       }
       #sidebar.closed {
-          right: -420px; /* 保持關閉時完全隱藏 */
+          right: -500px; /* 確保關閉時完全隱藏 */
+      }
+      #sidebar:not(.closed) { /* 滑出時的狀態 */
+          right: 20px;
       }
       @media (max-width: 600px) {
           #sidebar {
               width: 95%;
               max-width: 95%;
-              left: -100%; /* 預設在左側隱藏 */
+              left: -100%; /* 預設在左側完全隱藏 */
               right: auto; /* 覆蓋預設的 right */
               transform: translateY(-50%);
               top: 50%;
@@ -50,9 +53,6 @@
           #sidebar:not(.closed) { /* 滑出時的狀態 */
               left: 5%;
           }
-      }
-      #sidebar:not(.closed) { /* 滑出時的狀態 */
-          right: 20px;
       }
       #sidebar button[onclick="closeSidebar()"] {
           float: right;

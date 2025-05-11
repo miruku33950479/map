@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // 初始化地圖，預設顯示在一個大致的中心位置
     var map = L.map('map').setView([23.5, 120.5], 10);
   
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    L.tileLayer('https://tile.openstreetmap.bzh/br/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors & CartoDB',
         subdomains: 'abcd',
         maxZoom: 19

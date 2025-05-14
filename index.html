@@ -5,87 +5,91 @@
     <title>地圖範例</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-      html, body {
-          margin: 0;
-          padding: 0;
-          height: 100%;
-      }
-      #map {
-          width: 100%;
-          height: 100%;
-      }
-      #sidebar {
-          position: fixed;
-          top: 50%; /* 垂直方向置中 */
-          right: -500px; /* 預設完全隱藏在右側 */
-          transform: translateY(-50%); /* 配合 top: 50% 實現真正的垂直置中 */
-          width: 400px;
-          max-width: 90%; /* 在小螢幕上不要超出 */
-          height: auto; /* 根據內容調整高度 */
-          background: white;
-          box-shadow: 0 2px 10px rgba(0,0,0,0.2); /* 更柔和的陰影 */
-          overflow-y: auto;
-          padding: 20px;
-          transition: right 0.3s ease; /* 添加 transition 效果 */
-          z-index: 1000;
-          border-radius: 40px; /* 圓角 */
-      }
-      #sidebar.closed {
-          right: -500px; /* 確保關閉時完全隱藏 */
-      }
-      #sidebar:not(.closed) { /* 滑出時的狀態 */
-          right: 20px;
-      }
-      @media (max-width: 600px) {
-          #sidebar {
-              width: 95%;
-              max-width: 95%;
-              left: -100%; /* 預設在左側完全隱藏 */
-              right: auto; /* 覆蓋預設的 right */
-              transform: translateY(-50%);
-              top: 50%;
-              margin: 0;
-              transition: left 0.3s ease; /* 添加 transition 效果 */
-          }
-          #sidebar.closed {
-              left: -100%;
-          }
-          #sidebar:not(.closed) { /* 滑出時的狀態 */
-              left: 5%;
-          }
-      }
-      #sidebar button[onclick="closeSidebar()"] {
-          float: right;
-          margin-top: -10px; /* 稍微往上移，更靠近頂部 */
-          margin-right: -10px;
-          padding: 5px 10px;
-          border: none;
-          background-color: #f0f0f0;
-          border-radius: 5px;
-          cursor: pointer;
-      }
-      #sidebar h3 {
-          margin-top: 0; /* 移除預設的頂部 margin */
-      }
-      #sidebar img#sidebar-img {
-          margin-bottom: 10px;
-          border-radius: 5px; /* 圖片也加上圓角 */
-      }
-      #sidebar ul#sidebar-posts {
-          padding-left: 20px;
-          margin-bottom: 10px;
-      }
-      #sidebar p a {
-          display: block; /* 讓連結佔據整行 */
-          margin-bottom: 5px;
-      }
-  </style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+        }
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+        #sidebar {
+            position: fixed;
+            top: 50%; /* 垂直方向置中 */
+            right: -500px; /* 預設完全隱藏在右側 */
+            transform: translateY(-50%); /* 配合 top: 50% 實現真正的垂直置中 */
+            width: 400px;
+            max-width: 90%; /* 在小螢幕上不要超出 */
+            height: auto; /* 根據內容調整高度 */
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2); /* 更柔和的陰影 */
+            overflow-y: auto;
+            padding: 20px;
+            transition: right 0.3s ease; /* 添加 transition 效果 */
+            z-index: 1000;
+            border-radius: 40px; /* 圓角 */
+        }
+        #sidebar.closed {
+            right: -500px; /* 確保關閉時完全隱藏 */
+        }
+        #sidebar:not(.closed) { /* 滑出時的狀態 */
+            right: 20px;
+        }
+        @media (max-width: 600px) {
+            #sidebar {
+                width: 95%;
+                max-width: 95%;
+                left: -100%; /* 預設在左側完全隱藏 */
+                right: auto; /* 覆蓋預設的 right */
+                transform: translateY(-50%);
+                top: 50%;
+                margin: 0;
+                transition: left 0.3s ease; /* 添加 transition 效果 */
+            }
+            #sidebar.closed {
+                left: -100%;
+            }
+            #sidebar:not(.closed) { /* 滑出時的狀態 */
+                left: 5%;
+            }
+        }
+        #sidebar button[onclick="closeSidebar()"] {
+            float: right;
+            margin-top: -10px; /* 稍微往上移，更靠近頂部 */
+            margin-right: -10px;
+            padding: 5px 10px;
+            border: none;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #sidebar h3 {
+            margin-top: 0; /* 移除預設的頂部 margin */
+        }
+        #sidebar img#sidebar-img {
+            margin-bottom: 10px;
+            border-radius: 5px; /* 圖片也加上圓角 */
+        }
+        #sidebar ul#sidebar-posts {
+            padding-left: 20px;
+            margin-bottom: 10px;
+        }
+        #sidebar p a {
+            display: block; /* 讓連結佔據整行 */
+            margin-bottom: 5px;
+        }
+        #sidebar-content {
+        overflow-y: auto;
+        max-height: 300px; /* 當顯示內容自述太多超過這個值就會出現滾動條 */
+        }
+    </style>
 </head>
 <body>
 
 <div id="map"></div>
 
-<div id="sidebar">
+<div id="sidebar" class="closed">
     <button onclick="closeSidebar()" style="float: right;">收藏</button>
     <h3 id="sidebar-title"></h3>
     <div id="sidebar-img-container" style="width: 100%; height: 200px; overflow: hidden; background-color: #f0f0f0; display: flex; justify-content: center; align-items: center;">

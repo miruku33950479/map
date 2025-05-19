@@ -1,27 +1,37 @@
 document.addEventListener("DOMContentLoaded", function () {
+    // 初始化 Leaflet 地圖，設定預設中心點和縮放層級
     var map = L.map('map').setView([23.704454, 120.428517], 16); // 先用預設位置初始化地圖
 
+    // 創建自訂的圖釘圖示
     var PinIcon = L.icon({
         iconUrl: 'images/pin_icon.png',
         iconSize: [32, 32],
         iconAnchor: [16, 32],
         popupAnchor: [0, -32]
     });
+    // 將自訂圖示設定為所有標記的預設圖示
     L.Marker.prototype.options.icon = PinIcon;
 
+    // 添加 OpenStreetMap 圖層作為地圖的底圖
     L.tileLayer('https://tile.openstreetmap.bzh/br/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors & CartoDB',
         subdomains: 'abcd',
         maxZoom: 19
     }).addTo(map);
 
+    // 創建一個 Feature Group 用於管理地圖上的標記
     var markers = L.featureGroup().addTo(map);
+    // 獲取側邊欄元素
     var sidebar = document.getElementById('sidebar');
 
+    // 定義後端 API 的基礎 URL
     const baseUrl = 'https://7590-203-69-229-71.ngrok-free.app';
+    // 組合獲取所有房產項目的 API URL
     const itemsUrl = `${baseUrl}/items/`;
+    // 組合獲取 Rent10 房產資料的 API URL
     const rent10Url = `${baseUrl}/Rent/Rent10`;
 
+    // 測試用的陽光公寓資料
     const sunshineApartmentData = {
         coverImage: "https://media.gq.com.tw/photos/61e134dac128c151658f7506/16:9/w_1920,c_limit/casas%20caras%20cover.jpeg",
         name: "陽光公寓 (測試)",
@@ -69,6 +79,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let rent10Marker;
     let userLocationMarker; // 用於儲存使用者位置的標記
+    // 在地圖上添加陽光公寓的標記，並綁定點擊事件以打開側邊欄，以及綁定 Tooltip
     L.marker([sunshineApartmentData.coordinates.latitude, sunshineApartmentData.coordinates.longitude])
         .addTo(map)
         .on('click', function () {
@@ -76,6 +87,7 @@ document.addEventListener("DOMContentLoaded", function () {
         })
         .bindTooltip(sunshineApartmentData.name);
 
+    // 從 API 獲取 Rent10 的資料
     fetch(rent10Url, {
         headers: {
             'Accept': 'application/json'
@@ -88,9 +100,11 @@ document.addEventListener("DOMContentLoaded", function () {
             return response.json();
         })
         .then(rent10DataArray => {
+            // 檢查 API 回傳的資料是否為非空陣列
             if (rent10DataArray && rent10DataArray.length > 0) {
                 const rent10Data = rent10DataArray[0];
                 const { coordinates, name } = rent10Data;
+                // 在地圖上添加 Rent10 的標記，並綁定點擊事件以打開側邊欄，以及綁定 Tooltip
                 rent10Marker = L.marker([coordinates.latitude, coordinates.longitude])
                     .addTo(map)
                     .on('click', function () {
@@ -98,7 +112,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     })
                     .bindTooltip(name || 'Rent10 物件');
 
-                // 只有在成功載入 Rent10 資料後才調整地圖視野包含兩個標記
+                // 調整地圖視野以包含陽光公寓和 Rent10 的標記
                 const bounds = L.latLngBounds([
                     [sunshineApartmentData.coordinates.latitude, sunshineApartmentData.coordinates.longitude],
                     [coordinates.latitude, coordinates.longitude]
@@ -106,18 +120,20 @@ document.addEventListener("DOMContentLoaded", function () {
                 map.fitBounds(bounds);
 
             } else {
-                console.error('API /Rent/Rent10 回傳的資料為空陣列。');
+                console.error('API /Rent/RegionMap 回傳的資料為空陣列。');
             }
         })
         .catch(error => {
             console.error('獲取 Rent10 資料時發生錯誤:', error);
         });
 
+    // 根據目前地圖的可視範圍載入標記
     function loadMarkersInView() {
         const bounds = map.getBounds();
         const northEast = bounds.getNorthEast();
         const southWest = bounds.getSouthWest();
 
+        // 呼叫 API 獲取可視範圍內的房產資料
         fetch(`${itemsUrl}?min_lat=${southWest.lat}&min_lon=${southWest.lng}&max_lat=${northEast.lat}&max_lon=${northEast.lng}`, {
             headers: {
                 'Accept': 'application/json'
@@ -130,15 +146,19 @@ document.addEventListener("DOMContentLoaded", function () {
                 return response.json();
             })
             .then(data => {
+                // 清除現有的標記
                 markers.clearLayers();
+                // 遍歷 API 回傳的每個房產資料
                 data.forEach(property => {
                     const { coordinates, name, id } = property;
+                    // 為每個房產創建一個標記並添加到地圖和標記群組
                     L.marker([coordinates.latitude, coordinates.longitude])
                         .addTo(markers)
                         .on('click', function () {
+                            // 點擊標記時，獲取房產詳細資料並打開側邊欄
                             fetchRentDataAndOpenSidebar(id);
                         })
-                        .bindTooltip(name);
+                        .bindTooltip(name); // 綁定 Tooltip 顯示房產名稱
                 });
             })
             .catch(error => {
@@ -170,39 +190,42 @@ document.addEventListener("DOMContentLoaded", function () {
         console.error('瀏覽器不支援地理位置 API。');
         loadMarkersInView(); // 使用預設位置載入標記
     }
-    //=================================在使用者位置放圖釘=================================
+    //=================================在使用者位置放圖釘-頭=================================
     if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-        function (position) {
-            const userLat = position.coords.latitude;
-            const userLng = position.coords.longitude;
+        navigator.geolocation.getCurrentPosition(
+            function (position) {
+                const userLat = position.coords.latitude;
+                const userLng = position.coords.longitude;
 
-            // 設定地圖中心為使用者位置
-            map.setView([userLat, userLng], 16);
+                // 設定地圖中心為使用者位置
+                map.setView([userLat, userLng], 16);
 
-            // 放置使用者位置的標記
-            userLocationMarker = L.marker([userLat, userLng])
-                .addTo(map)
-                .bindTooltip('您的位置')
-                .openTooltip(); // 預設顯示 tooltip
+                // 放置使用者位置的標記
+                userLocationMarker = L.marker([userLat, userLng])
+                    .addTo(map)
+                    .bindTooltip('您的位置')
+                    .openTooltip(); // 預設顯示 tooltip
 
-            loadMarkersInView();
-        },
-        function (error) {
-            console.error('獲取使用者位置失敗:', error.message);
-            loadMarkersInView();
-        },
-        {
-            enableHighAccuracy: false,
-            timeout: 5000,
-            maximumAge: 0
-        }
-    );
+                loadMarkersInView();
+            },
+            function (error) {
+                console.error('獲取使用者位置失敗:', error.message);
+                loadMarkersInView();
+            },
+            {
+                enableHighAccuracy: false,
+                timeout: 5000,
+                maximumAge: 0
+            }
+        );
     }
-    //=================================在使用者位置放圖釘=================================
+    //=================================在使用者位置放圖釘-尾=================================
+    // 當地圖移動結束時，重新載入可視範圍內的標記
     map.on('moveend', loadMarkersInView);
+    // 點擊地圖時關閉側邊欄
     map.on('click', closeSidebar);
 
+    // 打開側邊欄並顯示房產資訊
     function openSidebar(property) {
         sidebar.classList.remove('closed');
         document.getElementById('sidebar-title').innerText = property.name || '未提供名稱';
@@ -253,10 +276,12 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById('sidebar-mail').innerText = property.urlMail ? '發送電子郵件' : '未提供電子郵件';
     }
 
+    // 關閉側邊欄
     function closeSidebar() {
         sidebar.classList.add('closed');
     }
 
+    // 根據房產 ID 從 API 獲取詳細資料並打開側邊欄
     function fetchRentDataAndOpenSidebar(rentId) {
         const rentUrl = `${baseUrl}/Rent/${rentId}`;
         fetch(rentUrl, {
@@ -282,5 +307,93 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     }
 
+    // 頁面載入時先關閉側邊欄
     sidebar.classList.add('closed');
+
+    // 獲取遮罩層、模態框和按鈕元素
+    const overlay = document.getElementById('overlay');
+    const authModal = document.getElementById('auth-modal');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+    const showRegisterFormLink = document.getElementById('show-register-form');
+    const showLoginFormLink = document.getElementById('show-login-form');
+    const loginButton = document.getElementById('login-button'); // 您的登入按鈕 ID
+    const registerButton = document.getElementById('register-button'); // 您的註冊按鈕 ID
+
+    // 顯示遮罩層和登入表單的函數
+    function showLoginModal() {
+        overlay.classList.remove('hidden');
+        loginForm.classList.remove('hidden');
+        registerForm.classList.add('hidden');
+    }
+
+    // 顯示遮罩層和註冊表單的函數
+    function showRegisterModal() {
+        overlay.classList.remove('hidden');
+        registerForm.classList.remove('hidden');
+        loginForm.classList.add('hidden');
+    }
+
+    // 隱藏遮罩層的函數
+    function hideAuthModal() {
+        overlay.classList.add('hidden');
+    }
+
+    // 為關閉按鈕添加點擊事件監聽器
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', hideAuthModal);
+    }
+
+    // 為顯示註冊表單的鏈接添加點擊事件監聽器
+    if (showRegisterFormLink) {
+        showRegisterFormLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            showRegisterModal();
+        });
+    }
+
+    // 為顯示登入表單的鏈接添加點擊事件監聽器
+    if (showLoginFormLink) {
+        showLoginFormLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            showLoginModal();
+        });
+    }
+
+    // 為登入按鈕添加點擊事件監聽器，以顯示登入模態框
+    if (loginButton) {
+        loginButton.addEventListener('click', showLoginModal);
+    }
+
+    // 在這裡添加處理登入和註冊表單提交的 JavaScript 邏輯
+    const loginSubmit = document.getElementById('loginForm');
+    if (loginSubmit) {
+        loginSubmit.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            console.log('登入資訊：', email, password);
+            // 在這裡發送登入請求到後端
+            // hideAuthModal();
+        });
+    }
+
+    const registerSubmit = document.getElementById('registerForm');
+    if (registerSubmit) {
+        registerSubmit.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            if (password === confirmPassword) {
+                console.log('註冊資訊：', email, password);
+                // 在這裡發送註冊請求到後端
+                // showLoginModal();
+                // hideAuthModal();
+            } else {
+                alert('密碼不一致！');
+            }
+        });
+    }
 });

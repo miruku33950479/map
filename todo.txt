@@ -1,0 +1,7 @@
+新增 登入 登出 搜尋 串API 右邊卡片要置頂
+這是註冊資訊
+  "userName": "string",
+  "password": "string",
+  "sex": "男",
+  "email": "string",
+  "phoneNumber": "string"

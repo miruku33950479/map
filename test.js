@@ -25,11 +25,11 @@ document.addEventListener("DOMContentLoaded", function () {
     var sidebar = document.getElementById('sidebar');
 
     // 定義後端 API 的基礎 URL
-    const baseUrl = 'https://7590-203-69-229-71.ngrok-free.app';
+    const baseUrl = 'https://7590-203-69-229-71.ngrok-free.app'; // <--- 請再次確認並修改這裡為您當前 ngrok 服務的實際 URL！
     // 組合獲取所有房產項目的 API URL (用於地圖移動載入)
     const itemsUrl = `${baseUrl}/items/`;
     // 組合獲取 RegionMap 房產資料的 API URL (用於初始載入地圖上的房產)
-    const regionMapUrl = `${baseUrl}/Rent/RegionMap`; // <-- 修改點
+    const regionMapUrl = `${baseUrl}/Rent/RegionMap`;
 
     // 測試用的陽光公寓資料 (保持不變)
     const sunshineApartmentData = {
@@ -76,18 +76,12 @@ document.addEventListener("DOMContentLoaded", function () {
         rentPriceRange: "10000-15000",
         userID: "test_user"
     };
-    // 創建一個 Feature Group 用於管理地圖上的標記 (針對 /items/ API)
-    var markers = L.featureGroup().addTo(map);
-    // 獲取側邊欄元素
-    var sidebar = document.getElementById('sidebar');
-
 
     // 新增：用於管理從 /Rent/RegionMap 獲取的標記
-    let regionMapMarkers = L.featureGroup().addTo(map); // <-- 新增 Feature Group
+    let regionMapMarkers = L.featureGroup().addTo(map);
     let userLocationMarker; // 用於儲存使用者位置的標記
 
     // 在地圖上添加陽光公寓的標記，並綁定點擊事件以打開側邊欄，以及綁定 Tooltip
-    // 考慮到 RegionMap 會載入所有資料，您可以決定是否仍需要單獨顯示此測試點
     L.marker([sunshineApartmentData.coordinates.latitude, sunshineApartmentData.coordinates.longitude])
         .addTo(map)
         .on('click', function () {
@@ -96,7 +90,7 @@ document.addEventListener("DOMContentLoaded", function () {
         .bindTooltip(sunshineApartmentData.name);
 
     // 從 API 獲取 RegionMap 的資料
-    fetch(regionMapUrl, { // <-- 修改點：使用 regionMapUrl
+    fetch(regionMapUrl, {
         headers: {
             'Accept': 'application/json'
         }
@@ -107,7 +101,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
             return response.json();
         })
-        .then(regionMapDataArray => { // <-- 修改點：期待一個陣列
+        .then(regionMapDataArray => {
             // 檢查 API 回傳的資料是否為非空陣列
             if (regionMapDataArray && regionMapDataArray.length > 0) {
                 regionMapMarkers.clearLayers(); // 清空舊的 RegionMap 標記
@@ -115,14 +109,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 const boundsArray = []; // 用於收集所有標記的座標，以便調整地圖視野
 
                 // 遍歷 RegionMap 返回的每個房產，並在地圖上添加標記
-                regionMapDataArray.forEach(property => { // <-- 修改點：遍歷陣列
+                regionMapDataArray.forEach(property => {
                     const { coordinates, name, id } = property;
-                    if (coordinates && coordinates.latitude && coordinates.longitude) { // 確保座標存在
+                    if (coordinates && coordinates.latitude !== undefined && coordinates.longitude !== undefined) { // 確保座標存在
                         L.marker([coordinates.latitude, coordinates.longitude])
-                            .addTo(regionMapMarkers) // <-- 修改點：添加到 regionMapMarkers
+                            .addTo(regionMapMarkers)
                             .on('click', function () {
                                 // 點擊標記時，獲取房產詳細資料並打開側邊欄
-                                // 這裡假設 RegionMap 返回的數據不包含所有側邊欄所需詳細資訊，所以仍然呼叫 fetchRentDataAndOpenSidebar
                                 fetchRentDataAndOpenSidebar(id);
                             })
                             .bindTooltip(name || '地圖物件'); // 綁定 Tooltip
@@ -142,7 +135,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         })
         .catch(error => {
-            console.error('獲取 Rent/RegionMap 資料時發生錯誤:', error); // <-- 修改錯誤訊息
+            console.error('獲取 Rent/RegionMap 資料時發生錯誤:', error);
         });
 
     // 根據目前地圖的可視範圍載入標記 (此函數用於 /items/ API)
@@ -155,7 +148,6 @@ document.addEventListener("DOMContentLoaded", function () {
         const searchRadiusMeters = 1000; // 您可以根據需求調整這個值，例如 500m, 2000m
 
         // 計算中心點周圍的矩形邊界
-        // Leaflet 提供了一個方便的方法來計算距離
         const northEastPoint = L.latLng(centerLat, centerLon).toBounds(searchRadiusMeters).getNorthEast();
         const southWestPoint = L.latLng(centerLat, centerLon).toBounds(searchRadiusMeters).getSouthWest();
 
@@ -182,14 +174,16 @@ document.addEventListener("DOMContentLoaded", function () {
                 // 遍歷 API 回傳的每個房產資料
                 data.forEach(property => {
                     const { coordinates, name, id } = property;
-                    // 為每個房產創建一個標記並添加到地圖和標記群組
-                    L.marker([coordinates.latitude, coordinates.longitude])
-                        .addTo(markers)
-                        .on('click', function () {
-                            // 點擊標記時，獲取房產詳細資料並打開側邊欄
-                            fetchRentDataAndOpenSidebar(id);
-                        })
-                        .bindTooltip(name); // 綁定 Tooltip 顯示房產名稱
+                    if (coordinates && coordinates.latitude !== undefined && coordinates.longitude !== undefined) {
+                        // 為每個房產創建一個標記並添加到地圖和標記群組
+                        L.marker([coordinates.latitude, coordinates.longitude])
+                            .addTo(markers)
+                            .on('click', function () {
+                                // 點擊標記時，獲取房產詳細資料並打開側邊欄
+                                fetchRentDataAndOpenSidebar(id);
+                            })
+                            .bindTooltip(name); // 綁定 Tooltip 顯示房產名稱
+                    }
                 });
             })
             .catch(error => {
@@ -203,6 +197,17 @@ document.addEventListener("DOMContentLoaded", function () {
             function (position) {
                 // 成功獲取使用者位置，將地圖中心設定為使用者位置
                 map.setView([position.coords.latitude, position.coords.longitude], 16); // 稍微放大顯示
+
+                // 放置使用者位置的標記 (如果您希望有一個獨立的「您的位置」標記)
+                if (userLocationMarker) {
+                    userLocationMarker.setLatLng([position.coords.latitude, position.coords.longitude]);
+                } else {
+                    userLocationMarker = L.marker([position.coords.latitude, position.coords.longitude])
+                        .addTo(map)
+                        .bindTooltip('您的位置')
+                        .openTooltip();
+                }
+
                 loadMarkersInView(); // 重新載入可視範圍內的標記
             },
             function (error) {
@@ -221,36 +226,7 @@ document.addEventListener("DOMContentLoaded", function () {
         console.error('瀏覽器不支援地理位置 API。');
         loadMarkersInView(); // 使用預設位置載入標記
     }
-    // =================================在使用者位置放圖釘-頭=================================
-    // if (navigator.geolocation) {
-    //     navigator.geolocation.getCurrentPosition(
-    //         function (position) {
-    //             const userLat = position.coords.latitude;
-    //             const userLng = position.coords.longitude;
 
-    //             // 設定地圖中心為使用者位置
-    //             map.setView([userLat, userLng], 16);
-
-    //             // 放置使用者位置的標記
-    //             userLocationMarker = L.marker([userLat, userLng])
-    //                 .addTo(map)
-    //                 .bindTooltip('您的位置')
-    //                 .openTooltip(); // 預設顯示 tooltip
-
-    //             loadMarkersInView();
-    //         },
-    //         function (error) {
-    //             console.error('獲取使用者位置失敗:', error.message);
-    //             loadMarkersInView();
-    //         },
-    //         {
-    //             enableHighAccuracy: false,
-    //             timeout: 5000,
-    //             maximumAge: 0
-    //         }
-    //     );
-    // }
-    // =================================在使用者位置放圖釘-尾=================================
     // 當地圖移動結束時，重新載入可視範圍內的標記
     map.on('moveend', loadMarkersInView);
     // 點擊地圖時關閉側邊欄
@@ -273,7 +249,7 @@ document.addEventListener("DOMContentLoaded", function () {
         };
 
         sidebarImg.onerror = () => {
-            sidebarImg.src = 'https://via.placeholder.com/300x200?text=No+Image';
+            sidebarImg.src = 'https://via.placeholder.com/300x200?text=No+Image'; // 載入失敗時顯示預設圖片
             sidebarImg.style.display = 'block';
             sidebarImgPlaceholder.style.display = 'none';
         };
@@ -343,14 +319,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // 獲取遮罩層、模態框和按鈕元素
     const overlay = document.getElementById('overlay');
-    const authModal = document.getElementById('auth-modal'); // 似乎沒用到這個變數，但保留
     const closeModalBtn = document.getElementById('close-modal-btn');
     const loginForm = document.getElementById('login-form');
     const registerForm = document.getElementById('register-form');
     const showRegisterFormLink = document.getElementById('show-register-form');
     const showLoginFormLink = document.getElementById('show-login-form');
     const loginButton = document.getElementById('login-button'); // 您的登入按鈕 ID
-    const registerButton = document.getElementById('register-button'); // 您的註冊按鈕 ID (似乎沒用到這個變數，但保留)
 
     // 顯示遮罩層和登入表單的函數
     function showLoginModal() {

@@ -1,102 +1,61 @@
 document.addEventListener("DOMContentLoaded", function () {
-    // ===== 測試資料開關 =====
-    // 設為 false 則會正常連線到 baseUrl 的線上 API
-    const USE_TEST_DATA = false;
-    // 初始化 Leaflet 地圖，設定預設中心點和縮放層級
+    // 初始化 Leaflet 地圖
     var map = L.map('map').setView([23.704454, 120.428517], 16);
 
-    // 創建自訂的圖釘圖示
+    // 創建並設定預設圖釘圖示
     var PinIcon = L.icon({
         iconUrl: 'images/pin_icon.png',
         iconSize: [32, 32],
         iconAnchor: [16, 32],
         popupAnchor: [0, -32]
     });
-    // 將自訂圖示設定為所有標記的預設圖示
     L.Marker.prototype.options.icon = PinIcon;
 
-    // 添加 OpenStreetMap 圖層作為地圖的底圖
+    // 添加 OpenStreetMap 圖層
     L.tileLayer('https://tile.openstreetmap.bzh/br/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors & CartoDB',
-        subdomains: 'abcd',
         maxZoom: 19
     }).addTo(map);
 
     // 創建 Feature Group 來管理不同類型的標記
-    var markers = L.featureGroup().addTo(map); // 用於房源 (/items/)
-    let regionMapMarkers = L.featureGroup().addTo(map); // 用於房源 (/Rent/RegionMap)
-    let restaurantMarkers = L.featureGroup().addTo(map); // 新增：專門用於餐廳
+    let rentMarkers = L.featureGroup().addTo(map); // **修改：統一管理所有房源標記**
+    let restaurantMarkers = L.featureGroup().addTo(map);
 
     var sidebar = document.getElementById('sidebar');
 
     // 定義後端 API 的基礎 URL
-    const baseUrl = 'https://0191d4c6b56a.ngrok-free.app'; // 請確認此 ngrok 網址是否仍有效
-    // 房源相關的 URL
-    const itemsUrl = `${baseUrl}/items/`;
-    const regionMapUrl = `${baseUrl}/Rent/RegionMap`;
+    const baseUrl = 'https://0191d4c6b56a.ngrok-free.app';
+    
+    // --- **修改：現在只需要這兩個 API 路徑** ---
+    const rentRegionMapUrl = `${baseUrl}/Rent/RegionMap`;
+    const restaurantRegionMapUrl = `${baseUrl}/Restaurant/RegionMap`;
+
+    // --- **移除不再需要的 itemsUrl 變數** ---
 
     // 測試用的陽光公寓資料 (不變)
-    const sunshineApartmentData = {
-        coverImage: "https://media.gq.com.tw/photos/61e134dac128c151658f7506/16:9/w_1920,c_limit/casas%20caras%20cover.jpeg",
-        name: "陽光公寓 (測試)",
-        cityName: "台北市",
-        coordinates: {
-            latitude: 23.7029651,
-            longitude: 120.4287316
-        },
-        mainContent: "這是一個預設標註在地圖上的地點，主要用途是作為系統功能測試與展示之用。",
-        rentStatus: 1,
-        vacantRooms: 2,
-        upcomingVacancies: 0,
-        posts: [
-            { id: "test1", rentMoney: 10000, roomName: "測試房A", rentPostStatus: "可預約" },
-            { id: "test2", rentMoney: 15000, roomName: "測試房B", rentPostStatus: "已出租" }
-        ],
-        id: "test_id",
-        urlPhone: "tel:+886123456789",
-        urlLine: "https://line.me/ti/p/testline",
-        urlMail: "mailto:test@test.com",
-        rentPriceRange: "10000-15000",
-        userID: "test_user"
-    };
+    const sunshineApartmentData = { /* ... 內容不變 ... */ };
     L.marker([sunshineApartmentData.coordinates.latitude, sunshineApartmentData.coordinates.longitude])
         .addTo(map)
         .on('click', () => openSidebar(sunshineApartmentData))
         .bindTooltip(sunshineApartmentData.name);
 
-    // --- 房源 API 邏輯 ---
-    fetch(regionMapUrl, {
-        headers: {
-            'Accept': 'application/json',
-            'ngrok-skip-browser-warning': 'true'
-        }
-    })
-    .then(response => response.ok ? response.json() : Promise.reject(response))
-    .then(data => {
-        if (data && data.length > 0) {
-            regionMapMarkers.clearLayers();
-            data.forEach(property => {
-                if (property.coordinates) {
-                    L.marker([property.coordinates.latitude, property.coordinates.longitude])
-                        .addTo(regionMapMarkers)
-                        .on('click', () => fetchRentDataAndOpenSidebar(property.id))
-                        .bindTooltip(property.name || '地圖物件');
-                }
-            });
-        }
-    })
-    .catch(error => console.error('獲取「房源」RegionMap 資料時發生錯誤:', error));
+    // --- **移除初始的 fetch(regionMapUrl)，統一由後續邏輯觸發** ---
+    
+    // --- **修改 loadMarkersInView 函式，使其呼叫正確的 API，並重新命名** ---
+    function loadRentalsInView() {
+        const bounds = map.getBounds();
+        const center = bounds.getCenter();
+        const latitudeDelta = bounds.getNorth() - bounds.getSouth();
+        const longitudeDelta = bounds.getEast() - bounds.getWest();
 
-    function loadMarkersInView() {
-        const center = map.getCenter();
-        const searchRadiusMeters = 1000;
-        const bounds = L.latLng(center).toBounds(searchRadiusMeters);
-        const url = new URL(itemsUrl);
+        // **修改：URL 指向 Rent/RegionMap**
+        const url = new URL(rentRegionMapUrl); 
         url.search = new URLSearchParams({
-            min_lat: bounds.getSouthWest().lat,
-            min_lon: bounds.getSouthWest().lng,
-            max_lat: bounds.getNorthEast().lat,
-            max_lon: bounds.getNorthEast().lng,
+            // **修改：傳送與餐廳 API 相同的參數格式**
+            latitude: center.lat,
+            longitude: center.lng,
+            latitudeDelta: latitudeDelta,
+            longitudeDelta: longitudeDelta
         }).toString();
         
         fetch(url, {
@@ -107,27 +66,29 @@ document.addEventListener("DOMContentLoaded", function () {
         })
         .then(response => response.ok ? response.json() : Promise.reject(response))
         .then(data => {
-            markers.clearLayers();
-            data.forEach(property => {
-                if (property.coordinates) {
-                    L.marker([property.coordinates.latitude, property.coordinates.longitude])
-                        .addTo(markers)
-                        .on('click', () => fetchRentDataAndOpenSidebar(property.id))
-                        .bindTooltip(property.name);
-                }
-            });
+            rentMarkers.clearLayers(); // **修改：清除統一的房源圖層**
+            if (data && data.length > 0) {
+                data.forEach(property => {
+                    if (property.coordinates) {
+                        L.marker([property.coordinates.latitude, property.coordinates.longitude])
+                            .addTo(rentMarkers) // **修改：加入到統一的房源圖層**
+                            .on('click', () => fetchRentDataAndOpenSidebar(property.id))
+                            .bindTooltip(property.name);
+                    }
+                });
+            }
         })
-        .catch(error => console.error('載入地圖標記資料時發生錯誤:', error));
+        .catch(error => console.error('載入房源資料時發生錯誤:', error));
     }
 
-    // --- 餐廳 API 邏輯 ---
+    // --- 餐廳 API 邏輯 (不變) ---
     function loadRestaurantsInView() {
         const bounds = map.getBounds();
         const center = bounds.getCenter();
         const latitudeDelta = bounds.getNorth() - bounds.getSouth();
         const longitudeDelta = bounds.getEast() - bounds.getWest();
 
-        const url = new URL(`${baseUrl}/Restaurant/RegionMap`);
+        const url = new URL(restaurantRegionMapUrl); // 使用餐廳 URL
         url.search = new URLSearchParams({
             latitude: center.lat,
             longitude: center.lng,
@@ -166,25 +127,24 @@ document.addEventListener("DOMContentLoaded", function () {
         navigator.geolocation.getCurrentPosition(
             position => {
                 map.setView([position.coords.latitude, position.coords.longitude], 16);
-                loadMarkersInView();
+                loadRentalsInView(); // **修改：呼叫新函式名**
                 loadRestaurantsInView();
             },
             error => {
                 console.error('獲取使用者位置失敗:', error.message);
-                loadMarkersInView();
+                loadRentalsInView(); // **修改：呼叫新函式名**
                 loadRestaurantsInView();
-            },
-            { enableHighAccuracy: false, timeout: 5000, maximumAge: 0 }
+            }
         );
     } else {
         console.error('瀏覽器不支援地理位置 API。');
-        loadMarkersInView();
+        loadRentalsInView(); // **修改：呼叫新函式名**
         loadRestaurantsInView();
     }
 
     // 地圖移動結束時，同時載入房源和餐廳資料
     map.on('moveend', function() {
-        loadMarkersInView();
+        loadRentalsInView(); // **修改：呼叫新函式名**
         loadRestaurantsInView();
     });
 

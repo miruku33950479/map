@@ -30,7 +30,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const rentRegionMapUrl = `${baseUrl}/Rent/RegionMap`;
     const restaurantRegionMapUrl = `${baseUrl}/Restaurant/RegionMap`;
 
-    // **修正開始：使用完整的測試物件**
+    // 測試用的陽光公寓資料
     const sunshineApartmentData = {
         coverImage: "https://media.gq.com.tw/photos/61e134dac128c151658f7506/16:9/w_1920,c_limit/casas%20caras%20cover.jpeg",
         name: "陽光公寓 (測試)",
@@ -54,7 +54,6 @@ document.addEventListener("DOMContentLoaded", function () {
         rentPriceRange: "10000-15000",
         userID: "test_user"
     };
-    // **修正結束**
 
     L.marker([sunshineApartmentData.coordinates.latitude, sunshineApartmentData.coordinates.longitude])
         .addTo(map)

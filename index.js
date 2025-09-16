@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }).addTo(map);
 
     // 創建 Feature Group 來管理不同類型的標記
-    let rentMarkers = L.featureGroup().addTo(map); // **修改：統一管理所有房源標記**
+    let rentMarkers = L.featureGroup().addTo(map);
     let restaurantMarkers = L.featureGroup().addTo(map);
 
     var sidebar = document.getElementById('sidebar');
@@ -26,32 +26,49 @@ document.addEventListener("DOMContentLoaded", function () {
     // 定義後端 API 的基礎 URL
     const baseUrl = 'https://0191d4c6b56a.ngrok-free.app';
     
-    // --- **修改：現在只需要這兩個 API 路徑** ---
+    // API 路徑
     const rentRegionMapUrl = `${baseUrl}/Rent/RegionMap`;
     const restaurantRegionMapUrl = `${baseUrl}/Restaurant/RegionMap`;
 
-    // --- **移除不再需要的 itemsUrl 變數** ---
+    // **修正開始：使用完整的測試物件**
+    const sunshineApartmentData = {
+        coverImage: "https://media.gq.com.tw/photos/61e134dac128c151658f7506/16:9/w_1920,c_limit/casas%20caras%20cover.jpeg",
+        name: "陽光公寓 (測試)",
+        cityName: "台北市",
+        coordinates: {
+            latitude: 23.7029651,
+            longitude: 120.4287316
+        },
+        mainContent: "這是一個預設標註在地圖上的地點，主要用途是作為系統功能測試與展示之用。",
+        rentStatus: 1,
+        vacantRooms: 2,
+        upcomingVacancies: 0,
+        posts: [
+            { id: "test1", rentMoney: 10000, roomName: "測試房A", rentPostStatus: "可預約" },
+            { id: "test2", rentMoney: 15000, roomName: "測試房B", rentPostStatus: "已出租" }
+        ],
+        id: "test_id",
+        urlPhone: "tel:+886123456789",
+        urlLine: "https://line.me/ti/p/testline",
+        urlMail: "mailto:test@test.com",
+        rentPriceRange: "10000-15000",
+        userID: "test_user"
+    };
+    // **修正結束**
 
-    // 測試用的陽光公寓資料 (不變)
-    const sunshineApartmentData = { /* ... 內容不變 ... */ };
     L.marker([sunshineApartmentData.coordinates.latitude, sunshineApartmentData.coordinates.longitude])
         .addTo(map)
         .on('click', () => openSidebar(sunshineApartmentData))
         .bindTooltip(sunshineApartmentData.name);
 
-    // --- **移除初始的 fetch(regionMapUrl)，統一由後續邏輯觸發** ---
-    
-    // --- **修改 loadMarkersInView 函式，使其呼叫正確的 API，並重新命名** ---
     function loadRentalsInView() {
         const bounds = map.getBounds();
         const center = bounds.getCenter();
         const latitudeDelta = bounds.getNorth() - bounds.getSouth();
         const longitudeDelta = bounds.getEast() - bounds.getWest();
 
-        // **修改：URL 指向 Rent/RegionMap**
         const url = new URL(rentRegionMapUrl); 
         url.search = new URLSearchParams({
-            // **修改：傳送與餐廳 API 相同的參數格式**
             latitude: center.lat,
             longitude: center.lng,
             latitudeDelta: latitudeDelta,
@@ -66,12 +83,12 @@ document.addEventListener("DOMContentLoaded", function () {
         })
         .then(response => response.ok ? response.json() : Promise.reject(response))
         .then(data => {
-            rentMarkers.clearLayers(); // **修改：清除統一的房源圖層**
+            rentMarkers.clearLayers();
             if (data && data.length > 0) {
                 data.forEach(property => {
                     if (property.coordinates) {
                         L.marker([property.coordinates.latitude, property.coordinates.longitude])
-                            .addTo(rentMarkers) // **修改：加入到統一的房源圖層**
+                            .addTo(rentMarkers)
                             .on('click', () => fetchRentDataAndOpenSidebar(property.id))
                             .bindTooltip(property.name);
                     }
@@ -81,14 +98,13 @@ document.addEventListener("DOMContentLoaded", function () {
         .catch(error => console.error('載入房源資料時發生錯誤:', error));
     }
 
-    // --- 餐廳 API 邏輯 (不變) ---
     function loadRestaurantsInView() {
         const bounds = map.getBounds();
         const center = bounds.getCenter();
         const latitudeDelta = bounds.getNorth() - bounds.getSouth();
         const longitudeDelta = bounds.getEast() - bounds.getWest();
 
-        const url = new URL(restaurantRegionMapUrl); // 使用餐廳 URL
+        const url = new URL(restaurantRegionMapUrl);
         url.search = new URLSearchParams({
             latitude: center.lat,
             longitude: center.lng,
@@ -122,29 +138,27 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // --- 頁面載入與地圖移動的邏輯 ---
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             position => {
                 map.setView([position.coords.latitude, position.coords.longitude], 16);
-                loadRentalsInView(); // **修改：呼叫新函式名**
+                loadRentalsInView();
                 loadRestaurantsInView();
             },
             error => {
                 console.error('獲取使用者位置失敗:', error.message);
-                loadRentalsInView(); // **修改：呼叫新函式名**
+                loadRentalsInView();
                 loadRestaurantsInView();
             }
         );
     } else {
         console.error('瀏覽器不支援地理位置 API。');
-        loadRentalsInView(); // **修改：呼叫新函式名**
+        loadRentalsInView();
         loadRestaurantsInView();
     }
 
-    // 地圖移動結束時，同時載入房源和餐廳資料
     map.on('moveend', function() {
-        loadRentalsInView(); // **修改：呼叫新函式名**
+        loadRentalsInView();
         loadRestaurantsInView();
     });
 
@@ -154,7 +168,6 @@ document.addEventListener("DOMContentLoaded", function () {
     function openSidebar(property) {
         sidebar.classList.remove('closed');
         document.getElementById('sidebar-title').innerText = property.name || '未提供名稱';
-
         const sidebarImg = document.getElementById('sidebar-img');
         const sidebarImgPlaceholder = document.getElementById('sidebar-img-placeholder');
         sidebarImg.style.display = 'none';
@@ -169,11 +182,9 @@ document.addEventListener("DOMContentLoaded", function () {
             sidebarImgPlaceholder.style.display = 'none';
         };
         sidebarImg.src = property.coverImage || '';
-
         document.getElementById('sidebar-content').innerText = property.mainContent || '';
         document.getElementById('sidebar-price').innerText = '租金範圍: ' + (property.rentPriceRange || '未提供');
         document.getElementById('sidebar-city').innerText = '城市: ' + (property.cityName || '未提供');
-
         const postsList = document.getElementById('sidebar-posts');
         postsList.innerHTML = '';
         if (property.posts && property.posts.length > 0) {
@@ -187,35 +198,30 @@ document.addEventListener("DOMContentLoaded", function () {
             li.textContent = '暫無房源資訊';
             postsList.appendChild(li);
         }
-
         document.getElementById('sidebar-phone').href = property.urlPhone ? `tel:${property.urlPhone}` : '#';
         document.getElementById('sidebar-line').href = property.urlLine || '#';
         document.getElementById('sidebar-mail').href = property.urlMail ? `mailto:${property.urlMail}` : '#';
     }
-    
     function closeSidebar() {
         sidebar.classList.add('closed');
     }
-
     function fetchRentDataAndOpenSidebar(rentId) {
         const rentUrl = `${baseUrl}/Rent/${rentId}`;
         fetch(rentUrl, {
-            headers: {
-                'Accept': 'application/json',
-                'ngrok-skip-browser-warning': 'true'
-            }
-        })
-        .then(response => response.ok ? response.json() : Promise.reject(response))
-        .then(data => {
-            if (data && data.length > 0) {
-                openSidebar(data[0]);
-            }
-        })
-        .catch(error => console.error('獲取房產詳細資料時發生錯誤:', error));
+                headers: {
+                    'Accept': 'application/json',
+                    'ngrok-skip-browser-warning': 'true'
+                }
+            })
+            .then(response => response.ok ? response.json() : Promise.reject(response))
+            .then(data => {
+                if (data && data.length > 0) {
+                    openSidebar(data[0]);
+                }
+            })
+            .catch(error => console.error('獲取房產詳細資料時發生錯誤:', error));
     }
     sidebar.classList.add('closed');
-    
-    // ... 所有登入、註冊的 Modal 相關程式碼都保持不變 ...
     const overlay = document.getElementById('overlay');
     const closeModalBtn = document.getElementById('close-modal-btn');
     const loginForm = document.getElementById('login-form');
@@ -223,7 +229,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const showRegisterFormLink = document.getElementById('show-register-form');
     const showLoginFormLink = document.getElementById('show-login-form');
     const loginButton = document.getElementById('login-button');
-
     function showLoginModal() {
         overlay.classList.remove('hidden');
         loginForm.classList.remove('hidden');
@@ -237,12 +242,16 @@ document.addEventListener("DOMContentLoaded", function () {
     function hideAuthModal() {
         overlay.classList.add('hidden');
     }
-
-    if(closeModalBtn) closeModalBtn.addEventListener('click', hideAuthModal);
-    if(showRegisterFormLink) showRegisterFormLink.addEventListener('click', e => { e.preventDefault(); showRegisterModal(); });
-    if(showLoginFormLink) showLoginFormLink.addEventListener('click', e => { e.preventDefault(); showLoginModal(); });
-    if(loginButton) loginButton.addEventListener('click', showLoginModal);
-    
+    if (closeModalBtn) closeModalBtn.addEventListener('click', hideAuthModal);
+    if (showRegisterFormLink) showRegisterFormLink.addEventListener('click', e => {
+        e.preventDefault();
+        showRegisterModal();
+    });
+    if (showLoginFormLink) showLoginFormLink.addEventListener('click', e => {
+        e.preventDefault();
+        showLoginModal();
+    });
+    if (loginButton) loginButton.addEventListener('click', showLoginModal);
     const loginSubmit = document.getElementById('loginForm');
     if (loginSubmit) {
         loginSubmit.addEventListener('submit', e => {
@@ -250,7 +259,6 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log('登入資訊：', document.getElementById('login-email').value, document.getElementById('login-password').value);
         });
     }
-
     const registerSubmit = document.getElementById('registerForm');
     if (registerSubmit) {
         registerSubmit.addEventListener('submit', e => {

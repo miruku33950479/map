@@ -23,35 +23,42 @@ document.addEventListener("DOMContentLoaded", function () {
 
     var sidebar = document.getElementById('sidebar');
 
-    // **修改：更新為新的 AWS API 基礎 URL**
-    const baseUrl = 'http://54.206.84.172:8000';
+    // **修改：更新為新的 HTTPS AWS API 基礎 URL**
+    const baseUrl = 'https://54.206.84.172:8443';
     
     // API 路徑
     const rentRegionMapUrl = `${baseUrl}/Rent/RegionMap`;
     const restaurantRegionMapUrl = `${baseUrl}/Restaurant/RegionMap`;
 
-    // 測試用的陽光公寓資料
+    // 原始的靜態測試物件
     const sunshineApartmentData = {
         coverImage: "https://media.gq.com.tw/photos/61e134dac128c151658f7506/16:9/w_1920,c_limit/casas%20caras%20cover.jpeg",
         name: "陽光公寓 (測試)",
         cityName: "台北市",
         coordinates: { latitude: 23.7029651, longitude: 120.4287316 },
         mainContent: "這是一個預設標註在地圖上的地點，主要用途是作為系統功能測試與展示之用。",
-        rentStatus: 1,
-        vacantRooms: 2,
-        upcomingVacancies: 0,
-        posts: [
-            { id: "test1", rentMoney: 10000, roomName: "測試房A", rentPostStatus: "可預約" },
-            { id: "test2", rentMoney: 15000, roomName: "測試房B", rentPostStatus: "已出租" }
-        ],
         id: "test_id",
-        urlPhone: "tel:+886123456789",
-        urlLine: "https://line.me/ti/p/testline",
-        urlMail: "mailto:test@test.com",
-        rentPriceRange: "10000-15000",
-        userID: "test_user"
+        rentStatus: 1, vacantRooms: 2, upcomingVacancies: 0,
+        posts: [ { id: "test1", rentMoney: 10000, roomName: "測試房A", rentPostStatus: "可預約" }, { id: "test2", rentMoney: 15000, roomName: "測試房B", rentPostStatus: "已出租" } ],
+        urlPhone: "tel:+886123456789", urlLine: "https://line.me/ti/p/testline", urlMail: "mailto:test@test.com",
+        rentPriceRange: "10000-15000", userID: "test_user"
     };
 
+    // 新增的靜態測試物件 (測試2)
+    const sunshineApartmentData2 = {
+        coverImage: "https://media.gq.com.tw/photos/61e134dac128c151658f7506/16:9/w_1920,c_limit/casas%20caras%20cover.jpeg",
+        name: "陽光公寓(測試2)",
+        cityName: "台北市",
+        coordinates: { latitude: 23.7029651, longitude: 120.43364 },
+        mainContent: "這是「測試2」的預設標註，模擬從 API 抓取。",
+        id: "test_id_2",
+        rentStatus: 1, vacantRooms: 2, upcomingVacancies: 0,
+        posts: [ { id: "test1", rentMoney: 10000, roomName: "測試房A", rentPostStatus: "可預約" }, { id: "test2", rentMoney: 15000, roomName: "測試房B", rentPostStatus: "已出租" } ],
+        urlPhone: "tel:+886123456789", urlLine: "https://line.me/ti/p/testline", urlMail: "mailto:test@test.com",
+        rentPriceRange: "10000-15000", userID: "test_user"
+    };
+
+    // 立即顯示原始的「陽光公寓(測試)」
     L.marker([sunshineApartmentData.coordinates.latitude, sunshineApartmentData.coordinates.longitude])
         .addTo(map)
         .on('click', () => openSidebar(sunshineApartmentData))
@@ -71,13 +78,13 @@ document.addEventListener("DOMContentLoaded", function () {
             longitudeDelta: longitudeDelta
         }).toString();
         
-        // **修改：因為不再使用 ngrok，已移除 ngrok 相關的 header**
         fetch(url, { headers: { 'Accept': 'application/json' } })
         .then(response => response.ok ? response.json() : Promise.reject(response))
         .then(data => {
+            const combinedData = [sunshineApartmentData2, ...data];
             rentMarkers.clearLayers();
-            if (data && data.length > 0) {
-                data.forEach(property => {
+            if (combinedData && combinedData.length > 0) {
+                combinedData.forEach(property => {
                     if (property.coordinates) {
                         L.marker([property.coordinates.latitude, property.coordinates.longitude])
                             .addTo(rentMarkers)
@@ -87,7 +94,16 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
             }
         })
-        .catch(error => console.error('載入房源資料時發生錯誤:', error));
+        .catch(error => {
+            console.error('載入房源資料時發生錯誤:', error);
+            console.log('API 請求失敗，但仍顯示模擬的測試資料點...');
+            rentMarkers.clearLayers();
+            const property = sunshineApartmentData2;
+            L.marker([property.coordinates.latitude, property.coordinates.longitude])
+                .addTo(rentMarkers)
+                .on('click', () => fetchRentDataAndOpenSidebar(property.id))
+                .bindTooltip(property.name);
+        });
     }
 
     function loadRestaurantsInView() {
@@ -124,7 +140,7 @@ document.addEventListener("DOMContentLoaded", function () {
             console.error('載入餐廳資料時發生錯誤:', error);
         });
     }
-
+    
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             position => {
@@ -143,7 +159,6 @@ document.addEventListener("DOMContentLoaded", function () {
         loadRentalsInView();
         loadRestaurantsInView();
     }
-
 
     map.on('click', closeSidebar);
 

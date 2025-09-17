@@ -144,10 +144,6 @@ document.addEventListener("DOMContentLoaded", function () {
         loadRestaurantsInView();
     }
 
-    map.on('moveend', function() {
-        loadRentalsInView();
-        loadRestaurantsInView();
-    });
 
     map.on('click', closeSidebar);
 
@@ -255,6 +251,14 @@ document.addEventListener("DOMContentLoaded", function () {
             } else {
                 alert('密碼不一致！');
             }
+        });
+    }
+    const refreshButton = document.getElementById('refresh-button');
+    if (refreshButton) {
+        refreshButton.addEventListener('click', function() {
+            console.log('手動更新按鈕被點擊，正在抓取目前範圍的資料...');
+            loadRentalsInView();
+            loadRestaurantsInView();
         });
     }
 });

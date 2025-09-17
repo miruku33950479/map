@@ -23,8 +23,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     var sidebar = document.getElementById('sidebar');
 
-    // **更新為新的 AWS API 基礎 URL**
-    const baseUrl = 'http://13.210.216.7:8000';
+    // **修改：更新為新的 AWS API 基礎 URL**
+    const baseUrl = 'http://54.206.84.172:8000';
     
     // API 路徑
     const rentRegionMapUrl = `${baseUrl}/Rent/RegionMap`;
@@ -35,10 +35,7 @@ document.addEventListener("DOMContentLoaded", function () {
         coverImage: "https://media.gq.com.tw/photos/61e134dac128c151658f7506/16:9/w_1920,c_limit/casas%20caras%20cover.jpeg",
         name: "陽光公寓 (測試)",
         cityName: "台北市",
-        coordinates: {
-            latitude: 23.7029651,
-            longitude: 120.4287316
-        },
+        coordinates: { latitude: 23.7029651, longitude: 120.4287316 },
         mainContent: "這是一個預設標註在地圖上的地點，主要用途是作為系統功能測試與展示之用。",
         rentStatus: 1,
         vacantRooms: 2,
@@ -74,7 +71,7 @@ document.addEventListener("DOMContentLoaded", function () {
             longitudeDelta: longitudeDelta
         }).toString();
         
-        // 注意：因為不再使用 ngrok，移除了 ngrok 相關的 header
+        // **修改：因為不再使用 ngrok，已移除 ngrok 相關的 header**
         fetch(url, { headers: { 'Accept': 'application/json' } })
         .then(response => response.ok ? response.json() : Promise.reject(response))
         .then(data => {

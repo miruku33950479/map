@@ -23,8 +23,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     var sidebar = document.getElementById('sidebar');
 
-    // 定義後端 API 的基礎 URL
-    const baseUrl = 'https://0191d4c6b56a.ngrok-free.app';
+    // **更新為新的 AWS API 基礎 URL**
+    const baseUrl = 'http://13.210.216.7:8000';
     
     // API 路徑
     const rentRegionMapUrl = `${baseUrl}/Rent/RegionMap`;
@@ -74,12 +74,8 @@ document.addEventListener("DOMContentLoaded", function () {
             longitudeDelta: longitudeDelta
         }).toString();
         
-        fetch(url, {
-            headers: {
-                'Accept': 'application/json',
-                'ngrok-skip-browser-warning': 'true'
-            }
-        })
+        // 注意：因為不再使用 ngrok，移除了 ngrok 相關的 header
+        fetch(url, { headers: { 'Accept': 'application/json' } })
         .then(response => response.ok ? response.json() : Promise.reject(response))
         .then(data => {
             rentMarkers.clearLayers();
@@ -112,12 +108,7 @@ document.addEventListener("DOMContentLoaded", function () {
             includeAll: true
         }).toString();
         
-        fetch(url, {
-            headers: {
-                'Accept': 'application/json',
-                'ngrok-skip-browser-warning': 'true'
-            }
-        })
+        fetch(url, { headers: { 'Accept': 'application/json' } })
         .then(response => response.ok ? response.json() : Promise.reject(response))
         .then(data => {
             restaurantMarkers.clearLayers();
@@ -163,7 +154,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     map.on('click', closeSidebar);
 
-    // --- 後續所有函式 (openSidebar, closeSidebar, 登入邏輯等) 皆保持不變 ---
     function openSidebar(property) {
         sidebar.classList.remove('closed');
         document.getElementById('sidebar-title').innerText = property.name || '未提供名稱';
@@ -208,8 +198,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const rentUrl = `${baseUrl}/Rent/${rentId}`;
         fetch(rentUrl, {
                 headers: {
-                    'Accept': 'application/json',
-                    'ngrok-skip-browser-warning': 'true'
+                    'Accept': 'application/json'
                 }
             })
             .then(response => response.ok ? response.json() : Promise.reject(response))

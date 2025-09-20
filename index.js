@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // 最終版 API 基礎 URL
     const baseUrl = 'https://xn--pqq3gk62n33n.com';
-    
+
     // API 路徑
     const rentRegionMapUrl = `${baseUrl}/Rent/RegionMap`;
     const restaurantRegionMapUrl = `${baseUrl}/Restaurant/RegionMap`;
@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", function () {
         mainContent: "這是一個預設標註在地圖上的地點，主要用途是作為系統功能測試與展示之用。",
         id: "test_id",
         rentStatus: 1, vacantRooms: 2, upcomingVacancies: 0,
-        posts: [ { id: "test1", rentMoney: 10000, roomName: "測試房A", rentPostStatus: "可預約" }, { id: "test2", rentMoney: 15000, roomName: "測試房B", rentPostStatus: "已出租" } ],
+        posts: [{ id: "test1", rentMoney: 10000, roomName: "測試房A", rentPostStatus: "可預約" }, { id: "test2", rentMoney: 15000, roomName: "測試房B", rentPostStatus: "已出租" }],
         urlPhone: "tel:+886123456789", urlLine: "https://line.me/ti/p/testline", urlMail: "mailto:test@test.com",
         rentPriceRange: "10000-15000", userID: "test_user"
     };
@@ -53,7 +53,7 @@ document.addEventListener("DOMContentLoaded", function () {
         mainContent: "這是「測試2」的預設標註，模擬從 API 抓取。",
         id: "test_id_2",
         rentStatus: 1, vacantRooms: 2, upcomingVacancies: 0,
-        posts: [ { id: "test1", rentMoney: 10000, roomName: "測試房A", rentPostStatus: "可預約" }, { id: "test2", rentMoney: 15000, roomName: "測試房B", rentPostStatus: "已出租" } ],
+        posts: [{ id: "test1", rentMoney: 10000, roomName: "測試房A", rentPostStatus: "可預約" }, { id: "test2", rentMoney: 15000, roomName: "測試房B", rentPostStatus: "已出租" }],
         urlPhone: "tel:+886123456789", urlLine: "https://line.me/ti/p/testline", urlMail: "mailto:test@test.com",
         rentPriceRange: "10000-15000", userID: "test_user"
     };
@@ -70,46 +70,45 @@ document.addEventListener("DOMContentLoaded", function () {
         const latitudeDelta = bounds.getNorth() - bounds.getSouth();
         const longitudeDelta = bounds.getEast() - bounds.getWest();
 
-        const url = new URL(rentRegionMapUrl); 
+        const url = new URL(rentRegionMapUrl);
         url.search = new URLSearchParams({
             latitude: center.lat,
             longitude: center.lng,
             latitudeDelta: latitudeDelta,
             longitudeDelta: longitudeDelta
         }).toString();
-        
+
         fetch(url, { headers: { 'Accept': 'application/json' } })
-        .then(response => response.ok ? response.json() : Promise.reject(response))
-        .then(data => {
-            const combinedData = [sunshineApartmentData2, ...data];
-            rentMarkers.clearLayers();
-            if (combinedData && combinedData.length > 0) {
-                combinedData.forEach(property => {
-                    if (property.coordinates) {
-                        const marker = L.marker([property.coordinates.latitude, property.coordinates.longitude])
-                            .addTo(rentMarkers)
-                            .bindTooltip(property.name);
-                        
-                        // 判斷點擊行為：模擬資料直接開側邊欄，真實資料才 call API
-                        if (property.id === 'test_id_2') {
-                            marker.on('click', () => openSidebar(property));
-                        } else {
-                            marker.on('click', () => fetchRentDataAndOpenSidebar(property.id));
+            .then(response => response.ok ? response.json() : Promise.reject(response))
+            .then(data => {
+                const combinedData = [sunshineApartmentData2, ...data];
+                rentMarkers.clearLayers();
+                if (combinedData && combinedData.length > 0) {
+                    combinedData.forEach(property => {
+                        if (property.coordinates) {
+                            const marker = L.marker([property.coordinates.latitude, property.coordinates.longitude])
+                                .addTo(rentMarkers)
+                                .bindTooltip(property.name);
+
+                            if (property.id === 'test_id_2') {
+                                marker.on('click', () => openSidebar(property));
+                            } else {
+                                marker.on('click', () => fetchRentDataAndOpenSidebar(property.id));
+                            }
                         }
-                    }
-                });
-            }
-        })
-        .catch(error => {
-            console.error('載入房源資料時發生錯誤:', error);
-            console.log('API 請求失敗，但仍顯示模擬的測試資料點...');
-            rentMarkers.clearLayers();
-            const property = sunshineApartmentData2;
-            const marker = L.marker([property.coordinates.latitude, property.coordinates.longitude])
-                .addTo(rentMarkers)
-                .bindTooltip(property.name);
-            marker.on('click', () => openSidebar(property));
-        });
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('載入房源資料時發生錯誤:', error);
+                console.log('API 請求失敗，但仍顯示模擬的測試資料點...');
+                rentMarkers.clearLayers();
+                const property = sunshineApartmentData2;
+                const marker = L.marker([property.coordinates.latitude, property.coordinates.longitude])
+                    .addTo(rentMarkers)
+                    .bindTooltip(property.name);
+                marker.on('click', () => openSidebar(property));
+            });
     }
 
     function loadRestaurantsInView() {
@@ -126,27 +125,27 @@ document.addEventListener("DOMContentLoaded", function () {
             longitudeDelta: longitudeDelta,
             includeAll: true
         }).toString();
-        
+
         fetch(url, { headers: { 'Accept': 'application/json' } })
-        .then(response => response.ok ? response.json() : Promise.reject(response))
-        .then(data => {
-            restaurantMarkers.clearLayers();
-            if (data && data.length > 0) {
-                data.forEach(restaurant => {
-                    const { name, latitude, longitude } = restaurant;
-                    if (latitude && longitude) {
-                        L.marker([latitude, longitude])
-                            .addTo(restaurantMarkers)
-                            .bindPopup(`<b>${name || '無餐廳名稱'}</b>`);
-                    }
-                });
-            }
-        })
-        .catch(error => {
-            console.error('載入餐廳資料時發生錯誤:', error);
-        });
+            .then(response => response.ok ? response.json() : Promise.reject(response))
+            .then(data => {
+                restaurantMarkers.clearLayers();
+                if (data && data.length > 0) {
+                    data.forEach(restaurant => {
+                        const { name, latitude, longitude } = restaurant;
+                        if (latitude && longitude) {
+                            L.marker([latitude, longitude])
+                                .addTo(restaurantMarkers)
+                                .bindPopup(`<b>${name || '無餐廳名稱'}</b>`);
+                        }
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('載入餐廳資料時發生錯誤:', error);
+            });
     }
-    
+
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             position => {
@@ -170,13 +169,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const refreshButton = document.getElementById('refresh-button');
     if (refreshButton) {
-        refreshButton.addEventListener('click', function() {
+        refreshButton.addEventListener('click', function () {
             console.log('手動更新按鈕被點擊，正在抓取目前範圍的資料...');
             loadRentalsInView();
             loadRestaurantsInView();
         });
     }
-    
+
     function openSidebar(property) {
         sidebar.classList.remove('closed');
         document.getElementById('sidebar-title').innerText = property.name || '未提供名稱';
@@ -204,7 +203,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const li = document.createElement('li');
                 li.textContent = `${post.roomName || '未提供房名'} - ${post.rentMoney !== undefined ? post.rentMoney : '未提供租金'} - ${post.rentPostStatus || '未提供狀態'}`;
                 postsList.appendChild(li);
-});
+            });
         } else {
             const li = document.createElement('li');
             li.textContent = '暫無房源資訊';
@@ -222,8 +221,8 @@ document.addEventListener("DOMContentLoaded", function () {
     function fetchRentDataAndOpenSidebar(rentId) {
         const rentUrl = `${baseUrl}/Rent/${rentId}`;
         fetch(rentUrl, {
-                headers: { 'Accept': 'application/json' }
-            })
+            headers: { 'Accept': 'application/json' }
+        })
             .then(response => response.ok ? response.json() : Promise.reject(response))
             .then(data => {
                 if (data && data.length > 0) {
@@ -232,7 +231,7 @@ document.addEventListener("DOMContentLoaded", function () {
             })
             .catch(error => console.error('獲取房產詳細資料時發生錯誤:', error));
     }
-    
+
     sidebar.classList.add('closed');
     const overlay = document.getElementById('overlay');
     const closeModalBtn = document.getElementById('close-modal-btn');
@@ -268,12 +267,37 @@ document.addEventListener("DOMContentLoaded", function () {
         showLoginModal();
     });
     if (loginButton) loginButton.addEventListener('click', showLoginModal);
-    
+
     const loginSubmit = document.getElementById('loginForm');
     if (loginSubmit) {
         loginSubmit.addEventListener('submit', e => {
             e.preventDefault();
-            console.log('登入資訊：', document.getElementById('login-email').value, document.getElementById('login-password').value);
+            const userName = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            const loginData = { userName: userName, password: password };
+
+            fetch(`${baseUrl}/Users/Login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(loginData)
+            })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        return response.json().then(err => { throw err; });
+                    }
+                })
+                .then(data => {
+                    console.log('登入成功:', data);
+                    alert(`登入成功！歡迎 ${data.userName}`);
+                    localStorage.setItem('userData', JSON.stringify(data));
+                    hideAuthModal();
+                })
+                .catch(error => {
+                    console.error('登入時發生錯誤:', error);
+                    alert(`登入失敗：${(error.detail && error.detail[0] && error.detail[0].msg) || error.detail || '請檢查您的帳號密碼'}`);
+                });
         });
     }
 
@@ -283,11 +307,41 @@ document.addEventListener("DOMContentLoaded", function () {
             e.preventDefault();
             const password = document.getElementById('register-password').value;
             const confirmPassword = document.getElementById('confirm-password').value;
-            if (password === confirmPassword) {
-                console.log('註冊資訊：', document.getElementById('register-email').value, password);
-            } else {
-                alert('密碼不一致！');
+
+            if (password !== confirmPassword) {
+                alert('兩次輸入的密碼不一致！');
+                return;
             }
+
+            const registerData = {
+                userName: document.getElementById('register-userName').value,
+                password: password,
+                sex: document.getElementById('register-sex').value,
+                email: document.getElementById('register-email').value,
+                phoneNumber: document.getElementById('register-phoneNumber').value
+            };
+
+            fetch(`${baseUrl}/Users/Register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(registerData)
+            })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        return response.json().then(err => { throw err; });
+                    }
+                })
+                .then(data => {
+                    console.log('註冊成功:', data);
+                    alert('註冊成功！現在您可以直接登入。');
+                    showLoginModal();
+                })
+                .catch(error => {
+                    console.error('註冊時發生錯誤:', error);
+                    alert(`註冊失敗：${(error.detail && error.detail[0] && error.detail[0].msg) || error.detail || '請檢查您輸入的資料'}`);
+                });
         });
     }
 });

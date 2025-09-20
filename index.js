@@ -23,8 +23,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     var sidebar = document.getElementById('sidebar');
 
-    // **修改：更新為新的 HTTPS AWS API 基礎 URL**
-    const baseUrl = 'https://54.206.84.172:8443';
+    // **最終版 API 基礎 URL**
+    const baseUrl = 'https://xn--pqq3gk62n33n.com';
     
     // API 路徑
     const rentRegionMapUrl = `${baseUrl}/Rent/RegionMap`;
@@ -162,6 +162,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
     map.on('click', closeSidebar);
 
+    const refreshButton = document.getElementById('refresh-button');
+    if (refreshButton) {
+        refreshButton.addEventListener('click', function() {
+            console.log('手動更新按鈕被點擊，正在抓取目前範圍的資料...');
+            loadRentalsInView();
+            loadRestaurantsInView();
+        });
+    }
+    
     function openSidebar(property) {
         sidebar.classList.remove('closed');
         document.getElementById('sidebar-title').innerText = property.name || '未提供名稱';
@@ -189,7 +198,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const li = document.createElement('li');
                 li.textContent = `${post.roomName || '未提供房名'} - ${post.rentMoney !== undefined ? post.rentMoney : '未提供租金'} - ${post.rentPostStatus || '未提供狀態'}`;
                 postsList.appendChild(li);
-            });
+});
         } else {
             const li = document.createElement('li');
             li.textContent = '暫無房源資訊';
@@ -199,15 +208,15 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById('sidebar-line').href = property.urlLine || '#';
         document.getElementById('sidebar-mail').href = property.urlMail ? `mailto:${property.urlMail}` : '#';
     }
+
     function closeSidebar() {
         sidebar.classList.add('closed');
     }
+
     function fetchRentDataAndOpenSidebar(rentId) {
         const rentUrl = `${baseUrl}/Rent/${rentId}`;
         fetch(rentUrl, {
-                headers: {
-                    'Accept': 'application/json'
-                }
+                headers: { 'Accept': 'application/json' }
             })
             .then(response => response.ok ? response.json() : Promise.reject(response))
             .then(data => {
@@ -217,6 +226,7 @@ document.addEventListener("DOMContentLoaded", function () {
             })
             .catch(error => console.error('獲取房產詳細資料時發生錯誤:', error));
     }
+    
     sidebar.classList.add('closed');
     const overlay = document.getElementById('overlay');
     const closeModalBtn = document.getElementById('close-modal-btn');
@@ -225,19 +235,23 @@ document.addEventListener("DOMContentLoaded", function () {
     const showRegisterFormLink = document.getElementById('show-register-form');
     const showLoginFormLink = document.getElementById('show-login-form');
     const loginButton = document.getElementById('login-button');
+
     function showLoginModal() {
         overlay.classList.remove('hidden');
         loginForm.classList.remove('hidden');
         registerForm.classList.add('hidden');
     }
+
     function showRegisterModal() {
         overlay.classList.remove('hidden');
         registerForm.classList.remove('hidden');
         loginForm.classList.add('hidden');
     }
+
     function hideAuthModal() {
         overlay.classList.add('hidden');
     }
+
     if (closeModalBtn) closeModalBtn.addEventListener('click', hideAuthModal);
     if (showRegisterFormLink) showRegisterFormLink.addEventListener('click', e => {
         e.preventDefault();
@@ -248,6 +262,7 @@ document.addEventListener("DOMContentLoaded", function () {
         showLoginModal();
     });
     if (loginButton) loginButton.addEventListener('click', showLoginModal);
+    
     const loginSubmit = document.getElementById('loginForm');
     if (loginSubmit) {
         loginSubmit.addEventListener('submit', e => {
@@ -255,6 +270,7 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log('登入資訊：', document.getElementById('login-email').value, document.getElementById('login-password').value);
         });
     }
+
     const registerSubmit = document.getElementById('registerForm');
     if (registerSubmit) {
         registerSubmit.addEventListener('submit', e => {
@@ -266,14 +282,6 @@ document.addEventListener("DOMContentLoaded", function () {
             } else {
                 alert('密碼不一致！');
             }
-        });
-    }
-    const refreshButton = document.getElementById('refresh-button');
-    if (refreshButton) {
-        refreshButton.addEventListener('click', function() {
-            console.log('手動更新按鈕被點擊，正在抓取目前範圍的資料...');
-            loadRentalsInView();
-            loadRestaurantsInView();
         });
     }
 });

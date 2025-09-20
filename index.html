@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
-
 <head>
     <meta charset="utf-8">
     <title>地圖範例</title>
@@ -207,11 +206,12 @@
         #register-form a:hover {
             text-decoration: underline;
         }
+        
         #refresh-button {
             position: absolute;
             bottom: 20px;
             right: 20px;
-            z-index: 1000; /* 確保按鈕在地圖圖層之上 */
+            z-index: 1000;
             padding: 10px 15px;
             font-size: 16px;
             background-color: #ffffff;
@@ -227,11 +227,8 @@
         }
     </style>
 </head>
-
 <body>
-    <button id="login-button"
-        style="position: absolute; top: 20px; right: 20px; z-index: 1001; padding: 10px 15px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">登入</button>
-
+    <button id="login-button" style="position: absolute; top: 20px; right: 20px; z-index: 1001; padding: 10px 15px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">登入</button>
     <div id="map"></div>
     <button id="refresh-button">重新整理</button>
     <div id="sidebar" class="closed">
@@ -250,7 +247,6 @@
         <p><a id="sidebar-line" href="">聯繫 Line</a></p>
         <p><a id="sidebar-mail" href="">發送電子郵件</a></p>
     </div>
-
     <div id="overlay" class="hidden">
         <div id="auth-modal">
             <button id="close-modal-btn">&times; 關閉</button>
@@ -290,9 +286,7 @@
             </div>
         </div>
     </div>
-
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="index.js" defer></script>
 </body>
-
 </html>

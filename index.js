@@ -64,6 +64,88 @@ document.addEventListener("DOMContentLoaded", function () {
         .on('click', () => openSidebar(sunshineApartmentData))
         .bindTooltip(sunshineApartmentData.name);
 
+    // --- 全域變數定義 ---
+    const loginButton = document.getElementById('login-button');
+    const bookmarksListButton = document.getElementById('bookmarks-list-button');
+    let currentUserData = null;
+
+    // --- 函式定義 ---
+    function updateUIToLoggedIn(userData) {
+        currentUserData = userData;
+        loginButton.innerText = '登出';
+        bookmarksListButton.style.display = 'block';
+    }
+
+    function updateUIToLoggedOut() {
+        currentUserData = null;
+        localStorage.removeItem('userData');
+        loginButton.innerText = '登入';
+        bookmarksListButton.style.display = 'none';
+    }
+
+    function handleBookmarkClick(userId, rentId) {
+        console.log(`使用者 ${userId} 想要加入書籤，房源 ID: ${rentId}`);
+        const requestData = { userID: userId, ID: rentId };
+
+        fetch(`${baseUrl}/Users/bookmarks`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestData)
+        })
+            .then(response => {
+                if (!response.ok) { throw new Error('加入收藏失敗'); }
+                return response.json();
+            })
+            .then(data => {
+                console.log('加入收藏成功:', data);
+                alert('加入收藏成功！');
+            })
+            .catch(error => {
+                console.error('加入收藏時發生錯誤:', error);
+                alert('加入收藏失敗，可能已經收藏過了。');
+            });
+    }
+
+    const bookmarksOverlay = document.getElementById('bookmarks-overlay');
+    const bookmarksListContainer = document.getElementById('bookmarks-list-container');
+    const closeBookmarksModalBtn = document.getElementById('close-bookmarks-modal-btn');
+
+    function hideBookmarksModal() {
+        bookmarksOverlay.classList.add('hidden');
+    }
+
+    function showBookmarksModal() {
+        if (!currentUserData) {
+            alert('請先登入！');
+            return;
+        }
+        bookmarksOverlay.classList.remove('hidden');
+        bookmarksListContainer.innerHTML = '<p>載入中...</p>';
+
+        fetch(`${baseUrl}/Users/${currentUserData.userID}/bookmarks`, {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' }
+        })
+            .then(response => response.ok ? response.json() : Promise.reject(response))
+            .then(data => {
+                const bookmarkedRentals = data.bookmarks.Rent;
+                if (bookmarkedRentals.length === 0) {
+                    bookmarksListContainer.innerHTML = '<p>您尚未收藏任何房源。</p>';
+                    return;
+                }
+                let listHtml = '<ul>';
+                bookmarkedRentals.forEach(item => {
+                    listHtml += `<li>${item.name || item.id}</li>`;
+                });
+                listHtml += '</ul>';
+                bookmarksListContainer.innerHTML = listHtml;
+            })
+            .catch(error => {
+                console.error('獲取收藏清單時發生錯誤:', error);
+                bookmarksListContainer.innerHTML = '<p>載入失敗，請稍後再試。</p>';
+            });
+    }
+
     function loadRentalsInView() {
         const bounds = map.getBounds();
         const center = bounds.getCenter();
@@ -90,7 +172,7 @@ document.addEventListener("DOMContentLoaded", function () {
                                 .addTo(rentMarkers)
                                 .bindTooltip(property.name);
 
-                            if (property.id === 'test_id_2') {
+                            if (property.id === 'test_id_2' || property.id === 'test_id') {
                                 marker.on('click', () => openSidebar(property));
                             } else {
                                 marker.on('click', () => fetchRentDataAndOpenSidebar(property.id));
@@ -146,36 +228,6 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     }
 
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            position => {
-                map.setView([position.coords.latitude, position.coords.longitude], 16);
-                loadRentalsInView();
-                loadRestaurantsInView();
-            },
-            error => {
-                console.error('獲取使用者位置失敗:', error.message);
-                loadRentalsInView();
-                loadRestaurantsInView();
-            }
-        );
-    } else {
-        console.error('瀏覽器不支援地理位置 API。');
-        loadRentalsInView();
-        loadRestaurantsInView();
-    }
-
-    map.on('click', closeSidebar);
-
-    const refreshButton = document.getElementById('refresh-button');
-    if (refreshButton) {
-        refreshButton.addEventListener('click', function () {
-            console.log('手動更新按鈕被點擊，正在抓取目前範圍的資料...');
-            loadRentalsInView();
-            loadRestaurantsInView();
-        });
-    }
-
     function openSidebar(property) {
         sidebar.classList.remove('closed');
         document.getElementById('sidebar-title').innerText = property.name || '未提供名稱';
@@ -212,6 +264,16 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById('sidebar-phone').href = property.urlPhone ? `tel:${property.urlPhone}` : '#';
         document.getElementById('sidebar-line').href = property.urlLine || '#';
         document.getElementById('sidebar-mail').href = property.urlMail ? `mailto:${property.urlMail}` : '#';
+
+        const bookmarkButton = document.getElementById('bookmark-button');
+        if (currentUserData) {
+            bookmarkButton.style.display = 'block';
+            bookmarkButton.onclick = function () {
+                handleBookmarkClick(currentUserData.userID, property.id);
+            };
+        } else {
+            bookmarkButton.style.display = 'none';
+        }
     }
 
     function closeSidebar() {
@@ -232,6 +294,57 @@ document.addEventListener("DOMContentLoaded", function () {
             .catch(error => console.error('獲取房產詳細資料時發生錯誤:', error));
     }
 
+    // --- 事件監聽與初始設定 ---
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            position => {
+                map.setView([position.coords.latitude, position.coords.longitude], 16);
+                loadRentalsInView();
+                loadRestaurantsInView();
+            },
+            error => {
+                console.error('獲取使用者位置失敗:', error.message);
+                loadRentalsInView();
+                loadRestaurantsInView();
+            }
+        );
+    } else {
+        console.error('瀏覽器不支援地理位置 API。');
+        loadRentalsInView();
+        loadRestaurantsInView();
+    }
+
+    map.on('click', closeSidebar);
+
+    const refreshButton = document.getElementById('refresh-button');
+    if (refreshButton) {
+        refreshButton.addEventListener('click', function () {
+            console.log('手動更新按鈕被點擊，正在抓取目前範圍的資料...');
+            loadRentalsInView();
+            loadRestaurantsInView();
+        });
+    }
+
+    if (bookmarksListButton) {
+        bookmarksListButton.addEventListener('click', showBookmarksModal);
+    }
+    if (closeBookmarksModalBtn) {
+        closeBookmarksModalBtn.addEventListener('click', hideBookmarksModal);
+    }
+
+    if (loginButton) {
+        loginButton.addEventListener('click', () => {
+            if (currentUserData) {
+                if (confirm('您確定要登出嗎？')) {
+                    updateUIToLoggedOut();
+                    alert('您已成功登出。');
+                }
+            } else {
+                showLoginModal();
+            }
+        });
+    }
+
     sidebar.classList.add('closed');
     const overlay = document.getElementById('overlay');
     const closeModalBtn = document.getElementById('close-modal-btn');
@@ -239,7 +352,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const registerForm = document.getElementById('register-form');
     const showRegisterFormLink = document.getElementById('show-register-form');
     const showLoginFormLink = document.getElementById('show-login-form');
-    const loginButton = document.getElementById('login-button');
 
     function showLoginModal() {
         overlay.classList.remove('hidden');
@@ -266,7 +378,6 @@ document.addEventListener("DOMContentLoaded", function () {
         e.preventDefault();
         showLoginModal();
     });
-    if (loginButton) loginButton.addEventListener('click', showLoginModal);
 
     const loginSubmit = document.getElementById('loginForm');
     if (loginSubmit) {
@@ -281,17 +392,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(loginData)
             })
-                .then(response => {
-                    if (response.ok) {
-                        return response.json();
-                    } else {
-                        return response.json().then(err => { throw err; });
-                    }
-                })
+                .then(response => response.ok ? response.json() : response.json().then(err => Promise.reject(err)))
                 .then(data => {
                     console.log('登入成功:', data);
                     alert(`登入成功！歡迎 ${data.userName}`);
                     localStorage.setItem('userData', JSON.stringify(data));
+                    updateUIToLoggedIn(data);
                     hideAuthModal();
                 })
                 .catch(error => {
@@ -326,13 +432,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(registerData)
             })
-                .then(response => {
-                    if (response.ok) {
-                        return response.json();
-                    } else {
-                        return response.json().then(err => { throw err; });
-                    }
-                })
+                .then(response => response.ok ? response.json() : response.json().then(err => Promise.reject(err)))
                 .then(data => {
                     console.log('註冊成功:', data);
                     alert('註冊成功！現在您可以直接登入。');
@@ -344,4 +444,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
         });
     }
+
+    function checkInitialLoginState() {
+        const storedUserData = localStorage.getItem('userData');
+        if (storedUserData) {
+            const userData = JSON.parse(storedUserData);
+            updateUIToLoggedIn(userData);
+        }
+    }
+    checkInitialLoginState();
 });

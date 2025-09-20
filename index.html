@@ -72,7 +72,7 @@
             }
         }
 
-        #sidebar button[onclick="closeSidebar()"] {
+        #sidebar button {
             float: right;
             margin-top: -10px;
             margin-right: -10px;
@@ -102,7 +102,8 @@
             margin-bottom: 5px;
         }
 
-        #overlay {
+        #overlay,
+        #bookmarks-overlay {
             position: fixed;
             top: 0;
             left: 0;
@@ -115,11 +116,13 @@
             align-items: center;
         }
 
-        #overlay.hidden {
+        #overlay.hidden,
+        #bookmarks-overlay.hidden {
             display: none;
         }
 
-        #auth-modal {
+        #auth-modal,
+        #bookmarks-modal {
             background-color: white;
             padding: 20px;
             border-radius: 8px;
@@ -129,7 +132,24 @@
             position: relative;
         }
 
-        #close-modal-btn {
+        #bookmarks-modal {
+            width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        #bookmarks-list-container ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        #bookmarks-list-container li {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
+
+        #close-modal-btn,
+        #close-bookmarks-modal-btn {
             position: absolute;
             top: 10px;
             right: 10px;
@@ -230,12 +250,14 @@
 </head>
 
 <body>
+    <button id="bookmarks-list-button"
+        style="display: none; position: absolute; top: 20px; right: 100px; z-index: 1001; padding: 10px 15px; background-color: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer;">收藏清單</button>
     <button id="login-button"
         style="position: absolute; top: 20px; right: 20px; z-index: 1001; padding: 10px 15px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">登入</button>
     <div id="map"></div>
     <button id="refresh-button">重新整理</button>
     <div id="sidebar" class="closed">
-        <button onclick="closeSidebar()" style="float: right;">收藏</button>
+        <button id="bookmark-button">加入收藏</button>
         <h3 id="sidebar-title"></h3>
         <div id="sidebar-img-container"
             style="width: 100%; height: 200px; overflow: hidden; background-color: #f0f0f0; display: flex; justify-content: center; align-items: center;">
@@ -298,6 +320,14 @@
                     <button type="submit">註冊</button>
                     <p>已經有帳號了？<a href="#" id="show-login-form">登入</a></p>
                 </form>
+            </div>
+        </div>
+    </div>
+    <div id="bookmarks-overlay" class="hidden">
+        <div id="bookmarks-modal">
+            <button id="close-bookmarks-modal-btn">&times; 關閉</button>
+            <h2>我的收藏清單</h2>
+            <div id="bookmarks-list-container">
             </div>
         </div>
     </div>

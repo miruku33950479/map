@@ -102,8 +102,7 @@
             margin-bottom: 5px;
         }
 
-        #overlay,
-        #bookmarks-overlay {
+        #overlay {
             position: fixed;
             top: 0;
             left: 0;
@@ -116,13 +115,11 @@
             align-items: center;
         }
 
-        #overlay.hidden,
-        #bookmarks-overlay.hidden {
+        #overlay.hidden {
             display: none;
         }
 
-        #auth-modal,
-        #bookmarks-modal {
+        #auth-modal {
             background-color: white;
             padding: 20px;
             border-radius: 8px;
@@ -132,24 +129,7 @@
             position: relative;
         }
 
-        #bookmarks-modal {
-            width: 500px;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-
-        #bookmarks-list-container ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        #bookmarks-list-container li {
-            padding: 8px;
-            border-bottom: 1px solid #eee;
-        }
-
-        #close-modal-btn,
-        #close-bookmarks-modal-btn {
+        #close-modal-btn {
             position: absolute;
             top: 10px;
             right: 10px;
@@ -246,6 +226,46 @@
         #refresh-button:hover {
             background-color: #f2f2f2;
         }
+
+        #bookmarks-panel {
+            position: fixed;
+            top: 0;
+            left: -450px;
+            width: 400px;
+            max-width: 90%;
+            height: 100vh;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            transition: left 0.3s ease;
+            z-index: 1500;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+
+        #bookmarks-panel.open {
+            left: 0;
+        }
+
+        #close-bookmarks-panel-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+            cursor: pointer;
+            border: none;
+            background: none;
+        }
+
+        #bookmarks-list-container ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        #bookmarks-list-container li {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
     </style>
 </head>
 
@@ -323,14 +343,14 @@
             </div>
         </div>
     </div>
-    <div id="bookmarks-overlay" class="hidden">
-        <div id="bookmarks-modal">
-            <button id="close-bookmarks-modal-btn">&times; 關閉</button>
-            <h2>我的收藏清單</h2>
-            <div id="bookmarks-list-container">
-            </div>
+
+    <div id="bookmarks-panel">
+        <button id="close-bookmarks-panel-btn">&times; 關閉</button>
+        <h2>我的收藏清單</h2>
+        <div id="bookmarks-list-container">
         </div>
     </div>
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="index.js" defer></script>
 </body>

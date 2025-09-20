@@ -93,33 +93,38 @@ document.addEventListener("DOMContentLoaded", function () {
             body: JSON.stringify(requestData)
         })
             .then(response => {
-                if (!response.ok) { throw new Error('加入收藏失敗'); }
-                return response.json();
+                if (response.ok) {
+                    return response.json();
+                }
+                if (response.status === 409) {
+                    throw new Error('此項目已在您的收藏清單中。');
+                }
+                throw new Error('加入收藏失敗，請稍後再試。');
             })
             .then(data => {
                 console.log('加入收藏成功:', data);
                 alert('加入收藏成功！');
             })
             .catch(error => {
-                console.error('加入收藏時發生錯誤:', error);
-                alert('加入收藏失敗，可能已經收藏過了。');
+                console.error('加入收藏時發生錯誤:', error.message);
+                alert(error.message);
             });
     }
 
-    const bookmarksOverlay = document.getElementById('bookmarks-overlay');
+    const bookmarksPanel = document.getElementById('bookmarks-panel');
     const bookmarksListContainer = document.getElementById('bookmarks-list-container');
-    const closeBookmarksModalBtn = document.getElementById('close-bookmarks-modal-btn');
+    const closeBookmarksPanelBtn = document.getElementById('close-bookmarks-panel-btn');
 
-    function hideBookmarksModal() {
-        bookmarksOverlay.classList.add('hidden');
+    function hideBookmarksPanel() {
+        bookmarksPanel.classList.remove('open');
     }
 
-    function showBookmarksModal() {
+    function showBookmarksPanel() {
         if (!currentUserData) {
             alert('請先登入！');
             return;
         }
-        bookmarksOverlay.classList.remove('hidden');
+        bookmarksPanel.classList.add('open');
         bookmarksListContainer.innerHTML = '<p>載入中...</p>';
 
         fetch(`${baseUrl}/Users/${currentUserData.userID}/bookmarks`, {
@@ -326,10 +331,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     if (bookmarksListButton) {
-        bookmarksListButton.addEventListener('click', showBookmarksModal);
+        bookmarksListButton.addEventListener('click', showBookmarksPanel);
     }
-    if (closeBookmarksModalBtn) {
-        closeBookmarksModalBtn.addEventListener('click', hideBookmarksModal);
+    if (closeBookmarksPanelBtn) {
+        closeBookmarksPanelBtn.addEventListener('click', hideBookmarksPanel);
     }
 
     if (loginButton) {

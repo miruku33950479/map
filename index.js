@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     var sidebar = document.getElementById('sidebar');
 
-    // **最終版 API 基礎 URL**
+    // 最終版 API 基礎 URL
     const baseUrl = 'https://xn--pqq3gk62n33n.com';
     
     // API 路徑
@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", function () {
         rentPriceRange: "10000-15000", userID: "test_user"
     };
 
-    // 新增的靜態測試物件 (測試2)
+    // 新增的靜態測試物件 (測試2)，模擬從 API 抓取
     const sunshineApartmentData2 = {
         coverImage: "https://media.gq.com.tw/photos/61e134dac128c151658f7506/16:9/w_1920,c_limit/casas%20caras%20cover.jpeg",
         name: "陽光公寓(測試2)",
@@ -86,10 +86,16 @@ document.addEventListener("DOMContentLoaded", function () {
             if (combinedData && combinedData.length > 0) {
                 combinedData.forEach(property => {
                     if (property.coordinates) {
-                        L.marker([property.coordinates.latitude, property.coordinates.longitude])
+                        const marker = L.marker([property.coordinates.latitude, property.coordinates.longitude])
                             .addTo(rentMarkers)
-                            .on('click', () => fetchRentDataAndOpenSidebar(property.id))
                             .bindTooltip(property.name);
+                        
+                        // 判斷點擊行為：模擬資料直接開側邊欄，真實資料才 call API
+                        if (property.id === 'test_id_2') {
+                            marker.on('click', () => openSidebar(property));
+                        } else {
+                            marker.on('click', () => fetchRentDataAndOpenSidebar(property.id));
+                        }
                     }
                 });
             }
@@ -99,10 +105,10 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log('API 請求失敗，但仍顯示模擬的測試資料點...');
             rentMarkers.clearLayers();
             const property = sunshineApartmentData2;
-            L.marker([property.coordinates.latitude, property.coordinates.longitude])
+            const marker = L.marker([property.coordinates.latitude, property.coordinates.longitude])
                 .addTo(rentMarkers)
-                .on('click', () => fetchRentDataAndOpenSidebar(property.id))
                 .bindTooltip(property.name);
+            marker.on('click', () => openSidebar(property));
         });
     }
 

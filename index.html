@@ -208,24 +208,27 @@
             text-decoration: underline;
         }
 
+        /* --- 修改這裡 --- */
         #refresh-button {
             position: absolute;
             bottom: 20px;
             right: 20px;
             z-index: 1000;
-            padding: 10px 15px;
-            font-size: 16px;
-            background-color: #ffffff;
-            color: #333;
-            border: 2px solid #ccc;
-            border-radius: 5px;
+            width: 48px;  /* 設定圖示寬度 */
+            height: 48px; /* 設定圖示高度 */
             cursor: pointer;
+            border-radius: 50%; /* 讓它變圓形 */
+            background-color: rgba(255, 255, 255, 0.8); /* 半透明背景 */
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s ease, background-color 0.2s ease; /* 加入動畫效果 */
         }
 
         #refresh-button:hover {
-            background-color: #f2f2f2;
+            transform: scale(1.1); /* 滑鼠懸停時放大 */
+            background-color: white; /* 懸停時背景變不透明 */
         }
+        /* --- 修改結束 --- */
+
 
         #bookmarks-panel {
             position: fixed;
@@ -275,7 +278,9 @@
     <button id="login-button"
         style="position: absolute; top: 20px; right: 20px; z-index: 1001; padding: 10px 15px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">登入</button>
     <div id="map"></div>
-    <button id="refresh-button">重新整理</button>
+    
+    <img id="refresh-button" src="Refresh.png" alt="重新整理">
+    
     <div id="sidebar" class="closed">
         <button id="bookmark-button">加入收藏</button>
         <h3 id="sidebar-title"></h3>

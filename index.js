@@ -254,8 +254,8 @@ document.addEventListener("DOMContentLoaded", function () {
         // --- 修改這裡：根據類型(rent/restaurant)設定預設圖片和顯示欄位 ---
         if (property.type === 'restaurant') {
             // 餐廳的設定
-            sidebarImg.src = property.coverImage || 'images/Default_Restaurant.jpg';
-            sidebarImg.onerror = () => { sidebarImg.src = 'images/Default_Restaurant.jpg'; };
+            sidebarImg.src = property.coverImage || 'images/DefaultRestaurant.jpg';
+            sidebarImg.onerror = () => { sidebarImg.src = 'images/DefaultRestaurant.jpg'; };
             
             // 隱藏不適用於餐廳的欄位
             priceElement.style.display = 'none';
@@ -263,8 +263,8 @@ document.addEventListener("DOMContentLoaded", function () {
             bookmarkButton.style.display = 'none';
 
         } else { // 預設為房源(rent)的設定
-            sidebarImg.src = property.coverImage || 'images/Default_Hotel.jpg';
-            sidebarImg.onerror = () => { sidebarImg.src = 'images/Default_Hotel.jpg'; };
+            sidebarImg.src = property.coverImage || 'images/DefaultHotel.jpg';
+            sidebarImg.onerror = () => { sidebarImg.src = 'images/DefaultHotel.jpg'; };
 
             // 顯示適用於房源的欄位
             priceElement.style.display = 'block';

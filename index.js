@@ -41,7 +41,8 @@ document.addEventListener("DOMContentLoaded", function () {
         rentStatus: 1, vacantRooms: 2, upcomingVacancies: 0,
         posts: [{ id: "test1", rentMoney: 10000, roomName: "測試房A", rentPostStatus: "可預約" }, { id: "test2", rentMoney: 15000, roomName: "測試房B", rentPostStatus: "已出租" }],
         urlPhone: "tel:+886123456789", urlLine: "https://line.me/ti/p/testline", urlMail: "mailto:test@test.com",
-        rentPriceRange: "10000-15000", userID: "test_user"
+        rentPriceRange: "10000-15000", userID: "test_user",
+        type: 'rent' // 新增類型以供判斷
     };
 
     // 新增的靜態測試物件 (測試2)，模擬從 API 抓取
@@ -55,7 +56,8 @@ document.addEventListener("DOMContentLoaded", function () {
         rentStatus: 1, vacantRooms: 2, upcomingVacancies: 0,
         posts: [{ id: "test1", rentMoney: 10000, roomName: "測試房A", rentPostStatus: "可預約" }, { id: "test2", rentMoney: 15000, roomName: "測試房B", rentPostStatus: "已出租" }],
         urlPhone: "tel:+886123456789", urlLine: "https://line.me/ti/p/testline", urlMail: "mailto:test@test.com",
-        rentPriceRange: "10000-15000", userID: "test_user"
+        rentPriceRange: "10000-15000", userID: "test_user",
+        type: 'rent' // 新增類型以供判斷
     };
 
     // 立即顯示原始的「陽光公寓(測試)」
@@ -165,12 +167,11 @@ document.addEventListener("DOMContentLoaded", function () {
             longitudeDelta: longitudeDelta
         }).toString();
 
-
-
         fetch(url, { headers: { 'Accept': 'application/json' } })
             .then(response => response.ok ? response.json() : Promise.reject(response))
             .then(data => {
-                const combinedData = [sunshineApartmentData2, ...data];
+                const apiData = data.map(item => ({ ...item, type: 'rent' })); // 為API回傳的資料加上類型
+                const combinedData = [sunshineApartmentData2, ...apiData];
                 rentMarkers.clearLayers();
                 if (combinedData && combinedData.length > 0) {
                     combinedData.forEach(property => {
@@ -178,8 +179,6 @@ document.addEventListener("DOMContentLoaded", function () {
                             const marker = L.marker([property.coordinates.latitude, property.coordinates.longitude])
                                 .addTo(rentMarkers)
                                 .bindTooltip(property.name);
-
-                            // 修改後：不論是不是測試資料，都直接用已經拿到的 property 物件打開側邊欄
                             marker.on('click', () => openSidebar(property));
                         }
                     });
@@ -218,11 +217,18 @@ document.addEventListener("DOMContentLoaded", function () {
                 restaurantMarkers.clearLayers();
                 if (data && data.length > 0) {
                     data.forEach(restaurant => {
-                        const { name, latitude, longitude } = restaurant;
-                        if (latitude && longitude) {
-                            L.marker([latitude, longitude])
+                        if (restaurant.latitude && restaurant.longitude) {
+                            const marker = L.marker([restaurant.latitude, restaurant.longitude])
                                 .addTo(restaurantMarkers)
-                                .bindPopup(`<b>${name || '無餐廳名稱'}</b>`);
+                                .bindTooltip(restaurant.name || '無餐廳名稱');
+
+                            // --- 修改這裡：讓餐廳圖釘也能打開側邊欄 ---
+                            const restaurantDataForSidebar = {
+                                ...restaurant,
+                                type: 'restaurant', // 加上類型，供 openSidebar 判斷
+                                mainContent: restaurant.mainContent || '暫無餐廳介紹' // 提供預設內容
+                            };
+                            marker.on('click', () => openSidebar(restaurantDataForSidebar));
                         }
                     });
                 }
@@ -235,49 +241,70 @@ document.addEventListener("DOMContentLoaded", function () {
     function openSidebar(property) {
         sidebar.classList.remove('closed');
         document.getElementById('sidebar-title').innerText = property.name || '未提供名稱';
+
         const sidebarImg = document.getElementById('sidebar-img');
         const sidebarImgPlaceholder = document.getElementById('sidebar-img-placeholder');
+        const priceElement = document.getElementById('sidebar-price');
+        const postsList = document.getElementById('sidebar-posts');
+        const bookmarkButton = document.getElementById('bookmark-button');
+
         sidebarImg.style.display = 'none';
         sidebarImgPlaceholder.style.display = 'flex';
+
+        // --- 修改這裡：根據類型(rent/restaurant)設定預設圖片和顯示欄位 ---
+        if (property.type === 'restaurant') {
+            // 餐廳的設定
+            sidebarImg.src = property.coverImage || 'images/Default_Restaurant.jpg';
+            sidebarImg.onerror = () => { sidebarImg.src = 'images/Default_Restaurant.jpg'; };
+            
+            // 隱藏不適用於餐廳的欄位
+            priceElement.style.display = 'none';
+            postsList.style.display = 'none';
+            bookmarkButton.style.display = 'none';
+
+        } else { // 預設為房源(rent)的設定
+            sidebarImg.src = property.coverImage || 'images/Default_Hotel.jpg';
+            sidebarImg.onerror = () => { sidebarImg.src = 'images/Default_Hotel.jpg'; };
+
+            // 顯示適用於房源的欄位
+            priceElement.style.display = 'block';
+            postsList.style.display = 'block';
+            priceElement.innerText = '租金範圍: ' + (property.rentPriceRange || '未提供');
+
+            postsList.innerHTML = '';
+            if (property.posts && property.posts.length > 0) {
+                property.posts.forEach(post => {
+                    const li = document.createElement('li');
+                    li.textContent = `${post.roomName || '未提供房名'} - ${post.rentMoney !== undefined ? post.rentMoney : '未提供租金'} - ${post.rentPostStatus || '未提供狀態'}`;
+                    postsList.appendChild(li);
+                });
+            } else {
+                const li = document.createElement('li');
+                li.textContent = '暫無房源資訊';
+                postsList.appendChild(li);
+            }
+            
+            if (currentUserData) {
+                bookmarkButton.style.display = 'block';
+                bookmarkButton.onclick = function () {
+                    handleBookmarkClick(currentUserData.userID, property.id);
+                };
+            } else {
+                bookmarkButton.style.display = 'none';
+            }
+        }
+
         sidebarImg.onload = () => {
             sidebarImg.style.display = 'block';
             sidebarImgPlaceholder.style.display = 'none';
         };
-        sidebarImg.onerror = () => {
-            sidebarImg.src = 'https://via.placeholder.com/300x200?text=No+Image';
-            sidebarImg.style.display = 'block';
-            sidebarImgPlaceholder.style.display = 'none';
-        };
-        sidebarImg.src = property.coverImage || '';
+
+        // --- 通用欄位設定 ---
         document.getElementById('sidebar-content').innerText = property.mainContent || '';
-        document.getElementById('sidebar-price').innerText = '租金範圍: ' + (property.rentPriceRange || '未提供');
         document.getElementById('sidebar-city').innerText = '城市: ' + (property.cityName || '未提供');
-        const postsList = document.getElementById('sidebar-posts');
-        postsList.innerHTML = '';
-        if (property.posts && property.posts.length > 0) {
-            property.posts.forEach(post => {
-                const li = document.createElement('li');
-                li.textContent = `${post.roomName || '未提供房名'} - ${post.rentMoney !== undefined ? post.rentMoney : '未提供租金'} - ${post.rentPostStatus || '未提供狀態'}`;
-                postsList.appendChild(li);
-            });
-        } else {
-            const li = document.createElement('li');
-            li.textContent = '暫無房源資訊';
-            postsList.appendChild(li);
-        }
         document.getElementById('sidebar-phone').href = property.urlPhone ? `tel:${property.urlPhone}` : '#';
         document.getElementById('sidebar-line').href = property.urlLine || '#';
         document.getElementById('sidebar-mail').href = property.urlMail ? `mailto:${property.urlMail}` : '#';
-
-        const bookmarkButton = document.getElementById('bookmark-button');
-        if (currentUserData) {
-            bookmarkButton.style.display = 'block';
-            bookmarkButton.onclick = function () {
-                handleBookmarkClick(currentUserData.userID, property.id);
-            };
-        } else {
-            bookmarkButton.style.display = 'none';
-        }
     }
 
     function closeSidebar() {

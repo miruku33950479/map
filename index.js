@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     var sidebar = document.getElementById('sidebar');
 
-    // 最終版 API 基礎 URL
+    // API 基礎 URL
     const baseUrl = 'https://api.xn--pqq3gk62n33n.com';
 
     // API 路徑
@@ -165,6 +165,8 @@ document.addEventListener("DOMContentLoaded", function () {
             longitudeDelta: longitudeDelta
         }).toString();
 
+
+
         fetch(url, { headers: { 'Accept': 'application/json' } })
             .then(response => response.ok ? response.json() : Promise.reject(response))
             .then(data => {
@@ -177,11 +179,8 @@ document.addEventListener("DOMContentLoaded", function () {
                                 .addTo(rentMarkers)
                                 .bindTooltip(property.name);
 
-                            if (property.id === 'test_id_2' || property.id === 'test_id') {
-                                marker.on('click', () => openSidebar(property));
-                            } else {
-                                marker.on('click', () => fetchRentDataAndOpenSidebar(property.id));
-                            }
+                            // 修改後：不論是不是測試資料，都直接用已經拿到的 property 物件打開側邊欄
+                            marker.on('click', () => openSidebar(property));
                         }
                     });
                 }
@@ -283,20 +282,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function closeSidebar() {
         sidebar.classList.add('closed');
-    }
-
-    function fetchRentDataAndOpenSidebar(rentId) {
-        const rentUrl = `${baseUrl}/Rent/${rentId}`;
-        fetch(rentUrl, {
-            headers: { 'Accept': 'application/json' }
-        })
-            .then(response => response.ok ? response.json() : Promise.reject(response))
-            .then(data => {
-                if (data && data.length > 0) {
-                    openSidebar(data[0]);
-                }
-            })
-            .catch(error => console.error('獲取房產詳細資料時發生錯誤:', error));
     }
 
     // --- 事件監聽與初始設定 ---

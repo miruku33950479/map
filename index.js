@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", function () {
     var sidebar = document.getElementById('sidebar');
 
     // 最終版 API 基礎 URL
-    const baseUrl = 'https://xn--pqq3gk62n33n.com';
+    const baseUrl = 'https://api.xn--pqq3gk62n33n.com';
 
     // API 路徑
     const rentRegionMapUrl = `${baseUrl}/Rent/RegionMap`;

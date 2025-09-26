@@ -2,14 +2,14 @@ document.addEventListener("DOMContentLoaded", function () {
     // 初始化 Leaflet 地圖
     var map = L.map('map').setView([23.704454, 120.428517], 16);
 
-    // 創建並設定預設圖釘圖示
-    var PinIcon = L.icon({
-        iconUrl: 'images/pin_icon.png',
-        iconSize: [32, 32],
-        iconAnchor: [16, 32],
-        popupAnchor: [0, -32]
-    });
-    L.Marker.prototype.options.icon = PinIcon;
+    // 創建並設定預設圖釘圖示(CSS)
+    var cssIcon = L.divIcon({
+    className: 'css-icon',
+    html: '<div></div>',
+    iconSize: [26, 26],
+    iconAnchor: [13, 26]
+});
+    L.Marker.prototype.options.icon = cssIcon;
 
     // 添加 OpenStreetMap 圖層
     L.tileLayer('https://tile.openstreetmap.bzh/br/{z}/{x}/{y}.png', {

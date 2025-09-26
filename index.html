@@ -242,6 +242,11 @@
             transform: scale(1.1); /* 滑鼠懸停時放大 */
             background-color: white; /* 懸停時背景變不透明 */
         }
+        /*按下刷新按鈕的反饋*/
+        #refresh-button:active {
+            transform: scale(0.9); /* 按下時縮小到 90% */
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); /* 陰影變小，模擬按下的感覺 */
+        }
         /* --- 刷新按鈕/重新整理-尾 --- */
 
 
@@ -284,7 +289,7 @@
             padding: 8px;
             border-bottom: 1px solid #eee;
         }
-        /*模塊化-頭*/
+        /*資訊卡模塊化-頭*/
         #sidebar .sidebar-section {
             background-color: #f9f9f9; /* 為區塊加上淡淡的背景色 */
             border: 1px solid #eee;      /* 加上淺色邊框 */
@@ -304,8 +309,8 @@
         .sidebar-section p, .sidebar-section ul {
             margin-bottom: 0; /* 移除區塊內最後一個元素的下邊距，讓外觀更整齊 */
         }
-        /*模塊化-尾*/
-        /*資訊內容分級-頭*/
+        /*資訊卡模塊化-尾*/
+        /*資訊卡內容分級-頭*/
         /* 標題 (第一級) */
         #sidebar-title {
             font-size: 22px;      /* 加大字體 */
@@ -323,7 +328,7 @@
             margin-bottom: 16px;
         }
 
-        /* 租金和城市等元數據 (第三級) */
+        /* 城市數據 (第三級) */
         #sidebar-price,
         #sidebar-city {
             font-size: 14px;
@@ -337,7 +342,35 @@
             color: #333;
             margin-right: 8px; /* 讓標籤和內容之間有點距離 */
         }
-        /*資訊內容分級-尾*/
+        /*資訊卡內容分級-尾*/
+        /*圖釘樣式-頭*/
+        /* 外層 div，主要用於定位，保持透明 */
+        .css-icon {
+            position: relative;
+            width: 26px;
+            height: 26px;
+        }
+
+        /* 內層 div，負責所有的外觀樣式和旋轉 */
+        .css-icon div {
+            background-color: #3498db; /* 圖釘主體顏色 */
+            width: 24px;
+            height: 24px;
+            border-radius: 50% 50% 50% 0; /* 製作水滴上半部的形狀 */
+            border: 1px solid #fff;
+            position: absolute;
+            transform: rotate(-45deg); /* 在內層旋轉 */
+            left: 0;
+            top: 0;
+            box-shadow: 0 0 2px #000;
+            transition: transform 0.1s ease-out; /* 將動畫效果也移到內層 */
+        }
+        
+        /* 讓圖釘在滑鼠懸停時有互動效果 */
+        .css-icon:hover div {
+            transform: rotate(-45deg) scale(1.1);
+        }
+        /*圖釘樣式-尾*/
     </style>
 </head>
 

@@ -264,8 +264,8 @@ document.addEventListener("DOMContentLoaded", function () {
             bookmarkButton.style.display = 'none';
 
         } else {
-            sidebarImg.src = property.coverImage || 'images/Default_Hotel.jpg';
-            sidebarImg.onerror = () => { sidebarImg.src = 'images/Default_Hotel.jpg'; };
+            sidebarImg.src = property.coverImage || 'images/DefaultHotel.jpg';
+            sidebarImg.onerror = () => { sidebarImg.src = 'images/DefaultHotel.jpg'; };
 
             priceElement.style.display = 'block';
             postsList.style.display = 'block';

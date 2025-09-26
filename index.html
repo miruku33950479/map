@@ -373,21 +373,39 @@
             margin-top: 15px; /* 與上方房間列表的間距 */
         }
         #bookmark-button {
-            float: none; /* 取消浮動 */
-            margin: 0;   /* 重設邊距 */
-            padding: 8px 20px;
-            font-size: 14px;
+            display: inline-flex; /* 使用 inline-flex 讓內容和圖示對齊 */
+            align-items: center;
+            justify-content: center;
+            gap: 8px; /* 圖示和文字的間距 */
+
+            float: none;
+            margin: 0;
+            padding: 10px 24px; /* 加大內邊距 */
+            font-size: 16px;    /* 加大字體 */
             font-weight: bold;
-            background-color: #007bff;
+            background-image: linear-gradient(to right, #007bff, #0056b3); /* 使用漸層背景 */
             color: white;
             border: none;
-            border-radius: 20px;
+            border-radius: 25px; /* 更圓潤的膠囊形狀 */
             cursor: pointer;
-            transition: background-color 0.2s ease;
+            box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3); /* 加上更明顯的陰影 */
+            transition: all 0.2s ease-in-out; /* 讓所有變化都平滑 */
         }
-
+        /*滑鼠懸停效果*/
         #bookmark-button:hover {
-            background-color: #0056b3;
+            transform: translateY(-2px); /* 向上微移 */
+            box-shadow: 0 6px 15px rgba(0, 123, 255, 0.4);
+        }
+        /* 點擊效果 */
+        #bookmark-button:active {
+            transform: translateY(0); /* 按下時恢復原位 */
+            box-shadow: 0 2px 5px rgba(0, 123, 255, 0.3);
+        }
+        /* 按鈕內的 SVG 圖示樣式 */
+        #bookmark-button svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor; /* 讓圖示顏色與文字顏色一致 */
         }
         /*收藏按鈕-尾*/
         .card-content {

@@ -42,7 +42,7 @@ document.addEventListener("DOMContentLoaded", function () {
         posts: [{ id: "test1", rentMoney: 10000, roomName: "測試房A", rentPostStatus: "可預約" }, { id: "test2", rentMoney: 15000, roomName: "測試房B", rentPostStatus: "已出租" }],
         urlPhone: "tel:+886123456789", urlLine: "https://line.me/ti/p/testline", urlMail: "mailto:test@test.com",
         rentPriceRange: "10000-15000", userID: "test_user",
-        type: 'rent' // 新增類型以供判斷
+        type: 'rent'
     };
 
     // 新增的靜態測試物件 (測試2)，模擬從 API 抓取
@@ -54,17 +54,18 @@ document.addEventListener("DOMContentLoaded", function () {
         mainContent: "這是「測試2」的預設標註，模擬從 API 抓取。",
         id: "test_id_2",
         rentStatus: 1, vacantRooms: 2, upcomingVacancies: 0,
-        posts: [{ id: "test1", rentMoney: 10000, roomName: "測試房A", rentPostStatus: "可預約" }, { id: "test2", rentMoney: 15000, roomName: "測試房B", rentPostStatus: "已出租" }],
+        posts: [{ id: "test1", rentMoney: 10000, roomName: "測試房A", rentPostStatus: "可預約" }, { id: "test2", rentMoney: 15002, roomName: "測試房B", rentPostStatus: "已出租" },{ id: "test3", rentMoney: 17352, roomName: "測試房CCC", rentPostStatus: "已出租" }],
         urlPhone: "tel:+886123456789", urlLine: "https://line.me/ti/p/testline", urlMail: "mailto:test@test.com",
-        rentPriceRange: "10000-15000", userID: "test_user",
-        type: 'rent' // 新增類型以供判斷
+        rentPriceRange: "10000-17532", userID: "test_user",
+        type: 'rent'
     };
 
     // 立即顯示原始的「陽光公寓(測試)」
+    const testTooltipContent = `<b>${sunshineApartmentData.name}</b><br>租金範圍: ${sunshineApartmentData.rentPriceRange}`; 
     L.marker([sunshineApartmentData.coordinates.latitude, sunshineApartmentData.coordinates.longitude])
         .addTo(map)
         .on('click', () => openSidebar(sunshineApartmentData))
-        .bindTooltip(sunshineApartmentData.name);
+        .bindTooltip(testTooltipContent);
 
     // --- 全域變數定義 ---
     const loginButton = document.getElementById('login-button');
@@ -170,15 +171,17 @@ document.addEventListener("DOMContentLoaded", function () {
         fetch(url, { headers: { 'Accept': 'application/json' } })
             .then(response => response.ok ? response.json() : Promise.reject(response))
             .then(data => {
-                const apiData = data.map(item => ({ ...item, type: 'rent' })); // 為API回傳的資料加上類型
+                const apiData = data.map(item => ({ ...item, type: 'rent' }));
                 const combinedData = [sunshineApartmentData2, ...apiData];
                 rentMarkers.clearLayers();
                 if (combinedData && combinedData.length > 0) {
                     combinedData.forEach(property => {
                         if (property.coordinates) {
+                            
+                            const tooltipContent = `<b>${property.name}</b><br>租金範圍: ${property.rentPriceRange || '未提供'}`;
                             const marker = L.marker([property.coordinates.latitude, property.coordinates.longitude])
                                 .addTo(rentMarkers)
-                                .bindTooltip(property.name);
+                                .bindTooltip(tooltipContent);
                             marker.on('click', () => openSidebar(property));
                         }
                     });
@@ -189,9 +192,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 console.log('API 請求失敗，但仍顯示模擬的測試資料點...');
                 rentMarkers.clearLayers();
                 const property = sunshineApartmentData2;
+                
+                const tooltipContent = `<b>${property.name}</b><br>租金範圍: ${property.rentPriceRange || '未提供'}`;
                 const marker = L.marker([property.coordinates.latitude, property.coordinates.longitude])
                     .addTo(rentMarkers)
-                    .bindTooltip(property.name);
+                    .bindTooltip(tooltipContent);
                 marker.on('click', () => openSidebar(property));
             });
     }
@@ -222,11 +227,10 @@ document.addEventListener("DOMContentLoaded", function () {
                                 .addTo(restaurantMarkers)
                                 .bindTooltip(restaurant.name || '無餐廳名稱');
 
-                            // --- 修改這裡：讓餐廳圖釘也能打開側邊欄 ---
                             const restaurantDataForSidebar = {
                                 ...restaurant,
-                                type: 'restaurant', // 加上類型，供 openSidebar 判斷
-                                mainContent: restaurant.mainContent || '暫無餐廳介紹' // 提供預設內容
+                                type: 'restaurant',
+                                mainContent: restaurant.mainContent || '暫無餐廳介紹'
                             };
                             marker.on('click', () => openSidebar(restaurantDataForSidebar));
                         }
@@ -251,25 +255,22 @@ document.addEventListener("DOMContentLoaded", function () {
         sidebarImg.style.display = 'none';
         sidebarImgPlaceholder.style.display = 'flex';
 
-        // --- 修改這裡：根據類型(rent/restaurant)設定預設圖片和顯示欄位 ---
         if (property.type === 'restaurant') {
-            // 餐廳的設定
             sidebarImg.src = property.coverImage || 'images/DefaultRestaurant.jpg';
             sidebarImg.onerror = () => { sidebarImg.src = 'images/DefaultRestaurant.jpg'; };
             
-            // 隱藏不適用於餐廳的欄位
             priceElement.style.display = 'none';
             postsList.style.display = 'none';
             bookmarkButton.style.display = 'none';
 
-        } else { // 預設為房源(rent)的設定
-            sidebarImg.src = property.coverImage || 'images/DefaultHotel.jpg';
-            sidebarImg.onerror = () => { sidebarImg.src = 'images/DefaultHotel.jpg'; };
+        } else {
+            sidebarImg.src = property.coverImage || 'images/Default_Hotel.jpg';
+            sidebarImg.onerror = () => { sidebarImg.src = 'images/Default_Hotel.jpg'; };
 
-            // 顯示適用於房源的欄位
             priceElement.style.display = 'block';
             postsList.style.display = 'block';
-            priceElement.innerText = '租金範圍: ' + (property.rentPriceRange || '未提供');
+            
+            priceElement.innerHTML = ''; // 或直接隱藏 priceElement.style.display = 'none';
 
             postsList.innerHTML = '';
             if (property.posts && property.posts.length > 0) {
@@ -299,9 +300,9 @@ document.addEventListener("DOMContentLoaded", function () {
             sidebarImgPlaceholder.style.display = 'none';
         };
 
-        // --- 通用欄位設定 ---
         document.getElementById('sidebar-content').innerText = property.mainContent || '';
-        document.getElementById('sidebar-city').innerText = '城市: ' + (property.cityName || '未提供');
+        document.getElementById('sidebar-city').innerHTML = '<strong>城市:</strong> ' + (property.cityName || '未提供');
+        
         document.getElementById('sidebar-phone').href = property.urlPhone ? `tel:${property.urlPhone}` : '#';
         document.getElementById('sidebar-line').href = property.urlLine || '#';
         document.getElementById('sidebar-mail').href = property.urlMail ? `mailto:${property.urlMail}` : '#';

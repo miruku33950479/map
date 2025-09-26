@@ -91,12 +91,27 @@
             margin-bottom: 10px;
             border-radius: 5px;
         }
-
-        #sidebar ul#sidebar-posts {
-            padding-left: 20px;
-            margin-bottom: 10px;
+        /*房源中每間房的資料顯示-頭*/
+        #sidebar-posts {
+            list-style-type: none; /* 移除預設的黑點 */
+            padding: 0;            /* 移除預設的內邊距 */
+            margin-top: 15px;      /* 與上方區塊的間距 */
         }
 
+        #sidebar-posts li {
+            background-color: #f9f9f9;
+            border: 1px solid #eee;
+            border-radius: 15px;
+            padding: 15px 15px;    /* 調整適合單行的高度(上下 左右) */
+            margin-bottom: 10px;   /* 每個房間模塊之間的間距 */
+            font-size: 20px;       /* 調整字體大小讓外觀更精緻 */
+        }
+
+        /* 確保最後一個房間模塊下方沒有多餘的邊距 */
+        #sidebar-posts li:last-child {
+            margin-bottom: 0;
+        }
+        /*房源中每間房的資料顯示-尾*/
         #sidebar p a {
             display: block;
             margin-bottom: 5px;
@@ -208,7 +223,7 @@
             text-decoration: underline;
         }
 
-        /* --- 刷新按鈕頭 --- */
+        /* --- 刷新按鈕/重新整理-頭 --- */
         #refresh-button {
             position: absolute;
             bottom: 20px;
@@ -227,7 +242,7 @@
             transform: scale(1.1); /* 滑鼠懸停時放大 */
             background-color: white; /* 懸停時背景變不透明 */
         }
-        /* --- 刷新按鈕尾 --- */
+        /* --- 刷新按鈕/重新整理-尾 --- */
 
 
         #bookmarks-panel {
@@ -269,7 +284,7 @@
             padding: 8px;
             border-bottom: 1px solid #eee;
         }
-        /*模塊化頭*/
+        /*模塊化-頭*/
         #sidebar .sidebar-section {
             background-color: #f9f9f9; /* 為區塊加上淡淡的背景色 */
             border: 1px solid #eee;      /* 加上淺色邊框 */
@@ -289,7 +304,40 @@
         .sidebar-section p, .sidebar-section ul {
             margin-bottom: 0; /* 移除區塊內最後一個元素的下邊距，讓外觀更整齊 */
         }
-        /*模塊化尾*/
+        /*模塊化-尾*/
+        /*資訊內容分級-頭*/
+        /* 標題 (第一級) */
+        #sidebar-title {
+            font-size: 22px;      /* 加大字體 */
+            font-weight: bold;    /* 粗體 */
+            color: #333;          /* 深色文字 */
+            margin-bottom: 12px;  /* 與下方內容的間距 */
+        }
+
+        /* 內文描述 (第二級) */
+        #sidebar-content {
+            font-size: 16px;
+            color: #555;
+            line-height: 1.6;     /* 增加行高，更易閱讀 */
+            margin-top: 0;
+            margin-bottom: 16px;
+        }
+
+        /* 租金和城市等元數據 (第三級) */
+        #sidebar-price,
+        #sidebar-city {
+            font-size: 14px;
+            color: #666;
+            margin: 4px 0; /* 微調上下間距 */
+        }
+
+        /* 針對步驟一中加入的 <strong> 標籤進行樣式設定 */
+        .sidebar-section strong {
+            font-weight: 600;
+            color: #333;
+            margin-right: 8px; /* 讓標籤和內容之間有點距離 */
+        }
+        /*資訊內容分級-尾*/
     </style>
 </head>
 
@@ -304,24 +352,26 @@
     
     <div id="sidebar" class="closed">
         <button id="bookmark-button">加入收藏</button>
-        <h3 id="sidebar-title"></h3>
+        
         <div id="sidebar-img-container"
-            style="width: 100%; height: 200px; overflow: hidden; background-color: #f0f0f0; display: flex; justify-content: center; align-items: center;">
+            style="width: 100%; height: 200px; overflow: hidden; background-color: #f0f0f0; display: flex; justify-content: center; align-items: center; border-radius: 15px;">
             <img id="sidebar-img" src="" style="width: 100%; height: auto; display: block; object-fit: cover;">
             <span id="sidebar-img-placeholder" style="position: absolute; color: #ccc;">圖片載入中...</span>
         </div>
+
         <div class="sidebar-section">
-        <p id="sidebar-content"></p>
-        <p id="sidebar-price"></p>
-        <p id="sidebar-city"></p>
+            <h3 id="sidebar-title"></h3>
+            <p id="sidebar-content"></p>
+            <p id="sidebar-price"></p>
+            <p id="sidebar-city"></p>
         </div>
-        <div class="sidebar-section">
+
         <ul id="sidebar-posts"></ul>
-        </div>
+
         <div class="sidebar-section">
-        <p><a id="sidebar-phone" href="">撥打電話</a></p>
-        <p><a id="sidebar-line" href="">聯繫 Line</a></p>
-        <p><a id="sidebar-mail" href="">發送電子郵件</a></p>
+            <p><a id="sidebar-phone" href="">撥打電話</a></p>
+            <p><a id="sidebar-line" href="">聯繫 Line</a></p>
+            <p><a id="sidebar-mail" href="">發送電子郵件</a></p>
         </div>
     </div>
     <div id="overlay" class="hidden">

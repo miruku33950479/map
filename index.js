@@ -39,7 +39,10 @@ document.addEventListener("DOMContentLoaded", function () {
         mainContent: "這是一個預設標註在地圖上的地點，主要用途是作為系統功能測試與展示之用。",
         id: "test_id",
         rentStatus: 1, vacantRooms: 2, upcomingVacancies: 0,
-        posts: [{ id: "test1", rentMoney: 10000, roomName: "測試房A", rentPostStatus: "可預約" }, { id: "test2", rentMoney: 15000, roomName: "測試房B", rentPostStatus: "已出租" }],
+        posts: [
+            { id: "test1", rentMoney: 10000, roomName: "測試房A", rentPostStatus: "可預約", rentStatus: 1 },
+            { id: "test2", rentMoney: 15000, roomName: "測試房B", rentPostStatus: "已出租", rentStatus: 3 }
+        ],
         urlPhone: "tel:+886123456789", urlLine: "https://line.me/ti/p/testline", urlMail: "mailto:test@test.com",
         rentPriceRange: "10000-15000", userID: "test_user",
         type: 'rent'
@@ -54,7 +57,11 @@ document.addEventListener("DOMContentLoaded", function () {
         mainContent: "這是「測試2」的預設標註，模擬從 API 抓取。",
         id: "test_id_2",
         rentStatus: 1, vacantRooms: 2, upcomingVacancies: 0,
-        posts: [{ id: "test1", rentMoney: 10000, roomName: "測試房A", rentPostStatus: "可預約" }, { id: "test2", rentMoney: 15002, roomName: "測試房B", rentPostStatus: "已出租" },{ id: "test3", rentMoney: 17352, roomName: "測試房CCC", rentPostStatus: "已出租" }],
+        posts: [
+            { id: "test1", rentMoney: 10000, roomName: "測試房A", rentPostStatus: "可預約", rentStatus: 1 }, 
+            { id: "test2", rentMoney: 15002, roomName: "測試房B", rentPostStatus: "已出租", rentStatus: 3 },
+            { id: "test3", rentMoney: 17352, roomName: "測試房CCC", rentPostStatus: "即將釋出", rentStatus: 2 }
+        ],
         urlPhone: "tel:+886123456789", urlLine: "https://line.me/ti/p/testline", urlMail: "mailto:test@test.com",
         rentPriceRange: "10000-17532", userID: "test_user",
         type: 'rent'
@@ -276,7 +283,33 @@ document.addEventListener("DOMContentLoaded", function () {
             if (property.posts && property.posts.length > 0) {
                 property.posts.forEach(post => {
                     const li = document.createElement('li');
-                    li.textContent = `${post.roomName || '未提供房名'} - ${post.rentMoney !== undefined ? post.rentMoney : '未提供租金'} - ${post.rentPostStatus || '未提供狀態'}`;
+                    let statusText = '';
+                    
+                    // 使用 switch 根據 rentStatus 數值來設定 class 和狀態文字
+                    switch (post.rentStatus) {
+                        case 1:
+                            li.classList.add('status-available');
+                            statusText = '尚有空房';
+                            break;
+                        case 2:
+                            li.classList.add('status-upcoming');
+                            statusText = '即將釋出';
+                            break;
+                        case 3:
+                            li.classList.add('status-rented');
+                            statusText = '完租';
+                            break;
+                        default:
+                            li.classList.add('status-rented');
+                            statusText = '狀態不明';
+                            break;
+                    }
+
+                    const roomNameSpan = `<span class="room-name">${post.roomName || '未提供房名'}</span>`;
+                    const rentMoneySpan = `<span class="room-money">${post.rentMoney !== undefined ? post.rentMoney : ''}</span>`;
+                    const rentStatusSpan = `<span class="room-status">${statusText}</span>`;
+
+                    li.innerHTML = `${roomNameSpan}${rentMoneySpan}${rentStatusSpan}`;
                     postsList.appendChild(li);
                 });
             } else {
@@ -301,7 +334,7 @@ document.addEventListener("DOMContentLoaded", function () {
         };
 
         document.getElementById('sidebar-content').innerText = property.mainContent || '';
-        document.getElementById('sidebar-city').innerHTML = '<strong>城市:</strong> ' + (property.cityName || '未提供');
+        //document.getElementById('sidebar-city').innerHTML = '<strong>城市:</strong> ' + (property.cityName || '未提供');
         
         document.getElementById('sidebar-phone').href = property.urlPhone ? `tel:${property.urlPhone}` : '#';
         document.getElementById('sidebar-line').href = property.urlLine || '#';

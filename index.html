@@ -208,7 +208,7 @@
             text-decoration: underline;
         }
 
-        /* --- 修改這裡 --- */
+        /* --- 刷新按鈕頭 --- */
         #refresh-button {
             position: absolute;
             bottom: 20px;
@@ -227,7 +227,7 @@
             transform: scale(1.1); /* 滑鼠懸停時放大 */
             background-color: white; /* 懸停時背景變不透明 */
         }
-        /* --- 修改結束 --- */
+        /* --- 刷新按鈕尾 --- */
 
 
         #bookmarks-panel {
@@ -269,6 +269,27 @@
             padding: 8px;
             border-bottom: 1px solid #eee;
         }
+        /*模塊化頭*/
+        #sidebar .sidebar-section {
+            background-color: #f9f9f9; /* 為區塊加上淡淡的背景色 */
+            border: 1px solid #eee;      /* 加上淺色邊框 */
+            border-radius: 15px;         /* 圓角效果 */
+            padding: 15px;               /* 區塊內邊距 */
+            margin-top: 15px;            /* 與上方元素的間距 */
+        }
+
+        #sidebar-img-container {
+            margin-top: 10px; /* 讓圖片與上方按鈕稍微分開 */
+        }
+
+        .sidebar-section h3 {
+            margin-top: 0; /* 移除標題的預設上邊距 */
+        }
+
+        .sidebar-section p, .sidebar-section ul {
+            margin-bottom: 0; /* 移除區塊內最後一個元素的下邊距，讓外觀更整齊 */
+        }
+        /*模塊化尾*/
     </style>
 </head>
 
@@ -289,13 +310,19 @@
             <img id="sidebar-img" src="" style="width: 100%; height: auto; display: block; object-fit: cover;">
             <span id="sidebar-img-placeholder" style="position: absolute; color: #ccc;">圖片載入中...</span>
         </div>
+        <div class="sidebar-section">
         <p id="sidebar-content"></p>
         <p id="sidebar-price"></p>
         <p id="sidebar-city"></p>
+        </div>
+        <div class="sidebar-section">
         <ul id="sidebar-posts"></ul>
+        </div>
+        <div class="sidebar-section">
         <p><a id="sidebar-phone" href="">撥打電話</a></p>
         <p><a id="sidebar-line" href="">聯繫 Line</a></p>
         <p><a id="sidebar-mail" href="">發送電子郵件</a></p>
+        </div>
     </div>
     <div id="overlay" class="hidden">
         <div id="auth-modal">

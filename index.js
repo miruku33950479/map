@@ -4,11 +4,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // 創建並設定預設圖釘圖示(CSS)
     var cssIcon = L.divIcon({
-    className: 'css-icon',
-    html: '<div></div>',
-    iconSize: [26, 26],
-    iconAnchor: [13, 26]
-});
+        className: 'css-icon',
+        html: '<div></div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 26]
+    });
     L.Marker.prototype.options.icon = cssIcon;
 
     // 添加 OpenStreetMap 圖層
@@ -58,7 +58,7 @@ document.addEventListener("DOMContentLoaded", function () {
         id: "test_id_2",
         rentStatus: 1, vacantRooms: 2, upcomingVacancies: 0,
         posts: [
-            { id: "test1", rentMoney: 10000, roomName: "測試房A", rentPostStatus: "可預約", rentStatus: 1 }, 
+            { id: "test1", rentMoney: 10000, roomName: "測試房A", rentPostStatus: "可預約", rentStatus: 1 },
             { id: "test2", rentMoney: 15002, roomName: "測試房B", rentPostStatus: "已出租", rentStatus: 3 },
             { id: "test3", rentMoney: 17352, roomName: "測試房CCC", rentPostStatus: "即將釋出", rentStatus: 2 }
         ],
@@ -68,7 +68,7 @@ document.addEventListener("DOMContentLoaded", function () {
     };
 
     // 立即顯示原始的「陽光公寓(測試)」
-    const testTooltipContent = `<b>${sunshineApartmentData.name}</b><br>租金範圍: ${sunshineApartmentData.rentPriceRange}`; 
+    const testTooltipContent = `<b>${sunshineApartmentData.name}</b><br>租金範圍: ${sunshineApartmentData.rentPriceRange}`;
     L.marker([sunshineApartmentData.coordinates.latitude, sunshineApartmentData.coordinates.longitude])
         .addTo(map)
         .on('click', () => openSidebar(sunshineApartmentData))
@@ -184,7 +184,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (combinedData && combinedData.length > 0) {
                     combinedData.forEach(property => {
                         if (property.coordinates) {
-                            
                             const tooltipContent = `<b>${property.name}</b><br>租金範圍: ${property.rentPriceRange || '未提供'}`;
                             const marker = L.marker([property.coordinates.latitude, property.coordinates.longitude])
                                 .addTo(rentMarkers)
@@ -199,7 +198,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 console.log('API 請求失敗，但仍顯示模擬的測試資料點...');
                 rentMarkers.clearLayers();
                 const property = sunshineApartmentData2;
-                
                 const tooltipContent = `<b>${property.name}</b><br>租金範圍: ${property.rentPriceRange || '未提供'}`;
                 const marker = L.marker([property.coordinates.latitude, property.coordinates.longitude])
                     .addTo(rentMarkers)
@@ -251,13 +249,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function openSidebar(property) {
         sidebar.classList.remove('closed');
-        document.getElementById('sidebar-title').innerText = property.name || '未提供名稱';
 
         const sidebarImg = document.getElementById('sidebar-img');
         const sidebarImgPlaceholder = document.getElementById('sidebar-img-placeholder');
         const priceElement = document.getElementById('sidebar-price');
         const postsList = document.getElementById('sidebar-posts');
-        const bookmarkButton = document.getElementById('bookmark-button');
+        const bookmarkButtonWrapper = document.getElementById('bookmark-button-wrapper');
+        const titleElement = document.getElementById('sidebar-title');
+        const contentElement = document.getElementById('sidebar-content');
+        const cityElement = document.getElementById('sidebar-city');
 
         sidebarImg.style.display = 'none';
         sidebarImgPlaceholder.style.display = 'flex';
@@ -265,27 +265,28 @@ document.addEventListener("DOMContentLoaded", function () {
         if (property.type === 'restaurant') {
             sidebarImg.src = property.coverImage || 'images/DefaultRestaurant.jpg';
             sidebarImg.onerror = () => { sidebarImg.src = 'images/DefaultRestaurant.jpg'; };
-            
+
             priceElement.style.display = 'none';
             postsList.style.display = 'none';
-            bookmarkButton.style.display = 'none';
+            if (bookmarkButtonWrapper) bookmarkButtonWrapper.style.display = 'none';
 
-        } else {
+        } else { // 房源的設定
             sidebarImg.src = property.coverImage || 'images/DefaultHotel.jpg';
             sidebarImg.onerror = () => { sidebarImg.src = 'images/DefaultHotel.jpg'; };
 
-            priceElement.style.display = 'block';
+            if (priceElement) {
+                priceElement.innerHTML = '';
+                priceElement.style.display = 'none';
+            }
+
             postsList.style.display = 'block';
-            
-            priceElement.innerHTML = ''; // 或直接隱藏 priceElement.style.display = 'none';
 
             postsList.innerHTML = '';
             if (property.posts && property.posts.length > 0) {
                 property.posts.forEach(post => {
                     const li = document.createElement('li');
                     let statusText = '';
-                    
-                    // 使用 switch 根據 rentStatus 數值來設定 class 和狀態文字
+
                     switch (post.rentStatus) {
                         case 1:
                             li.classList.add('status-available');
@@ -317,14 +318,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 li.textContent = '暫無房源資訊';
                 postsList.appendChild(li);
             }
-            
+
             if (currentUserData) {
-                bookmarkButton.style.display = 'block';
-                bookmarkButton.onclick = function () {
-                    handleBookmarkClick(currentUserData.userID, property.id);
-                };
+                if (bookmarkButtonWrapper) bookmarkButtonWrapper.style.display = 'flex';
             } else {
-                bookmarkButton.style.display = 'none';
+                if (bookmarkButtonWrapper) bookmarkButtonWrapper.style.display = 'none';
             }
         }
 
@@ -333,12 +331,39 @@ document.addEventListener("DOMContentLoaded", function () {
             sidebarImgPlaceholder.style.display = 'none';
         };
 
-        document.getElementById('sidebar-content').innerText = property.mainContent || '';
-        //document.getElementById('sidebar-city').innerHTML = '<strong>城市:</strong> ' + (property.cityName || '未提供');
-        
-        document.getElementById('sidebar-phone').href = property.urlPhone ? `tel:${property.urlPhone}` : '#';
-        document.getElementById('sidebar-line').href = property.urlLine || '#';
-        document.getElementById('sidebar-mail').href = property.urlMail ? `mailto:${property.urlMail}` : '#';
+        titleElement.innerText = property.name || '未提供名稱';
+        contentElement.innerText = property.mainContent || '';
+        if (cityElement) {
+            // cityElement.innerHTML = '<strong>城市:</strong> ' + (property.cityName || '未提供');
+        }
+
+        const phoneEl = document.getElementById('sidebar-phone');
+        const lineEl = document.getElementById('sidebar-line');
+        const mailEl = document.getElementById('sidebar-mail');
+
+        if (property.urlPhone) {
+            const displayPhone = property.urlPhone.replace('tel:', '').replace('+886', '0');
+            phoneEl.innerHTML = `電話：<span>${displayPhone}</span>`;
+            phoneEl.style.display = 'flex';
+        } else {
+            phoneEl.style.display = 'none';
+        }
+
+        if (property.urlLine) {
+            const displayLine = property.urlLine.split('/').pop();
+            lineEl.innerHTML = `Line ID：<span>${displayLine}</span>`;
+            lineEl.style.display = 'flex';
+        } else {
+            lineEl.style.display = 'none';
+        }
+
+        if (property.urlMail) {
+            const displayMail = property.urlMail.replace('mailto:', '');
+            mailEl.innerHTML = `電子郵件：<span>${displayMail}</span>`;
+            mailEl.style.display = 'flex';
+        } else {
+            mailEl.style.display = 'none';
+        }
     }
 
     function closeSidebar() {

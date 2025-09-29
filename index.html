@@ -481,6 +481,62 @@
             transform: rotate(-45deg) scale(1.1);
         }
         /*圖釘樣式-尾*/
+        /*聯絡資訊-頭*/
+        .contact-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px; /* 圖示和文字的間距 */
+            text-decoration: none;
+            color: #007bff;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .contact-link:hover {
+            text-decoration: underline;
+        }
+
+        .contact-link svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor; /* 讓圖示顏色和文字顏色一致 */
+        }
+        
+        .sidebar-section p {
+            margin-bottom: 12px;
+        }
+
+        .sidebar-section p:last-child {
+            margin-bottom: 0;
+        }
+
+        .contact-section {
+            margin-top: 15px;
+        }
+
+        .contact-item {
+            background-color: #f9f9f9;
+            border: 1px solid #eee;
+            border-radius: 15px;
+            padding: 15px;
+            margin: 0 0 10px 0; /* 重設 margin，只保留項目間的下方間距 */
+            font-size: 14px;
+            color: #666;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .contact-item:last-child {
+            margin-bottom: 0;
+        }
+
+        /* 讓資訊內容的文字加粗、變深色 */
+        .contact-item span {
+            font-weight: bold;
+            color: #333;
+        }
+        /*聯絡資訊-尾*/
     </style>
 </head>
 
@@ -515,9 +571,9 @@
         </div>
 
                 <div class="sidebar-section">
-            <p><a id="sidebar-phone" href="">撥打電話</a></p>
-            <p><a id="sidebar-line" href="">聯繫 Line</a></p>
-            <p><a id="sidebar-mail" href="">發送電子郵件</a></p>
+            <p id="sidebar-phone" class="contact-item"></p>
+            <p id="sidebar-line" class="contact-item"></p>
+            <p id="sidebar-mail" class="contact-item"></p>
         </div>
     </div>
     <div id="overlay" class="hidden">

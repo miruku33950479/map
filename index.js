@@ -271,7 +271,18 @@ document.addEventListener("DOMContentLoaded", function () {
             if (bookmarkButtonWrapper) bookmarkButtonWrapper.style.display = 'none';
 
         } else { // 房源的設定
-            sidebarImg.src = property.coverImage || 'images/DefaultHotel.jpg';
+            // 設定一個變數來存放最終的圖片 URL，預設為本地的圖片
+            let imageUrl = 'images/DefaultHotel.jpg'; 
+
+            // 如果 API 回應中有 coverImage，則組合出完整的 URL
+            if (property.coverImage) {
+                imageUrl = baseUrl + property.coverImage;
+            }
+
+            // 將組合好的 URL 或預設圖片路徑設定給圖片
+            sidebarImg.src = imageUrl;
+
+            // 如果圖片載入失敗（例如 API 給了錯誤的路徑），則顯示本地的預設圖片作為最終的備案
             sidebarImg.onerror = () => { sidebarImg.src = 'images/DefaultHotel.jpg'; };
 
             if (priceElement) {

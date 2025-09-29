@@ -296,30 +296,24 @@ document.addEventListener("DOMContentLoaded", function () {
             if (property.posts && property.posts.length > 0) {
                 property.posts.forEach(post => {
                     const li = document.createElement('li');
-                    let statusText = '';
+                    let statusTextForBadge = ''; // 用於徽章的簡潔文字
+                    const statusStringFromServer = post.rentPostStatus || ''; // 從 API 來的原始文字
 
-                    switch (post.rentStatus) {
-                        case 1:
-                            li.classList.add('status-available');
-                            statusText = '尚有空房';
-                            break;
-                        case 2:
-                            li.classList.add('status-upcoming');
-                            statusText = '即將釋出';
-                            break;
-                        case 3:
-                            li.classList.add('status-rented');
-                            statusText = '完租';
-                            break;
-                        default:
-                            li.classList.add('status-rented');
-                            statusText = '狀態不明';
-                            break;
+                    // 根據 API 回傳的文字內容來判斷狀態
+                    if (statusStringFromServer.includes('空房') || statusStringFromServer.includes('可預約')) {
+                        li.classList.add('status-available');
+                        statusTextForBadge = '尚有空房';
+                    } else if (statusStringFromServer.includes('即將釋出')) {
+                        li.classList.add('status-upcoming');
+                        statusTextForBadge = '即將釋出';
+                    } else { // 其他情況 (例如 "已出租", "完租") 都視為已租
+                        li.classList.add('status-rented');
+                        statusTextForBadge = '完租';
                     }
 
                     const roomNameSpan = `<span class="room-name">${post.roomName || '未提供房名'}</span>`;
                     const rentMoneySpan = `<span class="room-money">${post.rentMoney !== undefined ? post.rentMoney : ''}</span>`;
-                    const rentStatusSpan = `<span class="room-status">${statusText}</span>`;
+                    const rentStatusSpan = `<span class="room-status">${statusTextForBadge}</span>`;
 
                     li.innerHTML = `${roomNameSpan}${rentMoneySpan}${rentStatusSpan}`;
                     postsList.appendChild(li);

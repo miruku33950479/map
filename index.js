@@ -313,7 +313,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     const roomNameSpan = `<span class="room-name">${post.roomName || '未提供房名'}</span>`;
                     const rentMoneySpan = `<span class="room-money">${post.rentMoney !== undefined ? post.rentMoney : ''}</span>`;
-                    const rentStatusSpan = `<span class="room-status">${statusTextForBadge}</span>`;
+                    const rentStatusSpan = `<span class="room-status">${statusStringFromServer}</span>`;
 
                     li.innerHTML = `${roomNameSpan}${rentMoneySpan}${rentStatusSpan}`;
                     postsList.appendChild(li);

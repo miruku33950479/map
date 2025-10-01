@@ -72,70 +72,94 @@
             }
         }
 
-        #sidebar button {
-            float: right;
-            margin-top: -10px;
-            margin-right: -10px;
-            padding: 5px 10px;
-            border: none;
-            background-color: #f0f0f0;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        #sidebar h3 {
-            margin-top: 0;
-        }
-
-        #sidebar img#sidebar-img {
-            margin-bottom: 10px;
-            border-radius: 5px;
-        }
         /*資訊卡每間房的資料顯示-頭*/
         #sidebar-posts {
-            list-style-type: none; /* 移除預設的黑點 */
-            padding: 0;            /* 移除預設的內邊距 */
-            margin-top: 15px;      /* 與上方區塊的間距 */
+            list-style-type: none;
+            padding: 0;
+            margin-top: 15px;
         }
 
         #sidebar-posts li {
+            background-color: #f9f9f9;
             border: 1px solid #eee;
             border-radius: 15px;
-            padding: 15px;
+            padding: 12px;
             margin-bottom: 10px;
-            font-size: 16px; /* 稍微加大基礎字體 */
             display: flex;
-            align-items: center; /* 垂直置中 */
+            align-items: center;
+            gap: 15px; /* 圖片和文字之間的間距 */
         }
 
-        /* 根據房間狀態，在左側顯示不同顏色的提示條 */
+        #sidebar-posts li:last-child {
+            margin-bottom: 0;
+        }
+
         #sidebar-posts li.status-available {
-            border-left: 5px solid #2ecc71; /* 綠色：可預約 */
+            border-left: 5px solid #2ecc71;
         }
-        #sidebar-posts li.status-rented {
-            border-left: 5px solid #bdc3c7; /* 灰色：已出租 */
+        /* 狀態顏色提示條 */
+        #sidebar-posts li.status-available { border-left: 5px solid #2ecc71; }
+        #sidebar-posts li.status-rented { border-left: 5px solid #bdc3c7; }
+        #sidebar-posts li.status-upcoming { border-left: 5px solid #f39c12; }
+
+         /* 新增：圖片預留區的樣式 */
+        .room-image-placeholder {
+            width: 80px;
+            height: 60px;
+            background-color: #e9ecef;
+            border-radius: 8px;
+            flex-shrink: 0; /* 防止被壓縮 */
         }
-        #sidebar-posts li.status-upcoming {
-            border-left: 5px solid #f39c12; /* 橘色：即將釋出 */
+
+        /* 新增：右側文字資訊區的容器 */
+        .room-text-info {
+            display: flex;
+            flex-direction: column; /* 讓內容垂直排列 */
+            flex-grow: 1; /* 佔滿剩餘空間 */
+            gap: 8px; /* 房名和下方資訊的間距 */
+        }
+        
+        /* 新增：租金和狀態的子容器 */
+        .room-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         /* 房間名稱樣式 */
         .room-name {
             font-weight: bold;
-            flex-grow: 1; /* 讓房名自動填滿剩餘空間 */
-            padding-right: 10px; /* 與右側租金保留一點間距 */
+            font-size: 16px;
         }
 
         /* 租金樣式 */
         .room-money {
             color: #1bad47;
             font-weight: bold;
-            font-size: 18px;
-            flex-basis: 110px; /* 給予一個固定的基礎寬度 */
-            flex-shrink: 0;   /* 防止被壓縮 */
-            text-align: center;
+            font-size: 16px;
         }
-        /* 為租金加上 "NT$" 前綴 */
+        .room-money::before {
+            content: 'NT$ ';
+            font-size: 13px;
+            font-weight: normal;
+            color: #666;
+        }
+
+        /* 狀態徽章樣式 */
+        .room-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: white;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        /* 狀態徽章顏色 */
+        .status-available .room-status { background-color: #2ecc71; }
+        .status-rented .room-status { background-color: #95a5a6; }
+        .status-upcoming .room-status { background-color: #f39c12; }
+
         .room-money::before {
             content: 'NT$ ';
             font-size: 14px;
@@ -143,38 +167,35 @@
             color: #666;
         }
 
-        /* 狀態徽章(Badge)樣式 */
         .room-status {
             padding: 4px 0;
             border-radius: 20px;
             font-size: 12px;
             color: white;
             font-weight: bold;
-            white-space: nowrap; /* 避免文字換行 */
-            width: 90px;        /* 給予一個固定的寬度 */
-            text-align: center; /* 讓徽章內的文字置中 */
-            flex-shrink: 0;     /* 防止被壓縮 */
+            white-space: nowrap;
+            width: 90px;
+            text-align: center;
+            flex-shrink: 0;
         }
 
-        /* 根據不同狀態設定徽章顏色 */
         .status-available .room-status {
-            background-color: #2ecc71; /* 綠色 */
+            background-color: #2ecc71;
         }
+
         .status-rented .room-status {
-            background-color: #95a5a6; /* 灰色 */
+            background-color: #95a5a6;
         }
+
         .status-upcoming .room-status {
-            background-color: #f39c12; /* 橘色 */
+            background-color: #f39c12;
         }
-        /* 確保最後一個房間模塊下方沒有多餘的邊距 */
+
         #sidebar-posts li:last-child {
             margin-bottom: 0;
         }
+
         /*資訊卡每間房的資料顯示-尾*/
-        #sidebar p a {
-            display: block;
-            margin-bottom: 5px;
-        }
 
         #overlay {
             position: fixed;
@@ -288,26 +309,26 @@
             bottom: 20px;
             right: 20px;
             z-index: 1000;
-            width: 48px;  /* 設定圖示寬度 */
-            height: 48px; /* 設定圖示高度 */
+            width: 48px;
+            height: 48px;
             cursor: pointer;
-            border-radius: 50%; /* 讓它變圓形 */
-            background-color: rgba(255, 255, 255, 0.8); /* 半透明背景 */
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.8);
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            transition: transform 0.2s ease, background-color 0.2s ease; /* 加入動畫效果 */
+            transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
         }
 
         #refresh-button:hover {
-            transform: scale(1.1); /* 滑鼠懸停時放大 */
-            background-color: white; /* 懸停時背景變不透明 */
+            transform: scale(1.1);
+            background-color: white;
         }
-        /*按下刷新按鈕的反饋*/
-        #refresh-button:active {
-            transform: scale(0.9); /* 按下時縮小到 90% */
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); /* 陰影變小，模擬按下的感覺 */
-        }
-        /* --- 刷新按鈕/重新整理-尾 --- */
 
+        #refresh-button:active {
+            transform: scale(0.9);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        /* --- 刷新按鈕/重新整理-尾 --- */
 
         #bookmarks-panel {
             position: fixed;
@@ -348,168 +369,119 @@
             padding: 8px;
             border-bottom: 1px solid #eee;
         }
+
         /*資訊卡模塊化-頭*/
         #sidebar .sidebar-section {
-            background-color: #f9f9f9; /* 為區塊加上淡淡的背景色 */
-            border: 1px solid #eee;      /* 加上淺色邊框 */
-            border-radius: 15px;         /* 圓角效果 */
-            margin-top: 15px;            /* 與上方元素的間距 */
-            padding: 0;
-            overflow: hidden;           /* 確保子元素的圓角正常顯示 */
-        }
-        #sidebar > .sidebar-section:first-of-type {
-             margin-top: 10px;
+            background-color: #f9f9f9;
+            border: 1px solid #eee;
+            border-radius: 15px;
+            margin-top: 15px;
+            padding: 15px;
+            overflow: hidden;
         }
 
-        #sidebar-img-container {
-            border-radius: 0; /* 移除圓角，讓它填滿父容器頂部 */
-            margin-bottom: 15px; /* 與下方內容的間距 */
+        #sidebar>.sidebar-section:first-of-type {
+            margin-top: 10px;
         }
-        /*收藏按鈕-頭*/
-        #bookmark-button-wrapper {
-            display: flex; /* 使用 flex 排版 */
-            justify-content: center; /* 水平置中 */
-            padding: 10px 0; /* 上下留出一些空間 */
-            margin-top: 15px; /* 與上方房間列表的間距 */
-        }
-        #bookmark-button {
-            display: inline-flex; /* 使用 inline-flex 讓內容和圖示對齊 */
+
+        /* 新增：標題+按鈕的容器 */
+        .title-header {
+            display: flex;
+            justify-content: space-between;
             align-items: center;
-            justify-content: center;
-            gap: 8px; /* 圖示和文字的間距 */
+            gap: 10px;
+        }
 
+        /* 圖片容器的樣式 */
+        #sidebar-img-container {
+            border-radius: 10px;
+            margin-top: 12px;
+            margin-bottom: 15px;
+        }
+
+        /*收藏按鈕-頭*/
+        /* 修改收藏按鈕樣式，使其更小以適應新位置 */
+        #bookmark-button {
             float: none;
             margin: 0;
-            padding: 10px 24px; /* 加大內邊距 */
-            font-size: 16px;    /* 加大字體 */
+            padding: 6px 14px;
+            font-size: 12px;
             font-weight: bold;
-            background-image: linear-gradient(to right, #007bff, #0056b3); /* 使用漸層背景 */
+            background-color: #007bff;
             color: white;
             border: none;
-            border-radius: 25px; /* 更圓潤的膠囊形狀 */
+            border-radius: 20px;
             cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3); /* 加上更明顯的陰影 */
-            transition: all 0.2s ease-in-out; /* 讓所有變化都平滑 */
+            transition: all 0.2s ease;
+            white-space: nowrap;
         }
-        /*滑鼠懸停效果*/
+
         #bookmark-button:hover {
-            transform: translateY(-2px); /* 向上微移 */
-            box-shadow: 0 6px 15px rgba(0, 123, 255, 0.4);
+            background-color: #0056b3;
         }
-        /* 點擊效果 */
+
         #bookmark-button:active {
-            transform: translateY(0); /* 按下時恢復原位 */
-            box-shadow: 0 2px 5px rgba(0, 123, 255, 0.3);
+            transform: scale(0.95);
+            background-color: #004494;
         }
-        /* 按鈕內的 SVG 圖示樣式 */
-        #bookmark-button svg {
-            width: 18px;
-            height: 18px;
-            fill: currentColor; /* 讓圖示顏色與文字顏色一致 */
-        }
+
         /*收藏按鈕-尾*/
-        .card-content {
-            padding: 0 15px 15px 15px; /* 上方無邊距，其餘 15px */
-        }
-
-        .sidebar-section h3 {
-            margin-top: 0; /* 移除標題的預設上邊距 */
-        }
-
-        .sidebar-section p, .sidebar-section ul {
-            margin-bottom: 0; /* 移除區塊內最後一個元素的下邊距，讓外觀更整齊 */
-        }
         /*資訊卡模塊化-尾*/
+
         /*資訊卡內容分級-頭*/
         /* 標題 (第一級) */
         #sidebar-title {
-            font-size: 22px;      /* 加大字體 */
-            font-weight: bold;    /* 粗體 */
-            color: #333;          /* 深色文字 */
-            margin-bottom: 12px;  /* 與下方內容的間距 */
+            font-size: 22px;
+            font-weight: bold;
+            color: #333;
+            margin: 0;
         }
 
         /* 內文描述 (第二級) */
         #sidebar-content {
             font-size: 16px;
             color: #555;
-            line-height: 1.6;     /* 增加行高，更易閱讀 */
+            line-height: 1.6;
             margin-top: 0;
-            margin-bottom: 16px;
+            margin-bottom: 0;
         }
 
-        /* 城市數據 (第三級) */
+        /* 城市數據 (第三級) - 已隱藏 */
         #sidebar-price,
         #sidebar-city {
-            font-size: 14px;
-            color: #666;
-            margin: 4px 0; /* 微調上下間距 */
+            display: none;
         }
 
-        /* 針對步驟一中加入的 <strong> 標籤進行樣式設定 */
-        .sidebar-section strong {
-            font-weight: 600;
-            color: #333;
-            margin-right: 8px; /* 讓標籤和內容之間有點距離 */
-        }
         /*資訊卡內容分級-尾*/
+
         /*圖釘樣式-頭*/
-        /* 外層 div，主要用於定位，保持透明 */
         .css-icon {
             position: relative;
             width: 26px;
             height: 26px;
         }
 
-        /* 內層 div，負責所有的外觀樣式和旋轉 */
         .css-icon div {
-            background-color: #3498db; /* 圖釘主體顏色 */
+            background-color: #3498db;
             width: 24px;
             height: 24px;
-            border-radius: 50% 50% 50% 0; /* 製作水滴上半部的形狀 */
+            border-radius: 50% 50% 50% 0;
             border: 1px solid #fff;
             position: absolute;
-            transform: rotate(-45deg); /* 在內層旋轉 */
+            transform: rotate(-45deg);
             left: 0;
             top: 0;
             box-shadow: 0 0 2px #000;
-            transition: transform 0.1s ease-out; /* 將動畫效果也移到內層 */
+            transition: transform 0.1s ease-out;
         }
-        
-        /* 讓圖釘在滑鼠懸停時有互動效果 */
+
         .css-icon:hover div {
             transform: rotate(-45deg) scale(1.1);
         }
+
         /*圖釘樣式-尾*/
+
         /*聯絡資訊-頭*/
-        .contact-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px; /* 圖示和文字的間距 */
-            text-decoration: none;
-            color: #007bff;
-            font-size: 15px;
-            font-weight: 500;
-        }
-
-        .contact-link:hover {
-            text-decoration: underline;
-        }
-
-        .contact-link svg {
-            width: 20px;
-            height: 20px;
-            fill: currentColor; /* 讓圖示顏色和文字顏色一致 */
-        }
-        
-        .sidebar-section p {
-            margin-bottom: 12px;
-        }
-
-        .sidebar-section p:last-child {
-            margin-bottom: 0;
-        }
-
         .contact-section {
             margin-top: 15px;
         }
@@ -519,7 +491,7 @@
             border: 1px solid #eee;
             border-radius: 15px;
             padding: 15px;
-            margin: 0 0 10px 0; /* 重設 margin，只保留項目間的下方間距 */
+            margin: 0 0 10px 0;
             font-size: 14px;
             color: #666;
             display: flex;
@@ -531,11 +503,11 @@
             margin-bottom: 0;
         }
 
-        /* 讓資訊內容的文字加粗、變深色 */
         .contact-item span {
             font-weight: bold;
             color: #333;
         }
+
         /*聯絡資訊-尾*/
     </style>
 </head>
@@ -546,36 +518,34 @@
     <button id="login-button"
         style="position: absolute; top: 20px; right: 20px; z-index: 1001; padding: 10px 15px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">登入</button>
     <div id="map"></div>
-    
-    <img id="refresh-button" src="images/Refresh.png" alt="重新整理">
-    
-    <div id="sidebar" class="closed">
-                 <div class="sidebar-section">
-                     <h3 id="sidebar-title"></h3>
 
-                        <div id="sidebar-img-container"
+    <img id="refresh-button" src="images/Refresh.png" alt="重新整理">
+
+    <div id="sidebar" class="closed">
+        <div class="sidebar-section">
+            <div class="title-header">
+                <h3 id="sidebar-title"></h3>
+                <button id="bookmark-button">加入收藏</button>
+            </div>
+            <div id="sidebar-img-container"
                 style="width: 100%; height: 200px; overflow: hidden; background-color: #f0f0f0; display: flex; justify-content: center; align-items: center;">
                 <img id="sidebar-img" src="" style="width: 100%; height: 100%; display: block; object-fit: cover;">
                 <span id="sidebar-img-placeholder" style="position: absolute; color: #ccc;">圖片載入中...</span>
             </div>
-            
-                        <p id="sidebar-content"></p>
+            <p id="sidebar-content"></p>
             <p id="sidebar-price"></p>
             <p id="sidebar-city"></p>
         </div>
 
-                <ul id="sidebar-posts"></ul>
+        <ul id="sidebar-posts"></ul>
 
-                <div id="bookmark-button-wrapper">
-            <button id="bookmark-button">加入收藏</button>
-        </div>
-
-                <div class="sidebar-section">
+        <div class="contact-section">
             <p id="sidebar-phone" class="contact-item"></p>
             <p id="sidebar-line" class="contact-item"></p>
             <p id="sidebar-mail" class="contact-item"></p>
         </div>
     </div>
+
     <div id="overlay" class="hidden">
         <div id="auth-modal">
             <button id="close-modal-btn">&times; 關閉</button>

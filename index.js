@@ -50,7 +50,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // 新增的靜態測試物件 (測試2)，模擬從 API 抓取
     const sunshineApartmentData2 = {
-        coverImage: "https://media.gq.com.tw/photos/61e134dac128c151658f7506/16:9/w_1920,c_limit/casas%20caras%20cover.jpeg",
+        coverImage: "/Images/5d6ec32f-c84f-4f23-a0c2-4e9f43df7d36.jpg",
         name: "陽光公寓(測試2)",
         cityName: "台北市",
         coordinates: { latitude: 23.7029651, longitude: 120.43364 },
@@ -67,8 +67,32 @@ document.addEventListener("DOMContentLoaded", function () {
         type: 'rent'
     };
 
+    //金額格式化(每三位數加上,)-頭
+    function formatNumberWithCommas(num) {
+        if (num === undefined || num === null || isNaN(num)) return '';
+        return num.toLocaleString();
+    }
+
+    function formatPriceRange(rangeString) {
+        if (!rangeString) return '未提供';
+        const parts = String(rangeString).split('-');
+        if (parts.length === 2) {
+            const start = parseInt(parts[0], 10);
+            const end = parseInt(parts[1], 10);
+            if (!isNaN(start) && !isNaN(end)) {
+                return `${start.toLocaleString()}-${end.toLocaleString()}`;
+            }
+        }
+        const singleNum = parseInt(rangeString, 10);
+        if (!isNaN(singleNum)) {
+            return singleNum.toLocaleString();
+        }
+        return rangeString;
+    }
+    //金額格式化(每三位數加上,)-尾
+
     // 立即顯示原始的「陽光公寓(測試)」
-    const testTooltipContent = `<b>${sunshineApartmentData.name}</b><br>租金範圍: ${sunshineApartmentData.rentPriceRange}`;
+    const testTooltipContent = `<b>${sunshineApartmentData.name}</b><br>租金範圍: ${formatPriceRange(sunshineApartmentData.rentPriceRange)}`;
     L.marker([sunshineApartmentData.coordinates.latitude, sunshineApartmentData.coordinates.longitude])
         .addTo(map)
         .on('click', () => openSidebar(sunshineApartmentData))
@@ -144,7 +168,7 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(response => response.ok ? response.json() : Promise.reject(response))
             .then(data => {
                 const bookmarkedRentals = data.bookmarks.Rent;
-                if (bookmarkedRentals.length === 0) {
+                if (!bookmarkedRentals || bookmarkedRentals.length === 0) {
                     bookmarksListContainer.innerHTML = '<p>您尚未收藏任何房源。</p>';
                     return;
                 }
@@ -184,7 +208,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (combinedData && combinedData.length > 0) {
                     combinedData.forEach(property => {
                         if (property.coordinates) {
-                            const tooltipContent = `<b>${property.name}</b><br>租金範圍: ${property.rentPriceRange || '未提供'}`;
+                            const tooltipContent = `<b>${property.name}</b><br>租金範圍: ${formatPriceRange(property.rentPriceRange)}`;
                             const marker = L.marker([property.coordinates.latitude, property.coordinates.longitude])
                                 .addTo(rentMarkers)
                                 .bindTooltip(tooltipContent);
@@ -198,7 +222,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 console.log('API 請求失敗，但仍顯示模擬的測試資料點...');
                 rentMarkers.clearLayers();
                 const property = sunshineApartmentData2;
-                const tooltipContent = `<b>${property.name}</b><br>租金範圍: ${property.rentPriceRange || '未提供'}`;
+                const tooltipContent = `<b>${property.name}</b><br>租金範圍: ${formatPriceRange(property.rentPriceRange)}`;
                 const marker = L.marker([property.coordinates.latitude, property.coordinates.longitude])
                     .addTo(rentMarkers)
                     .bindTooltip(tooltipContent);
@@ -263,26 +287,23 @@ document.addEventListener("DOMContentLoaded", function () {
         sidebarImgPlaceholder.style.display = 'flex';
 
         if (property.type === 'restaurant') {
-            sidebarImg.src = property.coverImage || 'images/DefaultRestaurant.jpg';
-            sidebarImg.onerror = () => { sidebarImg.src = 'images/DefaultRestaurant.jpg'; };
-
-            priceElement.style.display = 'none';
-            postsList.style.display = 'none';
-            if (bookmarkButtonWrapper) bookmarkButtonWrapper.style.display = 'none';
-
-        } else { // 房源的設定
-            // 設定一個變數來存放最終的圖片 URL，預設為本地的圖片
-            let imageUrl = 'images/DefaultHotel.jpg'; 
-
-            // 如果 API 回應中有 coverImage，則組合出完整的 URL
+            let imageUrl = 'images/DefaultRestaurant.jpg';
             if (property.coverImage) {
                 imageUrl = baseUrl + property.coverImage;
             }
-
-            // 將組合好的 URL 或預設圖片路徑設定給圖片
             sidebarImg.src = imageUrl;
+            sidebarImg.onerror = () => { sidebarImg.src = 'images/DefaultRestaurant.jpg'; };
 
-            // 如果圖片載入失敗（例如 API 給了錯誤的路徑），則顯示本地的預設圖片作為最終的備案
+            if (priceElement) priceElement.style.display = 'none';
+            if (postsList) postsList.style.display = 'none';
+            if (bookmarkButtonWrapper) bookmarkButtonWrapper.style.display = 'none';
+
+        } else { // 房源的設定
+            let imageUrl = 'images/DefaultHotel.jpg';
+            if (property.coverImage) {
+                imageUrl = baseUrl + property.coverImage;
+            }
+            sidebarImg.src = imageUrl;
             sidebarImg.onerror = () => { sidebarImg.src = 'images/DefaultHotel.jpg'; };
 
             if (priceElement) {
@@ -290,32 +311,32 @@ document.addEventListener("DOMContentLoaded", function () {
                 priceElement.style.display = 'none';
             }
 
-            postsList.style.display = 'block';
+            if (postsList) postsList.style.display = 'block';
 
             postsList.innerHTML = '';
             if (property.posts && property.posts.length > 0) {
                 property.posts.forEach(post => {
                     const li = document.createElement('li');
-                    let statusTextForBadge = ''; // 用於徽章的簡潔文字
-                    const statusStringFromServer = post.rentPostStatus || ''; // 從 API 來的原始文字
+                    const statusStringFromServer = post.rentPostStatus || '狀態不明';
 
-                    // 根據 API 回傳的文字內容來判斷狀態
                     if (statusStringFromServer.includes('空房') || statusStringFromServer.includes('可預約')) {
                         li.classList.add('status-available');
-                        statusTextForBadge = '尚有空房';
                     } else if (statusStringFromServer.includes('即將釋出')) {
                         li.classList.add('status-upcoming');
-                        statusTextForBadge = '即將釋出';
-                    } else { // 其他情況 (例如 "已出租", "完租") 都視為已租
+                    } else {
                         li.classList.add('status-rented');
-                        statusTextForBadge = '完租';
                     }
 
+                    const imagePlaceholder = `<div class="room-image-placeholder"></div>`;
+                    
                     const roomNameSpan = `<span class="room-name">${post.roomName || '未提供房名'}</span>`;
-                    const rentMoneySpan = `<span class="room-money">${post.rentMoney !== undefined ? post.rentMoney : ''}</span>`;
+                    const rentMoneySpan = `<span class="room-money">${formatNumberWithCommas(post.rentMoney)}</span>`;
                     const rentStatusSpan = `<span class="room-status">${statusStringFromServer}</span>`;
+                    
+                    const metaInfo = `<div class="room-meta">${rentMoneySpan}${rentStatusSpan}</div>`;
+                    const textInfo = `<div class="room-text-info">${roomNameSpan}${metaInfo}</div>`;
 
-                    li.innerHTML = `${roomNameSpan}${rentMoneySpan}${rentStatusSpan}`;
+                    li.innerHTML = `${imagePlaceholder}${textInfo}`;
                     postsList.appendChild(li);
                 });
             } else {

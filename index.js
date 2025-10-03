@@ -135,9 +135,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function closeLightbox() {
         lightboxOverlay.classList.add('hidden');
-        allPropertyPosts = [];
-        currentRoomIndex = 0;
-        currentImageIndex = 0;
     }
 
     function nextImage() {
@@ -494,6 +491,13 @@ document.addEventListener("DOMContentLoaded", function () {
     lightboxImagePrevBtn.addEventListener('click', prevImage);
     lightboxRoomNextBtn.addEventListener('click', nextRoom);
     lightboxRoomPrevBtn.addEventListener('click', prevRoom);
+
+    // 房間圖片放大-點擊燈箱背景時關閉燈箱
+    lightboxOverlay.addEventListener('click', function(event) {
+        if (event.target === lightboxOverlay) {
+            closeLightbox();
+        }
+    });
 
     postsListContainer.addEventListener('click', function(e) {
         if (e.target && e.target.classList.contains('room-image')) {

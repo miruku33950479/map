@@ -36,34 +36,33 @@ document.addEventListener("DOMContentLoaded", function () {
         coordinates: { latitude: 23.7029651, longitude: 120.4287316 },
         mainContent: "這是一個預設標註在地圖上的地點，主要用途是作為系統功能測試與展示之用。",
         id: "test_id",
+        type: 'rent',
         posts: [
             { id: "test1", rentMoney: 10000, roomName: "測試房A", rentPostStatus: "可預約", rentStatus: 1, imageResources: [] },
             { id: "test2", rentMoney: 15000, roomName: "測試房B", rentPostStatus: "已出租", rentStatus: 3, imageResources: [] }
         ],
         urlPhone: "tel:+886123456789", urlLine: "https://line.me/ti/p/testline", urlMail: "mailto:test@test.com",
-        rentPriceRange: "10000-15000", userID: "test_user",
-        type: 'rent'
+        rentPriceRange: "10000-15000"
     };
 
     // 新增的靜態測試物件 (測試2)
     const sunshineApartmentData2 = {
-        coverImage: "/Images/5d6ec32f-c84f-4f23-a0c2-4e9f43df7d36.jpg",
+        coverImage: "images/DefaultHotel.jpg",
         name: "陽光公寓(測試2)",
         cityName: "台北市",
         coordinates: { latitude: 23.7029651, longitude: 120.43364 },
-        mainContent: "這是「測試2」的預設標註，模擬從 API 抓取。",
+        mainContent: "這是「測試2」的預設標註，使用本地圖片。",
         id: "test_id_2",
+        type: 'rent',
         posts: [
-            { id: "test1", rentMoney: 10000, roomName: "測試房A", rentPostStatus: "可預約", rentStatus: 1, imageResources: ["/Images/4f9bec75-e7c2-4dec-9965-49e2a0019d31.jpg", "/Images/5d6ec32f-c84f-4f23-a0c2-4e9f43df7d36.jpg"] },
+            { id: "test1", rentMoney: 10000, roomName: "測試房A", rentPostStatus: "可預約", rentStatus: 1, imageResources: ["images/Room1.jpg", "images/Room2.jpg"] },
             { id: "test2", rentMoney: 15002, roomName: "測試房B", rentPostStatus: "已出租", rentStatus: 3, imageResources: [] },
-            { id: "test3", rentMoney: 17352, roomName: "測試房CCC", rentPostStatus: "即將釋出", rentStatus: 2, imageResources: ["/Images/5d6ec32f-c84f-4f23-a0c2-4e9f43df7d36.jpg"] }
+            { id: "test3", rentMoney: 17352, roomName: "測試房CCC", rentPostStatus: "即將釋出", rentStatus: 2, imageResources: ["images/Room3.jpg"] }
         ],
         urlPhone: "tel:+886123456789", urlLine: "https://line.me/ti/p/testline", urlMail: "mailto:test@test.com",
-        rentPriceRange: "10000-17532", userID: "test_user",
-        type: 'rent'
+        rentPriceRange: "10000-17532"
     };
 
-    //金額格式化輔助函式
     function formatNumberWithCommas(num) {
         if (num === undefined || num === null || isNaN(num)) return '';
         return num.toLocaleString();
@@ -86,19 +85,10 @@ document.addEventListener("DOMContentLoaded", function () {
         return rangeString;
     }
 
-    // 立即顯示原始的「陽光公寓(測試)」
-    const testTooltipContent = `<b>${sunshineApartmentData.name}</b><br>租金範圍: ${formatPriceRange(sunshineApartmentData.rentPriceRange)}`;
-    L.marker([sunshineApartmentData.coordinates.latitude, sunshineApartmentData.coordinates.longitude])
-        .addTo(map)
-        .on('click', () => openSidebar(sunshineApartmentData))
-        .bindTooltip(testTooltipContent);
-
-    // --- 全域變數定義 ---
     const loginButton = document.getElementById('login-button');
     const bookmarksListButton = document.getElementById('bookmarks-list-button');
     let currentUserData = null;
 
-    // --- 獲取燈箱元素 ---
     const lightboxOverlay = document.getElementById('lightbox-overlay');
     const lightboxImage = document.getElementById('lightbox-image');
     const lightboxCloseBtn = document.getElementById('lightbox-close');
@@ -112,27 +102,22 @@ document.addEventListener("DOMContentLoaded", function () {
     const postsListContainer = document.getElementById('sidebar-posts');
     const lightboxRoomNav = document.getElementById('lightbox-room-nav');
 
-    // --- 圖片放大函式定義 ---
     function updateLightbox() {
-        if (allPropertyPosts.length === 0) return;
+        if (allPropertyPosts.length === 0 || !allPropertyPosts[currentRoomIndex]) return;
         const currentRoom = allPropertyPosts[currentRoomIndex];
         const currentImages = currentRoom.imageResources || [];
         if (currentImages.length > 0 && currentImages[currentImageIndex]) {
             const imagePath = currentImages[currentImageIndex];
             let finalImageUrl;
             if (imagePath.startsWith('/')) {
-                // 如果路徑以 '/' 開頭，認定為 API 路徑，加上 baseUrl
                 finalImageUrl = baseUrl + imagePath;
             } else {
-                // 否則，認定為本地預設圖片路徑
                 finalImageUrl = imagePath;
             }
             lightboxImage.src = finalImageUrl;
         } else {
-            // 如果沒有任何圖片，也顯示預設圖
             lightboxImage.src = 'images/DefaultHotel.jpg';
         }
-
         lightboxRoomName.textContent = currentRoom.roomName || '房間詳情';
         lightboxImageCounter.textContent = currentImages.length > 0 ? `${currentImageIndex + 1} / ${currentImages.length}` : '0 / 0';
         lightboxRoomCounter.textContent = `房間 ${currentRoomIndex + 1} / ${allPropertyPosts.length}`;
@@ -151,9 +136,12 @@ document.addEventListener("DOMContentLoaded", function () {
     function closeLightbox() {
         lightboxOverlay.classList.add('hidden');
         allPropertyPosts = [];
+        currentRoomIndex = 0;
+        currentImageIndex = 0;
     }
 
     function nextImage() {
+        if (!allPropertyPosts[currentRoomIndex]) return;
         const currentImages = allPropertyPosts[currentRoomIndex].imageResources || [];
         if (currentImages.length > 1) {
             currentImageIndex = (currentImageIndex + 1) % currentImages.length;
@@ -162,6 +150,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function prevImage() {
+        if (!allPropertyPosts[currentRoomIndex]) return;
         const currentImages = allPropertyPosts[currentRoomIndex].imageResources || [];
         if (currentImages.length > 1) {
             currentImageIndex = (currentImageIndex - 1 + currentImages.length) % currentImages.length;
@@ -170,6 +159,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function nextRoom() {
+        if (!allPropertyPosts[currentRoomIndex]) return;
         if (allPropertyPosts.length > 1) {
             currentRoomIndex = (currentRoomIndex + 1) % allPropertyPosts.length;
             currentImageIndex = 0;
@@ -178,13 +168,14 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function prevRoom() {
+        if (!allPropertyPosts[currentRoomIndex]) return;
         if (allPropertyPosts.length > 1) {
             currentRoomIndex = (currentRoomIndex - 1 + allPropertyPosts.length) % allPropertyPosts.length;
             currentImageIndex = 0;
             updateLightbox();
         }
     }
-
+    
     function updateUIToLoggedIn(userData) {
         currentUserData = userData;
         loginButton.innerText = '登出';
@@ -199,7 +190,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function handleBookmarkClick(userId, rentId) {
-        console.log(`使用者 ${userId} 想要加入書籤，房源 ID: ${rentId}`);
         const requestData = { userID: userId, ID: rentId };
         fetch(`${baseUrl}/Users/bookmarks`, {
             method: 'POST',
@@ -210,10 +200,8 @@ document.addEventListener("DOMContentLoaded", function () {
             if (response.status === 409) throw new Error('此項目已在您的收藏清單中。');
             throw new Error('加入收藏失敗，請稍後再試。');
         }).then(data => {
-            console.log('加入收藏成功:', data);
             alert('加入收藏成功！');
         }).catch(error => {
-            console.error('加入收藏時發生錯誤:', error.message);
             alert(error.message);
         });
     }
@@ -254,47 +242,40 @@ document.addEventListener("DOMContentLoaded", function () {
             bookmarksListContainer.innerHTML = '<p>載入失敗，請稍後再試。</p>';
         });
     }
-
+    
+    function displayMarkers(markerData) {
+        rentMarkers.clearLayers();
+        if (markerData && markerData.length > 0) {
+            markerData.forEach(property => {
+                if (property.coordinates) {
+                    const tooltipContent = `<b>${property.name}</b><br>租金範圍: ${formatPriceRange(property.rentPriceRange)}`;
+                    const marker = L.marker([property.coordinates.latitude, property.coordinates.longitude])
+                        .addTo(rentMarkers)
+                        .bindTooltip(tooltipContent);
+                    marker.on('click', () => openSidebar(property));
+                }
+            });
+        }
+    }
+    
     function loadRentalsInView() {
         const bounds = map.getBounds();
         const center = bounds.getCenter();
         const latitudeDelta = bounds.getNorth() - bounds.getSouth();
         const longitudeDelta = bounds.getEast() - bounds.getWest();
         const url = new URL(rentRegionMapUrl);
-        url.search = new URLSearchParams({
-            latitude: center.lat,
-            longitude: center.lng,
-            latitudeDelta: latitudeDelta,
-            longitudeDelta: longitudeDelta
-        }).toString();
+        url.search = new URLSearchParams({ latitude: center.lat, longitude: center.lng, latitudeDelta, longitudeDelta }).toString();
+        
         fetch(url, { headers: { 'Accept': 'application/json' } })
             .then(response => response.ok ? response.json() : Promise.reject(response))
             .then(data => {
                 const apiData = data.map(item => ({ ...item, type: 'rent' }));
-                const combinedData = [sunshineApartmentData2, ...apiData];
-                rentMarkers.clearLayers();
-                if (combinedData && combinedData.length > 0) {
-                    combinedData.forEach(property => {
-                        if (property.coordinates) {
-                            const tooltipContent = `<b>${property.name}</b><br>租金範圍: ${formatPriceRange(property.rentPriceRange)}`;
-                            const marker = L.marker([property.coordinates.latitude, property.coordinates.longitude])
-                                .addTo(rentMarkers)
-                                .bindTooltip(tooltipContent);
-                            marker.on('click', () => openSidebar(property));
-                        }
-                    });
-                }
+                displayMarkers(apiData);
             })
             .catch(error => {
                 console.error('載入房源資料時發生錯誤:', error);
-                console.log('API 請求失敗，但仍顯示模擬的測試資料點...');
-                rentMarkers.clearLayers();
-                const property = sunshineApartmentData2;
-                const tooltipContent = `<b>${property.name}</b><br>租金範圍: ${formatPriceRange(property.rentPriceRange)}`;
-                const marker = L.marker([property.coordinates.latitude, property.coordinates.longitude])
-                    .addTo(rentMarkers)
-                    .bindTooltip(tooltipContent);
-                marker.on('click', () => openSidebar(property));
+                console.log('API 請求失敗，顯示預設測試資料點...');
+                displayMarkers([sunshineApartmentData, sunshineApartmentData2]);
             });
     }
 
@@ -304,13 +285,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const latitudeDelta = bounds.getNorth() - bounds.getSouth();
         const longitudeDelta = bounds.getEast() - bounds.getWest();
         const url = new URL(restaurantRegionMapUrl);
-        url.search = new URLSearchParams({
-            latitude: center.lat,
-            longitude: center.lng,
-            latitudeDelta: latitudeDelta,
-            longitudeDelta: longitudeDelta,
-            includeAll: true
-        }).toString();
+        url.search = new URLSearchParams({ latitude: center.lat, longitude: center.lng, latitudeDelta, longitudeDelta, includeAll: true }).toString();
         fetch(url, { headers: { 'Accept': 'application/json' } })
             .then(response => response.ok ? response.json() : Promise.reject(response))
             .then(data => {
@@ -321,11 +296,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             const marker = L.marker([restaurant.latitude, restaurant.longitude])
                                 .addTo(restaurantMarkers)
                                 .bindTooltip(restaurant.name || '無餐廳名稱');
-                            const restaurantDataForSidebar = {
-                                ...restaurant,
-                                type: 'restaurant',
-                                mainContent: restaurant.mainContent || '暫無餐廳介紹'
-                            };
+                            const restaurantDataForSidebar = { ...restaurant, type: 'restaurant', mainContent: restaurant.mainContent || '暫無餐廳介紹' };
                             marker.on('click', () => openSidebar(restaurantDataForSidebar));
                         }
                     });
@@ -337,6 +308,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function openSidebar(property) {
+        closeLightbox();
         sidebar.classList.remove('closed');
         const sidebarImg = document.getElementById('sidebar-img');
         const sidebarImgPlaceholder = document.getElementById('sidebar-img-placeholder');
@@ -363,22 +335,30 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
             let imageUrl = 'images/DefaultHotel.jpg';
             if (property.coverImage) {
-                imageUrl = baseUrl + property.coverImage;
+                if (property.coverImage.startsWith('/')) {
+                    imageUrl = baseUrl + property.coverImage;
+                } else {
+                    imageUrl = property.coverImage;
+                }
             }
             sidebarImg.src = imageUrl;
             sidebarImg.onerror = () => { sidebarImg.src = 'images/DefaultHotel.jpg'; };
+            
             allPropertyPosts = property.posts || [];
+            
             if (priceElement) {
                 priceElement.innerHTML = '';
                 priceElement.style.display = 'none';
             }
             if (postsList) postsList.style.display = 'block';
+
             postsList.innerHTML = '';
             if (property.posts && property.posts.length > 0) {
                 const defaultRoomImages = ['images/Room1.jpg', 'images/Room2.jpg', 'images/Room3.jpg'];
                 property.posts.forEach((post, index) => {
                     const li = document.createElement('li');
                     const statusStringFromServer = post.rentPostStatus || '狀態不明';
+
                     if (statusStringFromServer.includes('空房') || statusStringFromServer.includes('可預約')) {
                         li.classList.add('status-available');
                     } else if (statusStringFromServer.includes('即將釋出')) {
@@ -386,14 +366,20 @@ document.addEventListener("DOMContentLoaded", function () {
                     } else {
                         li.classList.add('status-rented');
                     }
-                    let roomImageHtml = '<div class="room-image-placeholder"></div>';
+                    
+                    let roomImageHtml;
                     if (post.imageResources && post.imageResources.length > 0) {
-                        const firstImageUrl = baseUrl + post.imageResources[0];
+                        const firstImageUrl = post.imageResources[0].startsWith('/') ? baseUrl + post.imageResources[0] : post.imageResources[0];
                         roomImageHtml = `<img src="${firstImageUrl}" class="room-image" data-room-index="${index}">`;
                     } else {
                         const defaultImageSrc = defaultRoomImages[index % defaultRoomImages.length];
-                        roomImageHtml = `<img src="${defaultImageSrc}" class="room-image-placeholder">`;
+                        if (!post.imageResources) {
+                            post.imageResources = [];
+                        }
+                        post.imageResources[0] = defaultImageSrc;
+                        roomImageHtml = `<img src="${defaultImageSrc}" class="room-image" data-room-index="${index}">`;
                     }
+                    
                     const roomNameSpan = `<span class="room-name">${post.roomName || '未提供房名'}</span>`;
                     const rentMoneySpan = `<span class="room-money">${formatNumberWithCommas(post.rentMoney)}</span>`;
                     const rentStatusSpan = `<span class="room-status">${statusStringFromServer}</span>`;
@@ -430,50 +416,50 @@ document.addEventListener("DOMContentLoaded", function () {
             const displayPhone = property.urlPhone.replace('tel:', '').replace('+886', '0');
             phoneEl.innerHTML = `電話：<span>${displayPhone}</span>`;
             phoneEl.style.display = 'flex';
-        } else {
-            phoneEl.style.display = 'none';
-        }
+        } else { phoneEl.style.display = 'none'; }
         if (property.urlLine) {
             const displayLine = property.urlLine.split('/').pop();
             lineEl.innerHTML = `Line ID：<span>${displayLine}</span>`;
             lineEl.style.display = 'flex';
-        } else {
-            lineEl.style.display = 'none';
-        }
+        } else { lineEl.style.display = 'none'; }
         if (property.urlMail) {
             const displayMail = property.urlMail.replace('mailto:', '');
             mailEl.innerHTML = `電子郵件：<span>${displayMail}</span>`;
             mailEl.style.display = 'flex';
-        } else {
-            mailEl.style.display = 'none';
-        }
+        } else { mailEl.style.display = 'none'; }
     }
 
     function closeSidebar() {
         sidebar.classList.add('closed');
+        closeLightbox();
     }
+
+    // --- 事件監聽與初始設定 ---
+    displayMarkers([sunshineApartmentData, sunshineApartmentData2]); // 初始顯示測試資料
+    loadRestaurantsInView(); // 也載入餐廳
+
+    map.on('moveend', function() {
+        // 當地圖移動停止時，可以選擇是否要自動載入新資料
+        // loadRentalsInView(); 
+        // loadRestaurantsInView();
+    });
 
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             position => {
                 map.setView([position.coords.latitude, position.coords.longitude], 16);
-                loadRentalsInView();
-                loadRestaurantsInView();
+                loadRentalsInView(); // 取得位置後再載入真實資料
             },
             error => {
                 console.error('獲取使用者位置失敗:', error.message);
-                loadRentalsInView();
-                loadRestaurantsInView();
+                // 失敗時，測試資料已經顯示了
             }
         );
     } else {
         console.error('瀏覽器不支援地理位置 API。');
-        loadRentalsInView();
-        loadRestaurantsInView();
     }
 
     map.on('click', closeSidebar);
-
     const refreshButton = document.getElementById('refresh-button');
     if (refreshButton) {
         refreshButton.addEventListener('click', function () {
@@ -543,14 +529,8 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     if (closeModalBtn) closeModalBtn.addEventListener('click', hideAuthModal);
-    if (showRegisterFormLink) showRegisterFormLink.addEventListener('click', e => {
-        e.preventDefault();
-        showRegisterModal();
-    });
-    if (showLoginFormLink) showLoginFormLink.addEventListener('click', e => {
-        e.preventDefault();
-        showLoginModal();
-    });
+    if (showRegisterFormLink) showRegisterFormLink.addEventListener('click', e => { e.preventDefault(); showRegisterModal(); });
+    if (showLoginFormLink) showLoginFormLink.addEventListener('click', e => { e.preventDefault(); showLoginModal(); });
 
     const loginSubmit = document.getElementById('loginForm');
     if (loginSubmit) {

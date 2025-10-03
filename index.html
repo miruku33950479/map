@@ -32,7 +32,7 @@
             z-index: 1000;
             border-radius: 40px;
             overflow-y: auto;
-            max-height: 600px;
+            max-height: 80vh;
             scrollbar-width: none;
             -ms-overflow-style: none;
         }
@@ -60,6 +60,7 @@
                 margin: 0;
                 transition: right 0.3s ease;
                 height: auto;
+                max-height: 85vh;
                 border-radius: 0 0 0 20px;
             }
 
@@ -71,131 +72,6 @@
                 right: 5%;
             }
         }
-
-        /*資訊卡每間房的資料顯示-頭*/
-        #sidebar-posts {
-            list-style-type: none;
-            padding: 0;
-            margin-top: 15px;
-        }
-
-        #sidebar-posts li {
-            background-color: #f9f9f9;
-            border: 1px solid #eee;
-            border-radius: 15px;
-            padding: 12px;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 15px; /* 圖片和文字之間的間距 */
-        }
-
-        #sidebar-posts li:last-child {
-            margin-bottom: 0;
-        }
-
-        #sidebar-posts li.status-available {
-            border-left: 5px solid #2ecc71;
-        }
-        /* 狀態顏色提示條 */
-        #sidebar-posts li.status-available { border-left: 5px solid #2ecc71; }
-        #sidebar-posts li.status-rented { border-left: 5px solid #bdc3c7; }
-        #sidebar-posts li.status-upcoming { border-left: 5px solid #f39c12; }
-
-         /* 新增：圖片預留區的樣式 */
-        .room-image-placeholder {
-            width: 80px;
-            height: 60px;
-            background-color: #e9ecef;
-            border-radius: 8px;
-            flex-shrink: 0; /* 防止被壓縮 */
-        }
-
-        /* 新增：右側文字資訊區的容器 */
-        .room-text-info {
-            display: flex;
-            flex-direction: column; /* 讓內容垂直排列 */
-            flex-grow: 1; /* 佔滿剩餘空間 */
-            gap: 8px; /* 房名和下方資訊的間距 */
-        }
-        
-        /* 新增：租金和狀態的子容器 */
-        .room-meta {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        /* 房間名稱樣式 */
-        .room-name {
-            font-weight: bold;
-            font-size: 16px;
-        }
-
-        /* 租金樣式 */
-        .room-money {
-            color: #1bad47;
-            font-weight: bold;
-            font-size: 16px;
-        }
-        .room-money::before {
-            content: 'NT$ ';
-            font-size: 13px;
-            font-weight: normal;
-            color: #666;
-        }
-
-        /* 狀態徽章樣式 */
-        .room-status {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            color: white;
-            font-weight: bold;
-            white-space: nowrap;
-        }
-
-        /* 狀態徽章顏色 */
-        .status-available .room-status { background-color: #2ecc71; }
-        .status-rented .room-status { background-color: #95a5a6; }
-        .status-upcoming .room-status { background-color: #f39c12; }
-
-        .room-money::before {
-            content: 'NT$ ';
-            font-size: 14px;
-            font-weight: normal;
-            color: #666;
-        }
-
-        .room-status {
-            padding: 4px 0;
-            border-radius: 20px;
-            font-size: 12px;
-            color: white;
-            font-weight: bold;
-            white-space: nowrap;
-            width: 90px;
-            text-align: center;
-            flex-shrink: 0;
-        }
-
-        .status-available .room-status {
-            background-color: #2ecc71;
-        }
-
-        .status-rented .room-status {
-            background-color: #95a5a6;
-        }
-
-        .status-upcoming .room-status {
-            background-color: #f39c12;
-        }
-
-        #sidebar-posts li:last-child {
-            margin-bottom: 0;
-        }
-
-        /*資訊卡每間房的資料顯示-尾*/
 
         #overlay {
             position: fixed;
@@ -303,7 +179,6 @@
             text-decoration: underline;
         }
 
-        /* --- 刷新按鈕/重新整理-頭 --- */
         #refresh-button {
             position: absolute;
             bottom: 20px;
@@ -327,8 +202,6 @@
             transform: scale(0.9);
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
         }
-
-        /* --- 刷新按鈕/重新整理-尾 --- */
 
         #bookmarks-panel {
             position: fixed;
@@ -370,91 +243,6 @@
             border-bottom: 1px solid #eee;
         }
 
-        /*資訊卡模塊化-頭*/
-        #sidebar .sidebar-section {
-            background-color: #f9f9f9;
-            border: 1px solid #eee;
-            border-radius: 15px;
-            margin-top: 15px;
-            padding: 15px;
-            overflow: hidden;
-        }
-
-        #sidebar>.sidebar-section:first-of-type {
-            margin-top: 10px;
-        }
-
-        /* 新增：標題+按鈕的容器 */
-        .title-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 10px;
-        }
-
-        /* 圖片容器的樣式 */
-        #sidebar-img-container {
-            border-radius: 10px;
-            margin-top: 12px;
-            margin-bottom: 15px;
-        }
-
-        /*收藏按鈕-頭*/
-        /* 修改收藏按鈕樣式，使其更小以適應新位置 */
-        #bookmark-button {
-            float: none;
-            margin: 0;
-            padding: 6px 14px;
-            font-size: 12px;
-            font-weight: bold;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            white-space: nowrap;
-        }
-
-        #bookmark-button:hover {
-            background-color: #0056b3;
-        }
-
-        #bookmark-button:active {
-            transform: scale(0.95);
-            background-color: #004494;
-        }
-
-        /*收藏按鈕-尾*/
-        /*資訊卡模塊化-尾*/
-
-        /*資訊卡內容分級-頭*/
-        /* 標題 (第一級) */
-        #sidebar-title {
-            font-size: 22px;
-            font-weight: bold;
-            color: #333;
-            margin: 0;
-        }
-
-        /* 內文描述 (第二級) */
-        #sidebar-content {
-            font-size: 16px;
-            color: #555;
-            line-height: 1.6;
-            margin-top: 0;
-            margin-bottom: 0;
-        }
-
-        /* 城市數據 (第三級) - 已隱藏 */
-        #sidebar-price,
-        #sidebar-city {
-            display: none;
-        }
-
-        /*資訊卡內容分級-尾*/
-
-        /*圖釘樣式-頭*/
         .css-icon {
             position: relative;
             width: 26px;
@@ -479,9 +267,75 @@
             transform: rotate(-45deg) scale(1.1);
         }
 
-        /*圖釘樣式-尾*/
+        #sidebar .sidebar-section {
+            background-color: #f9f9f9;
+            border: 1px solid #eee;
+            border-radius: 15px;
+            margin-top: 15px;
+            padding: 15px;
+            overflow: hidden;
+        }
 
-        /*聯絡資訊-頭*/
+        #sidebar>.sidebar-section:first-of-type {
+            margin-top: 10px;
+        }
+
+        .title-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #sidebar-title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #333;
+            margin: 0;
+        }
+
+        #bookmark-button {
+            float: none;
+            margin: 0;
+            padding: 6px 14px;
+            font-size: 12px;
+            font-weight: bold;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        #bookmark-button:hover {
+            background-color: #0056b3;
+        }
+
+        #bookmark-button:active {
+            transform: scale(0.95);
+            background-color: #004494;
+        }
+
+        #sidebar-img-container {
+            border-radius: 10px;
+            margin-top: 12px;
+            margin-bottom: 15px;
+        }
+
+        #sidebar-content {
+            font-size: 16px;
+            color: #555;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        #sidebar-price,
+        #sidebar-city {
+            display: none;
+        }
+
         .contact-section {
             margin-top: 15px;
         }
@@ -508,7 +362,241 @@
             color: #333;
         }
 
-        /*聯絡資訊-尾*/
+        #sidebar-posts {
+            list-style-type: none;
+            padding: 0;
+            margin-top: 15px;
+        }
+
+        #sidebar-posts li {
+            background-color: #f9f9f9;
+            border: 1px solid #eee;
+            border-radius: 15px;
+            padding: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #sidebar-posts li:last-child {
+            margin-bottom: 0;
+        }
+
+        #sidebar-posts li.status-available {
+            border-left: 5px solid #2ecc71;
+        }
+
+        #sidebar-posts li.status-rented {
+            border-left: 5px solid #bdc3c7;
+        }
+
+        #sidebar-posts li.status-upcoming {
+            border-left: 5px solid #f39c12;
+        }
+
+        .room-image,
+        .room-image-placeholder {
+            width: 80px;
+            height: 60px;
+            background-color: #e9ecef;
+            border-radius: 8px;
+            flex-shrink: 0;
+            object-fit: cover;
+        }
+
+        .room-image {
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        .room-image:hover {
+            transform: scale(1.05);
+        }
+
+        .room-text-info {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            gap: 8px;
+        }
+
+        .room-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .room-name {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .room-money {
+            color: #1bad47;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .room-money::before {
+            content: 'NT$ ';
+            font-size: 13px;
+            font-weight: normal;
+            color: #666;
+        }
+
+        .room-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: white;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .status-available .room-status {
+            background-color: #2ecc71;
+        }
+
+        .status-rented .room-status {
+            background-color: #95a5a6;
+        }
+
+        .status-upcoming .room-status {
+            background-color: #f39c12;
+        }
+
+        #lightbox-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 3000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        #lightbox-overlay:not(.hidden) {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        #lightbox-content {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #lightbox-image-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        #lightbox-image {
+            max-width: 80vw;
+            max-height: 70vh;
+            border-radius: 10px;
+        }
+
+        .lightbox-nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.4);
+            color: white;
+            border: none;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 15px;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s ease;
+        }
+
+        .lightbox-nav-btn:hover {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+
+        #lightbox-image-prev {
+            left: -70px;
+        }
+
+        #lightbox-image-next {
+            right: -70px;
+        }
+
+        #lightbox-close {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            background: none;
+            color: white;
+            font-size: 45px;
+            border: none;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        #lightbox-image-counter {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 14px;
+        }
+
+        #lightbox-details {
+            color: white;
+            text-align: center;
+        }
+
+        #lightbox-room-name {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        #lightbox-room-nav {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 10px;
+        }
+
+        .room-nav-btn {
+            background: none;
+            border: 1px solid #ccc;
+            color: #ccc;
+            padding: 5px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .room-nav-btn:hover {
+            background-color: #fff;
+            color: #000;
+        }
+
+        #lightbox-room-counter {
+            font-size: 14px;
+        }
     </style>
 </head>
 
@@ -548,7 +636,7 @@
 
     <div id="overlay" class="hidden">
         <div id="auth-modal">
-            <button id="close-modal-btn">&times; 關閉</button>
+            <button id="close-modal-btn">&times;</button>
             <div id="login-form">
                 <h2>登入</h2>
                 <form id="loginForm">
@@ -599,14 +687,33 @@
     </div>
 
     <div id="bookmarks-panel">
-        <button id="close-bookmarks-panel-btn">&times; 關閉</button>
+        <button id="close-bookmarks-panel-btn">&times;</button>
         <h2>我的收藏清單</h2>
         <div id="bookmarks-list-container">
+        </div>
+    </div>
+
+    <div id="lightbox-overlay" class="hidden">
+        <button id="lightbox-close">&times;</button>
+        <div id="lightbox-content">
+            <div id="lightbox-image-container">
+                <button id="lightbox-image-prev" class="lightbox-nav-btn">&#10094;</button>
+                <img id="lightbox-image" src="">
+                <button id="lightbox-image-next" class="lightbox-nav-btn">&#10095;</button>
+                <div id="lightbox-image-counter"></div>
+            </div>
+            <div id="lightbox-details">
+                <h4 id="lightbox-room-name"></h4>
+                <div id="lightbox-room-nav">
+                    <button id="lightbox-room-prev" class="room-nav-btn">&lt; 上一個房間</button>
+                    <span id="lightbox-room-counter"></span>
+                    <button id="lightbox-room-next" class="room-nav-btn">下一個房間 &gt;</button>
+                </div>
+            </div>
         </div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="index.js" defer></script>
 </body>
-
 </html>

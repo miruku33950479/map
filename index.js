@@ -2,7 +2,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // 初始化 Leaflet 地圖
     var map = L.map('map').setView([23.704454, 120.428517], 16);
 
-    // 創建並設定預設圖釘圖示(CSS)
     var cssIcon = L.divIcon({
         className: 'css-icon',
         html: '<div></div>',
@@ -11,24 +10,23 @@ document.addEventListener("DOMContentLoaded", function () {
     });
     L.Marker.prototype.options.icon = cssIcon;
 
-    // 添加 OpenStreetMap 圖層
     L.tileLayer('https://tile.openstreetmap.bzh/br/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors & CartoDB',
         maxZoom: 19
     }).addTo(map);
 
-    // 創建 Feature Group 來管理不同類型的標記
     let rentMarkers = L.featureGroup().addTo(map);
     let restaurantMarkers = L.featureGroup().addTo(map);
 
     var sidebar = document.getElementById('sidebar');
-
-    // API 基礎 URL
     const baseUrl = 'https://api.xn--pqq3gk62n33n.com';
-
-    // API 路徑
     const rentRegionMapUrl = `${baseUrl}/Rent/RegionMap`;
     const restaurantRegionMapUrl = `${baseUrl}/Restaurant/RegionMap`;
+
+    // --- Lightbox 全域變數 ---
+    let allPropertyPosts = [];
+    let currentRoomIndex = 0;
+    let currentImageIndex = 0;
 
     // 原始的靜態測試物件
     const sunshineApartmentData = {
@@ -38,17 +36,16 @@ document.addEventListener("DOMContentLoaded", function () {
         coordinates: { latitude: 23.7029651, longitude: 120.4287316 },
         mainContent: "這是一個預設標註在地圖上的地點，主要用途是作為系統功能測試與展示之用。",
         id: "test_id",
-        rentStatus: 1, vacantRooms: 2, upcomingVacancies: 0,
         posts: [
-            { id: "test1", rentMoney: 10000, roomName: "測試房A", rentPostStatus: "可預約", rentStatus: 1 },
-            { id: "test2", rentMoney: 15000, roomName: "測試房B", rentPostStatus: "已出租", rentStatus: 3 }
+            { id: "test1", rentMoney: 10000, roomName: "測試房A", rentPostStatus: "可預約", rentStatus: 1, imageResources: [] },
+            { id: "test2", rentMoney: 15000, roomName: "測試房B", rentPostStatus: "已出租", rentStatus: 3, imageResources: [] }
         ],
         urlPhone: "tel:+886123456789", urlLine: "https://line.me/ti/p/testline", urlMail: "mailto:test@test.com",
         rentPriceRange: "10000-15000", userID: "test_user",
         type: 'rent'
     };
 
-    // 新增的靜態測試物件 (測試2)，模擬從 API 抓取
+    // 新增的靜態測試物件 (測試2)
     const sunshineApartmentData2 = {
         coverImage: "/Images/5d6ec32f-c84f-4f23-a0c2-4e9f43df7d36.jpg",
         name: "陽光公寓(測試2)",
@@ -56,18 +53,17 @@ document.addEventListener("DOMContentLoaded", function () {
         coordinates: { latitude: 23.7029651, longitude: 120.43364 },
         mainContent: "這是「測試2」的預設標註，模擬從 API 抓取。",
         id: "test_id_2",
-        rentStatus: 1, vacantRooms: 2, upcomingVacancies: 0,
         posts: [
-            { id: "test1", rentMoney: 10000, roomName: "測試房A", rentPostStatus: "可預約", rentStatus: 1 },
-            { id: "test2", rentMoney: 15002, roomName: "測試房B", rentPostStatus: "已出租", rentStatus: 3 },
-            { id: "test3", rentMoney: 17352, roomName: "測試房CCC", rentPostStatus: "即將釋出", rentStatus: 2 }
+            { id: "test1", rentMoney: 10000, roomName: "測試房A", rentPostStatus: "可預約", rentStatus: 1, imageResources: ["/Images/4f9bec75-e7c2-4dec-9965-49e2a0019d31.jpg", "/Images/5d6ec32f-c84f-4f23-a0c2-4e9f43df7d36.jpg"] },
+            { id: "test2", rentMoney: 15002, roomName: "測試房B", rentPostStatus: "已出租", rentStatus: 3, imageResources: [] },
+            { id: "test3", rentMoney: 17352, roomName: "測試房CCC", rentPostStatus: "即將釋出", rentStatus: 2, imageResources: ["/Images/5d6ec32f-c84f-4f23-a0c2-4e9f43df7d36.jpg"] }
         ],
         urlPhone: "tel:+886123456789", urlLine: "https://line.me/ti/p/testline", urlMail: "mailto:test@test.com",
         rentPriceRange: "10000-17532", userID: "test_user",
         type: 'rent'
     };
 
-    //金額格式化(每三位數加上,)-頭
+    //金額格式化輔助函式
     function formatNumberWithCommas(num) {
         if (num === undefined || num === null || isNaN(num)) return '';
         return num.toLocaleString();
@@ -89,7 +85,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         return rangeString;
     }
-    //金額格式化(每三位數加上,)-尾
 
     // 立即顯示原始的「陽光公寓(測試)」
     const testTooltipContent = `<b>${sunshineApartmentData.name}</b><br>租金範圍: ${formatPriceRange(sunshineApartmentData.rentPriceRange)}`;
@@ -103,7 +98,93 @@ document.addEventListener("DOMContentLoaded", function () {
     const bookmarksListButton = document.getElementById('bookmarks-list-button');
     let currentUserData = null;
 
-    // --- 函式定義 ---
+    // --- 獲取燈箱元素 ---
+    const lightboxOverlay = document.getElementById('lightbox-overlay');
+    const lightboxImage = document.getElementById('lightbox-image');
+    const lightboxCloseBtn = document.getElementById('lightbox-close');
+    const lightboxImagePrevBtn = document.getElementById('lightbox-image-prev');
+    const lightboxImageNextBtn = document.getElementById('lightbox-image-next');
+    const lightboxRoomPrevBtn = document.getElementById('lightbox-room-prev');
+    const lightboxRoomNextBtn = document.getElementById('lightbox-room-next');
+    const lightboxImageCounter = document.getElementById('lightbox-image-counter');
+    const lightboxRoomCounter = document.getElementById('lightbox-room-counter');
+    const lightboxRoomName = document.getElementById('lightbox-room-name');
+    const postsListContainer = document.getElementById('sidebar-posts');
+    const lightboxRoomNav = document.getElementById('lightbox-room-nav');
+
+    // --- 圖片放大函式定義 ---
+    function updateLightbox() {
+        if (allPropertyPosts.length === 0) return;
+        const currentRoom = allPropertyPosts[currentRoomIndex];
+        const currentImages = currentRoom.imageResources || [];
+        if (currentImages.length > 0 && currentImages[currentImageIndex]) {
+            const imagePath = currentImages[currentImageIndex];
+            let finalImageUrl;
+            if (imagePath.startsWith('/')) {
+                // 如果路徑以 '/' 開頭，認定為 API 路徑，加上 baseUrl
+                finalImageUrl = baseUrl + imagePath;
+            } else {
+                // 否則，認定為本地預設圖片路徑
+                finalImageUrl = imagePath;
+            }
+            lightboxImage.src = finalImageUrl;
+        } else {
+            // 如果沒有任何圖片，也顯示預設圖
+            lightboxImage.src = 'images/DefaultHotel.jpg';
+        }
+
+        lightboxRoomName.textContent = currentRoom.roomName || '房間詳情';
+        lightboxImageCounter.textContent = currentImages.length > 0 ? `${currentImageIndex + 1} / ${currentImages.length}` : '0 / 0';
+        lightboxRoomCounter.textContent = `房間 ${currentRoomIndex + 1} / ${allPropertyPosts.length}`;
+        lightboxImagePrevBtn.style.display = currentImages.length > 1 ? 'block' : 'none';
+        lightboxImageNextBtn.style.display = currentImages.length > 1 ? 'block' : 'none';
+        lightboxRoomNav.style.display = allPropertyPosts.length > 1 ? 'flex' : 'none';
+    }
+
+    function openLightbox(roomIndex) {
+        currentRoomIndex = roomIndex;
+        currentImageIndex = 0;
+        updateLightbox();
+        lightboxOverlay.classList.remove('hidden');
+    }
+
+    function closeLightbox() {
+        lightboxOverlay.classList.add('hidden');
+        allPropertyPosts = [];
+    }
+
+    function nextImage() {
+        const currentImages = allPropertyPosts[currentRoomIndex].imageResources || [];
+        if (currentImages.length > 1) {
+            currentImageIndex = (currentImageIndex + 1) % currentImages.length;
+            updateLightbox();
+        }
+    }
+
+    function prevImage() {
+        const currentImages = allPropertyPosts[currentRoomIndex].imageResources || [];
+        if (currentImages.length > 1) {
+            currentImageIndex = (currentImageIndex - 1 + currentImages.length) % currentImages.length;
+            updateLightbox();
+        }
+    }
+
+    function nextRoom() {
+        if (allPropertyPosts.length > 1) {
+            currentRoomIndex = (currentRoomIndex + 1) % allPropertyPosts.length;
+            currentImageIndex = 0;
+            updateLightbox();
+        }
+    }
+
+    function prevRoom() {
+        if (allPropertyPosts.length > 1) {
+            currentRoomIndex = (currentRoomIndex - 1 + allPropertyPosts.length) % allPropertyPosts.length;
+            currentImageIndex = 0;
+            updateLightbox();
+        }
+    }
+
     function updateUIToLoggedIn(userData) {
         currentUserData = userData;
         loginButton.innerText = '登出';
@@ -120,29 +201,21 @@ document.addEventListener("DOMContentLoaded", function () {
     function handleBookmarkClick(userId, rentId) {
         console.log(`使用者 ${userId} 想要加入書籤，房源 ID: ${rentId}`);
         const requestData = { userID: userId, ID: rentId };
-
         fetch(`${baseUrl}/Users/bookmarks`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(requestData)
-        })
-            .then(response => {
-                if (response.ok) {
-                    return response.json();
-                }
-                if (response.status === 409) {
-                    throw new Error('此項目已在您的收藏清單中。');
-                }
-                throw new Error('加入收藏失敗，請稍後再試。');
-            })
-            .then(data => {
-                console.log('加入收藏成功:', data);
-                alert('加入收藏成功！');
-            })
-            .catch(error => {
-                console.error('加入收藏時發生錯誤:', error.message);
-                alert(error.message);
-            });
+        }).then(response => {
+            if (response.ok) return response.json();
+            if (response.status === 409) throw new Error('此項目已在您的收藏清單中。');
+            throw new Error('加入收藏失敗，請稍後再試。');
+        }).then(data => {
+            console.log('加入收藏成功:', data);
+            alert('加入收藏成功！');
+        }).catch(error => {
+            console.error('加入收藏時發生錯誤:', error.message);
+            alert(error.message);
+        });
     }
 
     const bookmarksPanel = document.getElementById('bookmarks-panel');
@@ -160,29 +233,26 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         bookmarksPanel.classList.add('open');
         bookmarksListContainer.innerHTML = '<p>載入中...</p>';
-
         fetch(`${baseUrl}/Users/${currentUserData.userID}/bookmarks`, {
             method: 'GET',
             headers: { 'Accept': 'application/json' }
-        })
-            .then(response => response.ok ? response.json() : Promise.reject(response))
-            .then(data => {
-                const bookmarkedRentals = data.bookmarks.Rent;
-                if (!bookmarkedRentals || bookmarkedRentals.length === 0) {
-                    bookmarksListContainer.innerHTML = '<p>您尚未收藏任何房源。</p>';
-                    return;
-                }
-                let listHtml = '<ul>';
-                bookmarkedRentals.forEach(item => {
-                    listHtml += `<li>${item.name || item.id}</li>`;
-                });
-                listHtml += '</ul>';
-                bookmarksListContainer.innerHTML = listHtml;
-            })
-            .catch(error => {
-                console.error('獲取收藏清單時發生錯誤:', error);
-                bookmarksListContainer.innerHTML = '<p>載入失敗，請稍後再試。</p>';
+        }).then(response => response.ok ? response.json() : Promise.reject(response))
+          .then(data => {
+            const bookmarkedRentals = data.bookmarks.Rent;
+            if (!bookmarkedRentals || bookmarkedRentals.length === 0) {
+                bookmarksListContainer.innerHTML = '<p>您尚未收藏任何房源。</p>';
+                return;
+            }
+            let listHtml = '<ul>';
+            bookmarkedRentals.forEach(item => {
+                listHtml += `<li>${item.name || item.id}</li>`;
             });
+            listHtml += '</ul>';
+            bookmarksListContainer.innerHTML = listHtml;
+        }).catch(error => {
+            console.error('獲取收藏清單時發生錯誤:', error);
+            bookmarksListContainer.innerHTML = '<p>載入失敗，請稍後再試。</p>';
+        });
     }
 
     function loadRentalsInView() {
@@ -190,7 +260,6 @@ document.addEventListener("DOMContentLoaded", function () {
         const center = bounds.getCenter();
         const latitudeDelta = bounds.getNorth() - bounds.getSouth();
         const longitudeDelta = bounds.getEast() - bounds.getWest();
-
         const url = new URL(rentRegionMapUrl);
         url.search = new URLSearchParams({
             latitude: center.lat,
@@ -198,7 +267,6 @@ document.addEventListener("DOMContentLoaded", function () {
             latitudeDelta: latitudeDelta,
             longitudeDelta: longitudeDelta
         }).toString();
-
         fetch(url, { headers: { 'Accept': 'application/json' } })
             .then(response => response.ok ? response.json() : Promise.reject(response))
             .then(data => {
@@ -235,7 +303,6 @@ document.addEventListener("DOMContentLoaded", function () {
         const center = bounds.getCenter();
         const latitudeDelta = bounds.getNorth() - bounds.getSouth();
         const longitudeDelta = bounds.getEast() - bounds.getWest();
-
         const url = new URL(restaurantRegionMapUrl);
         url.search = new URLSearchParams({
             latitude: center.lat,
@@ -244,7 +311,6 @@ document.addEventListener("DOMContentLoaded", function () {
             longitudeDelta: longitudeDelta,
             includeAll: true
         }).toString();
-
         fetch(url, { headers: { 'Accept': 'application/json' } })
             .then(response => response.ok ? response.json() : Promise.reject(response))
             .then(data => {
@@ -255,7 +321,6 @@ document.addEventListener("DOMContentLoaded", function () {
                             const marker = L.marker([restaurant.latitude, restaurant.longitude])
                                 .addTo(restaurantMarkers)
                                 .bindTooltip(restaurant.name || '無餐廳名稱');
-
                             const restaurantDataForSidebar = {
                                 ...restaurant,
                                 type: 'restaurant',
@@ -273,7 +338,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function openSidebar(property) {
         sidebar.classList.remove('closed');
-
         const sidebarImg = document.getElementById('sidebar-img');
         const sidebarImgPlaceholder = document.getElementById('sidebar-img-placeholder');
         const priceElement = document.getElementById('sidebar-price');
@@ -293,32 +357,28 @@ document.addEventListener("DOMContentLoaded", function () {
             }
             sidebarImg.src = imageUrl;
             sidebarImg.onerror = () => { sidebarImg.src = 'images/DefaultRestaurant.jpg'; };
-
             if (priceElement) priceElement.style.display = 'none';
             if (postsList) postsList.style.display = 'none';
             if (bookmarkButtonWrapper) bookmarkButtonWrapper.style.display = 'none';
-
-        } else { // 房源的設定
+        } else {
             let imageUrl = 'images/DefaultHotel.jpg';
             if (property.coverImage) {
                 imageUrl = baseUrl + property.coverImage;
             }
             sidebarImg.src = imageUrl;
             sidebarImg.onerror = () => { sidebarImg.src = 'images/DefaultHotel.jpg'; };
-
+            allPropertyPosts = property.posts || [];
             if (priceElement) {
                 priceElement.innerHTML = '';
                 priceElement.style.display = 'none';
             }
-
             if (postsList) postsList.style.display = 'block';
-
             postsList.innerHTML = '';
             if (property.posts && property.posts.length > 0) {
-                property.posts.forEach(post => {
+                const defaultRoomImages = ['images/Room1.jpg', 'images/Room2.jpg', 'images/Room3.jpg'];
+                property.posts.forEach((post, index) => {
                     const li = document.createElement('li');
                     const statusStringFromServer = post.rentPostStatus || '狀態不明';
-
                     if (statusStringFromServer.includes('空房') || statusStringFromServer.includes('可預約')) {
                         li.classList.add('status-available');
                     } else if (statusStringFromServer.includes('即將釋出')) {
@@ -326,47 +386,46 @@ document.addEventListener("DOMContentLoaded", function () {
                     } else {
                         li.classList.add('status-rented');
                     }
-
-                    const imagePlaceholder = `<div class="room-image-placeholder"></div>`;
-                    
+                    let roomImageHtml = '<div class="room-image-placeholder"></div>';
+                    if (post.imageResources && post.imageResources.length > 0) {
+                        const firstImageUrl = baseUrl + post.imageResources[0];
+                        roomImageHtml = `<img src="${firstImageUrl}" class="room-image" data-room-index="${index}">`;
+                    } else {
+                        const defaultImageSrc = defaultRoomImages[index % defaultRoomImages.length];
+                        roomImageHtml = `<img src="${defaultImageSrc}" class="room-image-placeholder">`;
+                    }
                     const roomNameSpan = `<span class="room-name">${post.roomName || '未提供房名'}</span>`;
                     const rentMoneySpan = `<span class="room-money">${formatNumberWithCommas(post.rentMoney)}</span>`;
                     const rentStatusSpan = `<span class="room-status">${statusStringFromServer}</span>`;
-                    
                     const metaInfo = `<div class="room-meta">${rentMoneySpan}${rentStatusSpan}</div>`;
                     const textInfo = `<div class="room-text-info">${roomNameSpan}${metaInfo}</div>`;
-
-                    li.innerHTML = `${imagePlaceholder}${textInfo}`;
+                    li.innerHTML = `${roomImageHtml}${textInfo}`;
                     postsList.appendChild(li);
                 });
             } else {
+                allPropertyPosts = [];
                 const li = document.createElement('li');
                 li.textContent = '暫無房源資訊';
                 postsList.appendChild(li);
             }
-
             if (currentUserData) {
                 if (bookmarkButtonWrapper) bookmarkButtonWrapper.style.display = 'flex';
             } else {
                 if (bookmarkButtonWrapper) bookmarkButtonWrapper.style.display = 'none';
             }
         }
-
         sidebarImg.onload = () => {
             sidebarImg.style.display = 'block';
             sidebarImgPlaceholder.style.display = 'none';
         };
-
         titleElement.innerText = property.name || '未提供名稱';
         contentElement.innerText = property.mainContent || '';
         if (cityElement) {
             // cityElement.innerHTML = '<strong>城市:</strong> ' + (property.cityName || '未提供');
         }
-
         const phoneEl = document.getElementById('sidebar-phone');
         const lineEl = document.getElementById('sidebar-line');
         const mailEl = document.getElementById('sidebar-mail');
-
         if (property.urlPhone) {
             const displayPhone = property.urlPhone.replace('tel:', '').replace('+886', '0');
             phoneEl.innerHTML = `電話：<span>${displayPhone}</span>`;
@@ -374,7 +433,6 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
             phoneEl.style.display = 'none';
         }
-
         if (property.urlLine) {
             const displayLine = property.urlLine.split('/').pop();
             lineEl.innerHTML = `Line ID：<span>${displayLine}</span>`;
@@ -382,7 +440,6 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
             lineEl.style.display = 'none';
         }
-
         if (property.urlMail) {
             const displayMail = property.urlMail.replace('mailto:', '');
             mailEl.innerHTML = `電子郵件：<span>${displayMail}</span>`;
@@ -396,7 +453,6 @@ document.addEventListener("DOMContentLoaded", function () {
         sidebar.classList.add('closed');
     }
 
-    // --- 事件監聽與初始設定 ---
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             position => {
@@ -447,6 +503,21 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    lightboxCloseBtn.addEventListener('click', closeLightbox);
+    lightboxImageNextBtn.addEventListener('click', nextImage);
+    lightboxImagePrevBtn.addEventListener('click', prevImage);
+    lightboxRoomNextBtn.addEventListener('click', nextRoom);
+    lightboxRoomPrevBtn.addEventListener('click', prevRoom);
+
+    postsListContainer.addEventListener('click', function(e) {
+        if (e.target && e.target.classList.contains('room-image')) {
+            const roomIndex = parseInt(e.target.dataset.roomIndex, 10);
+            if (!isNaN(roomIndex)) {
+                openLightbox(roomIndex);
+            }
+        }
+    });
+
     sidebar.classList.add('closed');
     const overlay = document.getElementById('overlay');
     const closeModalBtn = document.getElementById('close-modal-btn');
@@ -488,24 +559,21 @@ document.addEventListener("DOMContentLoaded", function () {
             const userName = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
             const loginData = { userName: userName, password: password };
-
             fetch(`${baseUrl}/Users/Login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(loginData)
-            })
-                .then(response => response.ok ? response.json() : response.json().then(err => Promise.reject(err)))
-                .then(data => {
-                    console.log('登入成功:', data);
-                    alert(`登入成功！歡迎 ${data.userName}`);
-                    localStorage.setItem('userData', JSON.stringify(data));
-                    updateUIToLoggedIn(data);
-                    hideAuthModal();
-                })
-                .catch(error => {
-                    console.error('登入時發生錯誤:', error);
-                    alert(`登入失敗：${(error.detail && error.detail[0] && error.detail[0].msg) || error.detail || '請檢查您的帳號密碼'}`);
-                });
+            }).then(response => response.ok ? response.json() : response.json().then(err => Promise.reject(err)))
+              .then(data => {
+                console.log('登入成功:', data);
+                alert(`登入成功！歡迎 ${data.userName}`);
+                localStorage.setItem('userData', JSON.stringify(data));
+                updateUIToLoggedIn(data);
+                hideAuthModal();
+            }).catch(error => {
+                console.error('登入時發生錯誤:', error);
+                alert(`登入失敗：${(error.detail && error.detail[0] && error.detail[0].msg) || error.detail || '請檢查您的帳號密碼'}`);
+            });
         });
     }
 
@@ -515,12 +583,10 @@ document.addEventListener("DOMContentLoaded", function () {
             e.preventDefault();
             const password = document.getElementById('register-password').value;
             const confirmPassword = document.getElementById('confirm-password').value;
-
             if (password !== confirmPassword) {
                 alert('兩次輸入的密碼不一致！');
                 return;
             }
-
             const registerData = {
                 userName: document.getElementById('register-userName').value,
                 password: password,
@@ -528,22 +594,19 @@ document.addEventListener("DOMContentLoaded", function () {
                 email: document.getElementById('register-email').value,
                 phoneNumber: document.getElementById('register-phoneNumber').value
             };
-
             fetch(`${baseUrl}/Users/Register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(registerData)
-            })
-                .then(response => response.ok ? response.json() : response.json().then(err => Promise.reject(err)))
-                .then(data => {
-                    console.log('註冊成功:', data);
-                    alert('註冊成功！現在您可以直接登入。');
-                    showLoginModal();
-                })
-                .catch(error => {
-                    console.error('註冊時發生錯誤:', error);
-                    alert(`註冊失敗：${(error.detail && error.detail[0] && error.detail[0].msg) || error.detail || '請檢查您輸入的資料'}`);
-                });
+            }).then(response => response.ok ? response.json() : response.json().then(err => Promise.reject(err)))
+              .then(data => {
+                console.log('註冊成功:', data);
+                alert('註冊成功！現在您可以直接登入。');
+                showLoginModal();
+            }).catch(error => {
+                console.error('註冊時發生錯誤:', error);
+                alert(`註冊失敗：${(error.detail && error.detail[0] && error.detail[0].msg) || error.detail || '請檢查您輸入的資料'}`);
+            });
         });
     }
 

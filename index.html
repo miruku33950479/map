@@ -535,23 +535,25 @@
         .lightbox-nav-btn:hover {
             background-color: rgba(0, 0, 0, 0.7);
         }
-
+        #lightbox-main-panel {
+            display: flex;
+            align-items: stretch; /* 關鍵：讓子元素等高 */
+            gap: 15px; /* 圖片和描述卡片的固定距離 */
+            max-height: 70vh; /* 與圖片的最大高度保持一致 */
+        }
         /*房間描述文字*/
         #lightbox-room-description {
-            position: fixed; /* 改為 fixed，相對於整個視窗定位 */
-            top: 15vh; /* 距離視窗頂部 15%，使其在視覺上與圖片頂部對齊 */
-            right: 2vw; /* 距離視窗右邊緣 2% 的寬度 */
-            background-color: rgba(0, 0, 0, 0.7); /* 背景加深一點，更易閱讀 */
+            display: none; /* 預設隱藏 */
+            background-color: rgb(25, 25, 25); /* 不透明的深灰色背景 */
             color: white;
-            padding: 15px 20px;
-            border-radius: 8px;
+            padding: 20px;
+            border-radius: 10px;
             font-size: 15px;
-            max-width: 350px; /* 您可以自由調整最大寬度 */
+            width: 350px; /* 您可以依需求調整寬度 */
             line-height: 1.7;
             text-align: left;
-            z-index: 3001;
-            display: none; /* 預設隱藏 */
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5); /* 增加一點陰影，更有立體感 */
+            overflow-y: auto; /* 如果文字太長，出現滾動條 */
+            box-sizing: border-box; /* 確保 padding 不會影響寬度計算 */
         }
 
         #lightbox-image-prev {
@@ -717,18 +719,17 @@
         </div>
     </div>
 
-    <div id="lightbox-overlay" class="hidden">
-        <button id="lightbox-close">&times;</button>
-        <div id="lightbox-content">
-            <div id="lightbox-image-container">
-                <button id="lightbox-image-prev" class="lightbox-nav-btn">&#10094;</button>
-                <img id="lightbox-image" src="">
-                <button id="lightbox-image-next" class="lightbox-nav-btn">&#10095;</button>
-                <div id="lightbox-image-counter"></div>
-                
+    <div id="lightbox-content">
+            <div id="lightbox-main-panel">
+                <div id="lightbox-image-container">
+                    <button id="lightbox-image-prev" class="lightbox-nav-btn">&#10094;</button>
+                    <img id="lightbox-image" src="">
+                    <button id="lightbox-image-next" class="lightbox-nav-btn">&#10095;</button>
+                    <div id="lightbox-image-counter"></div>
+                </div>
                 <div id="lightbox-room-description"></div>
             </div>
-             <div id="lightbox-details">
+            <div id="lightbox-details">
                 <h4 id="lightbox-room-name"></h4>
                 <div id="lightbox-room-nav">
                     <button id="lightbox-room-prev" class="room-nav-btn">&lt; 上一個房間</button>
@@ -737,7 +738,6 @@
                 </div>
             </div>
         </div>
-    </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="index.js" defer></script>

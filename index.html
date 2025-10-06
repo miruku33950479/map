@@ -535,25 +535,31 @@
         .lightbox-nav-btn:hover {
             background-color: rgba(0, 0, 0, 0.7);
         }
+        #lightbox-main-panel {
+            display: flex;
+            justify-content: space-between; /* 讓內容靠兩側，中間自動撐開 */
+            align-items: flex-start;      /* 讓所有子元素頂部對齊 */
+            width: 95vw;                  /* 限制總寬度為螢幕的 95% */
+            max-height: 70vh;
+        }
+        #lightbox-room-description,
+        #lightbox-description-placeholder {
+            width: 350px;       /* 兩邊都設定固定寬度 */
+            flex-shrink: 0;     /* 關鍵：防止被壓縮 */
+            box-sizing: border-box;
+            visibility: hidden; /* 預設都隱藏 */
+        }
         #lightbox-room-description {
-            position: absolute;           /* 改為絕對定位 */
-            left: 100%;                   /* 將卡片左側貼齊圖片容器的右側 */
-            margin-left: 20px;            /* 與圖片產生 20px 的固定距離 */
-            top: 50%;                     /* 搭配下一行 transform 來實現垂直置中 */
-            transform: translateY(-50%);  /* 讓卡片自身向上移動50%的高度，達到完美垂直置中 */
-
-            display: none;
             background-color: black;
             color: white;
             padding: 20px;
             border-radius: 10px;
             font-size: 15px;
-            max-width: 350px;
             line-height: 1.7;
-            text-align: left;
-            box-sizing: border-box;
+            max-height: 100%;    /* 高度不超過父容器 */
+            overflow-y: auto;    /* 文字過多時滾動 */
         }
-        
+
         #lightbox-image-prev {
             left: -70px;
         }
@@ -720,14 +726,19 @@
     <div id="lightbox-overlay" class="hidden">
         <button id="lightbox-close">&times;</button>
         <div id="lightbox-content">
-            <div id="lightbox-image-container">
-                <button id="lightbox-image-prev" class="lightbox-nav-btn">&#10094;</button>
-                <img id="lightbox-image" src="">
-                <button id="lightbox-image-next" class="lightbox-nav-btn">&#10095;</button>
-                <div id="lightbox-image-counter"></div>
-                
+            <div id="lightbox-main-panel">
+                <div id="lightbox-description-placeholder"></div>
+
+                <div id="lightbox-image-container">
+                    <button id="lightbox-image-prev" class="lightbox-nav-btn">&#10094;</button>
+                    <img id="lightbox-image" src="">
+                    <button id="lightbox-image-next" class="lightbox-nav-btn">&#10095;</button>
+                    <div id="lightbox-image-counter"></div>
+                </div>
+
                 <div id="lightbox-room-description"></div>
             </div>
+
             <div id="lightbox-details">
                 <h4 id="lightbox-room-name"></h4>
                 <div id="lightbox-room-nav">

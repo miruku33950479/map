@@ -101,14 +101,21 @@ document.addEventListener("DOMContentLoaded", function () {
         const currentImages = currentRoom.imageResources || [];
         /*房間描述文字*/
         const roomDescriptionCard = document.getElementById('lightbox-room-description');
-        if (roomDescriptionCard) {
+        const placeholder = document.getElementById('lightbox-description-placeholder');
+
+        if (roomDescriptionCard && placeholder) {
             if (currentRoom.lightboxDescription) {
                 roomDescriptionCard.textContent = currentRoom.lightboxDescription;
-                roomDescriptionCard.style.display = 'block';
+                // 當有文字時，讓卡片和佔位元素都「可見」
+                roomDescriptionCard.style.visibility = 'visible';
+                placeholder.style.visibility = 'visible';
             } else {
-                roomDescriptionCard.style.display = 'none';
+                // 當沒有文字時，讓它們都「隱藏」
+                roomDescription-card.style.visibility = 'hidden';
+                placeholder.style.visibility = 'hidden';
             }
         }
+        
         if (currentImages.length > 0 && currentImages[currentImageIndex]) {
             const imagePath = currentImages[currentImageIndex];
             let finalImageUrl;

@@ -719,7 +719,9 @@
         </div>
     </div>
 
-    <div id="lightbox-content">
+    <div id="lightbox-overlay" class="hidden">
+        <button id="lightbox-close">&times;</button>
+        <div id="lightbox-content">
             <div id="lightbox-main-panel">
                 <div id="lightbox-image-container">
                     <button id="lightbox-image-prev" class="lightbox-nav-btn">&#10094;</button>
@@ -738,6 +740,7 @@
                 </div>
             </div>
         </div>
+    </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="index.js" defer></script>

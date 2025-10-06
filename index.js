@@ -2,14 +2,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // 初始化 Leaflet 地圖
     var map = L.map('map').setView([23.704454, 120.428517], 16);
 
-    var cssIcon = L.divIcon({
-        className: 'css-icon',
-        html: '<div></div>',
-        iconSize: [26, 26],
-        iconAnchor: [13, 26]
-    });
-    L.Marker.prototype.options.icon = cssIcon;
-
     L.tileLayer('https://tile.openstreetmap.bzh/br/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors & CartoDB',
         maxZoom: 19
@@ -241,19 +233,33 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     
     function displayMarkers(markerData) {
-        rentMarkers.clearLayers();
-        if (markerData && markerData.length > 0) {
-            markerData.forEach(property => {
-                if (property.coordinates) {
-                    const tooltipContent = `<b>${property.name}</b><br>租金範圍: ${formatPriceRange(property.rentPriceRange)}`;
-                    const marker = L.marker([property.coordinates.latitude, property.coordinates.longitude])
-                        .addTo(rentMarkers)
-                        .bindTooltip(tooltipContent);
-                    marker.on('click', () => openSidebar(property));
-                }
-            });
-        }
+    rentMarkers.clearLayers();
+    if (markerData && markerData.length > 0) {
+        markerData.forEach(property => {
+            if (property.coordinates) {
+                // 如果 API 沒有提供 ringColor，就使用預設的藍色
+                const iconColor = property.ringColor || '#3498db';
+
+                // 為每個 marker 動態創建一個帶有顏色的 icon
+                const dynamicIcon = L.divIcon({
+                    className: 'css-icon',
+                    html: `<div style="background-color: ${iconColor};"></div>`,
+                    iconSize: [26, 26],
+                    iconAnchor: [13, 26]
+                });
+
+                const tooltipContent = `<b>${property.name}</b><br>租金範圍: ${formatPriceRange(property.rentPriceRange)}`;
+                
+                // 在創建 marker 時傳入動態生成的 icon
+                const marker = L.marker([property.coordinates.latitude, property.coordinates.longitude], { icon: dynamicIcon })
+                    .addTo(rentMarkers)
+                    .bindTooltip(tooltipContent);
+
+                marker.on('click', () => openSidebar(property));
+            }
+        });
     }
+}
     
     function loadRentalsInView() {
         const bounds = map.getBounds();

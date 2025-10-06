@@ -19,6 +19,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let allPropertyPosts = [];
     let currentRoomIndex = 0;
     let currentImageIndex = 0;
+    let currentPropertyData = null;
 
     // 原始的靜態測試物件
     const sunshineApartmentData = {
@@ -47,8 +48,8 @@ document.addEventListener("DOMContentLoaded", function () {
         id: "test_id_2",
         type: 'rent',
         posts: [
-            { id: "test1", rentMoney: 10000, roomName: "測試房A", rentPostStatus: "可預約", rentStatus: 1, imageResources: ["images/Room1.jpg", "images/Room2.jpg"] },
-            { id: "test2", rentMoney: 15002, roomName: "測試房B", rentPostStatus: "已出租", rentStatus: 3, imageResources: [] },
+            { id: "test1", rentMoney: 10000, roomName: "測試房A", rentPostStatus: "可預約", rentStatus: 1, imageResources: ["images/Room1.jpg", "images/Room2.jpg"],lightboxDescription: "這是一段測試房A的說明文字，大約三十個字，用來展示燈箱中的浮動資訊卡片效果。" },
+            { id: "test2", rentMoney: 15002, roomName: "測試房B", rentPostStatus: "已出租", rentStatus: 3, imageResources: [],lightboxDescription: "這是測試房B的說明，風格簡約，採光良好，交通便利，是您居住的最佳選擇，歡迎隨時預約看房。" },
             { id: "test3", rentMoney: 17352, roomName: "測試房CCC", rentPostStatus: "即將釋出", rentStatus: 2, imageResources: ["images/Room3.jpg"] }
         ],
         urlPhone: "tel:+886123456789", urlLine: "https://line.me/ti/p/testline", urlMail: "mailto:test@test.com",
@@ -98,6 +99,16 @@ document.addEventListener("DOMContentLoaded", function () {
         if (allPropertyPosts.length === 0 || !allPropertyPosts[currentRoomIndex]) return;
         const currentRoom = allPropertyPosts[currentRoomIndex];
         const currentImages = currentRoom.imageResources || [];
+        /*房間描述文字*/
+        const roomDescriptionCard = document.getElementById('lightbox-room-description');
+        if (roomDescriptionCard) {
+            if (currentRoom.lightboxDescription) {
+                roomDescriptionCard.textContent = currentRoom.lightboxDescription;
+                roomDescriptionCard.style.display = 'block';
+            } else {
+                roomDescriptionCard.style.display = 'none';
+            }
+        }
         if (currentImages.length > 0 && currentImages[currentImageIndex]) {
             const imagePath = currentImages[currentImageIndex];
             let finalImageUrl;
@@ -119,6 +130,11 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function openLightbox(roomIndex) {
+        const propertyTitleCard = document.getElementById('lightbox-property-title');
+        if (propertyTitleCard && currentPropertyData) {
+        propertyTitleCard.textContent = currentPropertyData.name || '';
+        propertyTitleCard.style.display = currentPropertyData.name ? 'block' : 'none';
+        }
         currentRoomIndex = roomIndex;
         currentImageIndex = 0;
         updateLightbox();
@@ -311,6 +327,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function openSidebar(property) {
+        currentPropertyData = property;
         closeLightbox();
         sidebar.classList.remove('closed');
         const sidebarImg = document.getElementById('sidebar-img');
@@ -500,8 +517,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // 房間圖片放大-點擊燈箱背景時關閉燈箱
     lightboxOverlay.addEventListener('click', function(event) {
+    // 確保點擊的是背景本身，而不是圖片、按鈕等子元素
         if (event.target === lightboxOverlay) {
-            closeLightbox();
+            // 取得滑鼠點擊處的 X 座標
+            const clickX = event.clientX;
+            
+            // 取得整個視窗的寬度
+            const windowWidth = window.innerWidth;
+
+            // 判斷點擊位置是在左半邊還是右半邊
+            if (clickX < windowWidth / 2) {
+                // 點擊了左半邊，切換到上一張圖
+                prevImage();
+            } else {
+                // 點擊了右半邊，切換到下一張圖
+                nextImage();
+            }
         }
     });
 

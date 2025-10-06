@@ -480,6 +480,11 @@
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.3s ease, visibility 0.3s ease;
+            /*防止全選圖片*/
+            -webkit-user-select: none; /* Safari */
+            -moz-user-select: none;    /* Firefox */
+            -ms-user-select: none;     /* IE10+ */
+            user-select: none;         /* 標準語法 */
         }
 
         #lightbox-overlay:not(.hidden) {
@@ -529,6 +534,36 @@
 
         .lightbox-nav-btn:hover {
             background-color: rgba(0, 0, 0, 0.7);
+        }
+
+        #lightbox-property-title {
+            position: absolute;
+            top: 5vh;
+            right: 5vw;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 16px;
+            max-width: 250px;
+            text-align: right;
+            z-index: 3001; /* 確保在圖片內容之上 */
+        }
+        /*房間描述文字*/
+        #lightbox-room-description {
+            position: absolute;
+            bottom: 5vh;
+            left: 5vw;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 15px;
+            max-width: 300px; /* 您可以調整最大寬度 */
+            line-height: 1.6;
+            text-align: left;
+            z-index: 3001;
+            display: none; /* 預設隱藏 */
         }
 
         #lightbox-image-prev {

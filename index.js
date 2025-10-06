@@ -130,11 +130,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function openLightbox(roomIndex) {
-        const propertyTitleCard = document.getElementById('lightbox-property-title');
-        if (propertyTitleCard && currentPropertyData) {
-        propertyTitleCard.textContent = currentPropertyData.name || '';
-        propertyTitleCard.style.display = currentPropertyData.name ? 'block' : 'none';
-        }
         currentRoomIndex = roomIndex;
         currentImageIndex = 0;
         updateLightbox();

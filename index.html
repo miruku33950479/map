@@ -536,19 +536,6 @@
             background-color: rgba(0, 0, 0, 0.7);
         }
 
-        #lightbox-property-title {
-            position: absolute;
-            top: 5vh;
-            right: 5vw;
-            background-color: rgba(0, 0, 0, 0.6);
-            color: white;
-            padding: 10px 15px;
-            border-radius: 8px;
-            font-size: 16px;
-            max-width: 250px;
-            text-align: right;
-            z-index: 3001; /* 確保在圖片內容之上 */
-        }
         /*房間描述文字*/
         #lightbox-room-description {
             position: absolute;
@@ -560,7 +547,7 @@
             padding: 10px 15px;
             border-radius: 8px;
             font-size: 15px;
-            max-width: 250px; /* 您可以依需求調整最大寬度 */
+            max-width: 600px; /* 您可以依需求調整最大寬度 */
             line-height: 1.6;
             text-align: left;
             z-index: 3001;
@@ -732,7 +719,6 @@
 
     <div id="lightbox-overlay" class="hidden">
         <button id="lightbox-close">&times;</button>
-        <div id="lightbox-property-title"></div>
         <div id="lightbox-content">
             <div id="lightbox-image-container">
                 <button id="lightbox-image-prev" class="lightbox-nav-btn">&#10094;</button>

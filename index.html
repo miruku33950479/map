@@ -538,20 +538,20 @@
 
         /*房間描述文字*/
         #lightbox-room-description {
-            position: absolute;
-            top: 0; /* 頂部與圖片容器對齊 */
-            left: 100%; /* 將左邊緣對齊到圖片容器的右邊緣 */
-            margin-left: 20px; /* 在圖片和卡片之間增加 20px 的間距 */
-            background-color: rgba(0, 0, 0, 0.6);
+            position: fixed; /* 改為 fixed，相對於整個視窗定位 */
+            top: 15vh; /* 距離視窗頂部 15%，使其在視覺上與圖片頂部對齊 */
+            right: 2vw; /* 距離視窗右邊緣 2% 的寬度 */
+            background-color: rgba(0, 0, 0, 0.7); /* 背景加深一點，更易閱讀 */
             color: white;
-            padding: 10px 15px;
+            padding: 15px 20px;
             border-radius: 8px;
             font-size: 15px;
-            max-width: 600px; /* 您可以依需求調整最大寬度 */
-            line-height: 1.6;
+            max-width: 350px; /* 您可以自由調整最大寬度 */
+            line-height: 1.7;
             text-align: left;
             z-index: 3001;
             display: none; /* 預設隱藏 */
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5); /* 增加一點陰影，更有立體感 */
         }
 
         #lightbox-image-prev {

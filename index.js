@@ -301,12 +301,15 @@ document.addEventListener("DOMContentLoaded", function () {
         fetch(url, { headers: { 'Accept': 'application/json' } })
             .then(response => response.ok ? response.json() : Promise.reject(response))
             .then(data => {
+                // 將 API 回傳的資料與靜態測試資料合併
                 const apiData = data.map(item => ({ ...item, type: 'rent' }));
-                displayMarkers(apiData);
+                const combinedData = [...apiData, sunshineApartmentData, sunshineApartmentData2];
+                displayMarkers(combinedData);
             })
             .catch(error => {
                 console.error('載入房源資料時發生錯誤:', error);
                 console.log('API 請求失敗，顯示預設測試資料點...');
+                // API 失敗時，一樣顯示測試資料
                 displayMarkers([sunshineApartmentData, sunshineApartmentData2]);
             });
     }

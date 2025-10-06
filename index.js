@@ -111,11 +111,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 placeholder.style.visibility = 'visible';
             } else {
                 // 當沒有文字時，讓它們都「隱藏」
-                roomDescription-card.style.visibility = 'hidden';
+                roomDescriptionCard.style.visibility = 'hidden';
                 placeholder.style.visibility = 'hidden';
             }
         }
-        
+
         if (currentImages.length > 0 && currentImages[currentImageIndex]) {
             const imagePath = currentImages[currentImageIndex];
             let finalImageUrl;

@@ -537,23 +537,25 @@
         }
         #lightbox-main-panel {
             display: flex;
-            align-items: stretch; /* 關鍵：讓子元素等高 */
-            gap: 15px; /* 圖片和描述卡片的固定距離 */
-            max-height: 70vh; /* 與圖片的最大高度保持一致 */
+            align-items: center; /* 讓內容垂直置中 */
+            justify-content: center; /* 確保整體內容水平置中 */
+            gap: 15px;
+            max-height: 70vh;
         }
         /*房間描述文字*/
         #lightbox-room-description {
-            display: none; /* 預設隱藏 */
-            background-color: rgb(25, 25, 25); /* 不透明的深灰色背景 */
+            display: none;
+            background-color: black; /* 1. 改為純黑色背景 */
             color: white;
             padding: 20px;
             border-radius: 10px;
             font-size: 15px;
-            width: 350px; /* 您可以依需求調整寬度 */
+            max-width: 350px; /* 保留最大寬度限制，避免文字太長時無限變寬 */
+            max-height: 600px;
             line-height: 1.7;
             text-align: left;
-            overflow-y: auto; /* 如果文字太長，出現滾動條 */
-            box-sizing: border-box; /* 確保 padding 不會影響寬度計算 */
+            box-sizing: border-box;
+            flex-shrink: 0; /* 避免在空間不足時被壓縮 */
         }
 
         #lightbox-image-prev {

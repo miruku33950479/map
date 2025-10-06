@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", function () {
             { id: "test2", rentMoney: 15000, roomName: "測試房B", rentPostStatus: "已出租", rentStatus: 3, imageResources: [] }
         ],
         urlPhone: "tel:+886123456789", urlLine: "https://line.me/ti/p/testline", urlMail: "mailto:test@test.com",
-        rentPriceRange: "10000-15000"
+        rentPriceRange: "10000~15000"
     };
 
     // 新增的靜態測試物件 (測試2)
@@ -53,7 +53,7 @@ document.addEventListener("DOMContentLoaded", function () {
             { id: "test3", rentMoney: 17352, roomName: "測試房CCC", rentPostStatus: "即將釋出", rentStatus: 2, imageResources: ["images/Room3.jpg"] }
         ],
         urlPhone: "tel:+886123456789", urlLine: "https://line.me/ti/p/testline", urlMail: "mailto:test@test.com",
-        rentPriceRange: "10000-17532"
+        rentPriceRange: "10000~17532"
     };
 
     function formatNumberWithCommas(num) {
@@ -63,18 +63,29 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function formatPriceRange(rangeString) {
         if (!rangeString) return '未提供';
-        const parts = String(rangeString).split('-');
+
+        // 移除字串中所有的逗號
+        const cleanedString = String(rangeString).replace(/,/g, '');
+        
+        // 使用波浪號 ~ 來分割字串
+        const parts = cleanedString.split('~');
+
         if (parts.length === 2) {
             const start = parseInt(parts[0], 10);
             const end = parseInt(parts[1], 10);
             if (!isNaN(start) && !isNaN(end)) {
-                return `${start.toLocaleString()}-${end.toLocaleString()}`;
+                // 格式化後用 ~ 組合回傳
+                return `${start.toLocaleString()}~${end.toLocaleString()}`;
             }
         }
-        const singleNum = parseInt(rangeString, 10);
+
+        // 處理單一價格的情況
+        const singleNum = parseInt(cleanedString, 10);
         if (!isNaN(singleNum)) {
             return singleNum.toLocaleString();
         }
+
+        // 如果格式不符預期，直接回傳原始字串
         return rangeString;
     }
 

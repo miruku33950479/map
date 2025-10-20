@@ -239,25 +239,98 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         bookmarksPanel.classList.add('open');
         bookmarksListContainer.innerHTML = '<p>載入中...</p>';
+
+        // 預設圖片路徑 (與 openSidebar 邏輯一致)
+        const defaultRoomImages = ['images/Room1.jpg', 'images/Room2.jpg', 'images/Room3.jpg'];
+        const defaultCoverImage = 'images/DefaultHotel.jpg';
+
         fetch(`${baseUrl}/Users/${currentUserData.userID}/bookmarks`, {
             method: 'GET',
             headers: { 'Accept': 'application/json' }
         }).then(response => response.ok ? response.json() : Promise.reject(response))
           .then(data => {
             const bookmarkedRentals = data.bookmarks.Rent;
+            bookmarksListContainer.innerHTML = ''; // 清空載入中提示
+
             if (!bookmarkedRentals || bookmarkedRentals.length === 0) {
                 bookmarksListContainer.innerHTML = '<p>您尚未收藏任何房源。</p>';
                 return;
             }
-            let listHtml = '<ul>';
-            bookmarkedRentals.forEach(item => {
-                listHtml += `<li>${item.name || item.id}</li>`;
+
+            // 使用與側邊欄列表相似的結構來呈現卡片
+            const ul = document.createElement('ul');
+            ul.classList.add('bookmarks-card-list'); // 新增一個類別以便CSS樣式化
+
+            bookmarkedRentals.forEach((property, index) => {
+                const li = document.createElement('li');
+                li.classList.add('bookmark-card-item'); // 新增一個類別
+                li.dataset.propertyId = property.id; // 可用於後續點擊操作
+
+                // 判斷房源狀態（若API回傳的收藏資料中有此資訊）
+                // 這裡假設收藏列表只會顯示房源名稱和基本資訊，且不一定有詳細的 posts 資訊
+                // 如果 posts 資訊不完整，就只顯示房源的 coverImage 和名稱
+                
+                let coverImageUrl = property.coverImage;
+                if (coverImageUrl) {
+                    if (coverImageUrl.startsWith('/')) {
+                        coverImageUrl = baseUrl + coverImageUrl;
+                    }
+                } else {
+                    coverImageUrl = defaultCoverImage;
+                }
+                
+                // 建立卡片內容
+                const cardHtml = `
+                    <img src="${coverImageUrl}" class="bookmark-cover-image" onerror="this.src='${defaultCoverImage}';" alt="${property.name}">
+                    <div class="bookmark-text-info">
+                        <span class="bookmark-name">${property.name || '未提供房名'}</span>
+                        <div class="bookmark-meta">
+                            <span class="bookmark-city">${property.cityName || '城市未定'}</span>
+                            <span class="bookmark-price-range">${property.rentPriceRange ? '租金:' + formatPriceRange(property.rentPriceRange) : '租金範圍未提供'}</span>
+                        </div>
+                        <button class="remove-bookmark-btn" data-rent-id="${property.id}">&times; 移除</button>
+                    </div>
+                `;
+
+                li.innerHTML = cardHtml;
+                ul.appendChild(li);
             });
-            listHtml += '</ul>';
-            bookmarksListContainer.innerHTML = listHtml;
+            bookmarksListContainer.appendChild(ul);
+            
+            // 替每個「移除」按鈕添加事件監聽器
+            ul.querySelectorAll('.remove-bookmark-btn').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 避免觸發可能存在的卡片點擊事件
+                    const rentId = this.dataset.rentId;
+                    if (confirm('您確定要從收藏中移除此項目嗎？')) {
+                        // 呼叫新的移除收藏函式（您需要實作此 API 呼叫）
+                        handleRemoveBookmark(currentUserData.userID, rentId);
+                    }
+                });
+            });
+
         }).catch(error => {
             console.error('獲取收藏清單時發生錯誤:', error);
             bookmarksListContainer.innerHTML = '<p>載入失敗，請稍後再試。</p>';
+        });
+    }
+    // 新增的移除收藏函式
+    function handleRemoveBookmark(userId, rentId) {
+        // 假設移除收藏的 API 也是 /Users/bookmarks，但使用 DELETE 方法
+        const requestData = { userID: userId, ID: rentId };
+        fetch(`${baseUrl}/Users/bookmarks`, {
+            method: 'DELETE', // 假設使用 DELETE 方法
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestData)
+        }).then(response => {
+            if (response.ok) return response.json();
+            throw new Error('移除收藏失敗，請稍後再試。');
+        }).then(data => {
+            alert('移除收藏成功！');
+            // 移除成功後，重新載入收藏清單
+            showBookmarksPanel(); 
+        }).catch(error => {
+            alert(error.message);
         });
     }
     

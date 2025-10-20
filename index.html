@@ -232,16 +232,89 @@
             border: none;
             background: none;
         }
-
-        #bookmarks-list-container ul {
-            list-style: none;
+        #bookmarks-list-container ul.bookmarks-card-list {
+            list-style-type: none;
             padding: 0;
+            margin-top: 15px;
         }
 
-        #bookmarks-list-container li {
-            padding: 8px;
-            border-bottom: 1px solid #eee;
+        .bookmark-card-item {
+            background-color: #f9f9f9;
+            border: 1px solid #eee;
+            border-radius: 15px;
+            padding: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer; /* 讓它看起來可點擊 */
+            transition: background-color 0.2s ease;
         }
+
+        .bookmark-card-item:hover {
+            background-color: #f0f0f0;
+        }
+
+        .bookmark-cover-image {
+            width: 80px;
+            height: 60px;
+            background-color: #e9ecef;
+            border-radius: 8px;
+            flex-shrink: 0;
+            object-fit: cover;
+        }
+
+        .bookmark-text-info {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            gap: 5px;
+        }
+
+        .bookmark-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .bookmark-name {
+            font-weight: bold;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .bookmark-price-range {
+            color: #1bad47;
+            font-weight: bold;
+        }
+        
+        .bookmark-city {
+             font-weight: normal;
+        }
+        
+        .remove-bookmark-btn {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 5px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            align-self: flex-end; /* 靠右下角對齊 */
+        }
+        
+        .remove-bookmark-btn:hover {
+            background-color: #c0392b;
+        }
+        
+        #bookmarks-list-container li {
+            padding: 0; /* 重設為 0，讓 .bookmark-card-item 的 padding 生效 */
+            border-bottom: none;
+        }
+        
 
         .css-icon {
             position: relative;

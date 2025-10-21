@@ -315,7 +315,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
     // 新增的移除收藏函式
-    function handleRemoveBookmark(userId, rentId) {
+    function handleRemoveBookmark(userId, rentId) { 
         // 假設移除收藏的 API 也是 /Users/bookmarks，但使用 DELETE 方法
         const requestData = { userID: userId, ID: rentId };
         fetch(`${baseUrl}/Users/bookmarks`, {
@@ -603,6 +603,12 @@ document.addEventListener("DOMContentLoaded", function () {
     lightboxImagePrevBtn.addEventListener('click', prevImage);
     lightboxRoomNextBtn.addEventListener('click', nextRoom);
     lightboxRoomPrevBtn.addEventListener('click', prevRoom);
+
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeLightbox();
+        }
+    });
 
     // 房間圖片放大-點擊燈箱背景時關閉燈箱
     lightboxOverlay.addEventListener('click', function(event) {

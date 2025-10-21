@@ -571,12 +571,14 @@
             flex-direction: column;
             align-items: center;
             gap: 15px;
+            pointer-events: none;
         }
 
         #lightbox-image-container {
             position: relative;
             display: flex;
             align-items: center;
+            pointer-events: auto;
         }
 
         #lightbox-image {
@@ -613,6 +615,7 @@
             align-items: flex-start;      /* 讓所有子元素頂部對齊 */
             width: 95vw;                  /* 限制總寬度為螢幕的 95% */
             max-height: 70vh;
+            pointer-events: none;   
         }
         #lightbox-room-description,
         #lightbox-description-placeholder {
@@ -620,6 +623,7 @@
             flex-shrink: 0;     /* 關鍵：防止被壓縮 */
             box-sizing: border-box;
             visibility: hidden; /* 預設都隱藏 */
+            pointer-events: auto;
         }
         #lightbox-room-description {
             background-color: black;

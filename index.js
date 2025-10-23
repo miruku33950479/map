@@ -20,6 +20,10 @@ document.addEventListener("DOMContentLoaded", function () {
     let currentRoomIndex = 0;
     let currentImageIndex = 0;
     let currentPropertyData = null; // 儲存當前側邊欄顯示的物件資料
+    
+    
+    let allMapProperties = []; // 儲存所有地圖上的房源資料
+    
 
     // 原始的靜態測試物件
     const sunshineApartmentData = {
@@ -63,29 +67,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function formatPriceRange(rangeString) {
         if (!rangeString) return '未提供';
-
-        // 移除字串中所有的逗號
         const cleanedString = String(rangeString).replace(/,/g, '');
-        
-        // 使用波浪號 ~ 來分割字串
         const parts = cleanedString.split('~');
-
         if (parts.length === 2) {
             const start = parseInt(parts[0], 10);
             const end = parseInt(parts[1], 10);
             if (!isNaN(start) && !isNaN(end)) {
-                // 格式化後用 ~ 組合回傳
                 return `${start.toLocaleString()}~${end.toLocaleString()}`;
             }
         }
-
-        // 處理單一價格的情況
         const singleNum = parseInt(cleanedString, 10);
         if (!isNaN(singleNum)) {
             return singleNum.toLocaleString();
         }
-
-        // 如果格式不符預期，直接回傳原始字串
         return rangeString;
     }
 
@@ -96,19 +90,15 @@ document.addEventListener("DOMContentLoaded", function () {
     const bookmarkButton = document.getElementById('bookmark-button');
     if (bookmarkButton) {
         bookmarkButton.addEventListener('click', function() {
-            // 檢查是否登入
             if (!currentUserData) {
                 alert('請先登入才能收藏！');
-                showLoginModal(); // 顯示登入視窗
+                showLoginModal();
                 return;
             }
-            // 檢查是否有點開租屋物件
             if (!currentPropertyData || currentPropertyData.type !== 'rent') {
                 alert('請先選取一個租屋物件！');
                 return;
             }
-            
-            // 呼叫收藏函式
             handleBookmarkClick(currentUserData.userID, currentPropertyData.id);
         });
     }
@@ -134,18 +124,15 @@ document.addEventListener("DOMContentLoaded", function () {
         if (allPropertyPosts.length === 0 || !allPropertyPosts[currentRoomIndex]) return;
         const currentRoom = allPropertyPosts[currentRoomIndex];
         const currentImages = currentRoom.imageResources || [];
-        /*房間描述文字*/
         const roomDescriptionCard = document.getElementById('lightbox-room-description');
         const placeholder = document.getElementById('lightbox-description-placeholder');
 
         if (roomDescriptionCard && placeholder) {
             if (currentRoom.lightboxDescription) {
                 roomDescriptionCard.textContent = currentRoom.lightboxDescription;
-                // 當有文字時，讓卡片和佔位元素都「可見」
                 roomDescriptionCard.style.visibility = 'visible';
                 placeholder.style.visibility = 'visible';
             } else {
-                // 當沒有文字時，讓它們都「隱藏」
                 roomDescriptionCard.style.visibility = 'hidden';
                 placeholder.style.visibility = 'hidden';
             }
@@ -222,7 +209,6 @@ document.addEventListener("DOMContentLoaded", function () {
         currentUserData = userData;
         loginButton.innerText = '登出';
         bookmarksListButton.style.display = 'block';
-        // 如果側邊欄是開啟的，更新收藏按鈕狀態
         if (!sidebar.classList.contains('closed') && currentPropertyData && currentPropertyData.type === 'rent') {
              const btn = document.getElementById('bookmark-button');
              if(btn) btn.style.display = 'block';
@@ -234,7 +220,6 @@ document.addEventListener("DOMContentLoaded", function () {
         localStorage.removeItem('userData');
         loginButton.innerText = '登入';
         bookmarksListButton.style.display = 'none';
-        // 如果側邊欄是開啟的，隱藏收藏按鈕
         if (!sidebar.classList.contains('closed')) {
              const btn = document.getElementById('bookmark-button');
              if(btn) btn.style.display = 'none';
@@ -243,11 +228,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function handleBookmarkClick(userId, rentId) {
         console.log('--- 收藏按鈕被點擊 ---');
-        // 修正：使用 'rent' 和 rentId
         const propertyType = 'rent'; 
         console.log(`嘗試新增收藏: UserID: ${userId}, Type: ${propertyType}, ID: ${rentId}`);
         
-        // 修正：檢查 rentId
         if (!userId || !propertyType || !rentId) {
             alert('請先登入，或房源資料不完整。');
             return;
@@ -278,6 +261,7 @@ document.addEventListener("DOMContentLoaded", function () {
         bookmarksPanel.classList.remove('open');
     }
 
+    
     function showBookmarksPanel() {
         if (!currentUserData) {
             alert('請先登入！');
@@ -286,8 +270,6 @@ document.addEventListener("DOMContentLoaded", function () {
         bookmarksPanel.classList.add('open');
         bookmarksListContainer.innerHTML = '<p>載入中...</p>';
 
-        // 預設圖片路徑 (與 openSidebar 邏輯一致)
-        const defaultRoomImages = ['images/Room1.jpg', 'images/Room2.jpg', 'images/Room3.jpg'];
         const defaultCoverImage = 'images/DefaultHotel.jpg';
 
         fetch(`${baseUrl}/Users/${currentUserData.userID}/bookmarks`, {
@@ -296,25 +278,19 @@ document.addEventListener("DOMContentLoaded", function () {
         }).then(response => response.ok ? response.json() : Promise.reject(response))
           .then(data => {
             const bookmarkedRentals = data.bookmarks.Rent;
-            bookmarksListContainer.innerHTML = ''; // 清空載入中提示
+            bookmarksListContainer.innerHTML = ''; 
 
             if (!bookmarkedRentals || bookmarkedRentals.length === 0) {
                 bookmarksListContainer.innerHTML = '<p>您尚未收藏任何房源。</p>';
                 return;
             }
 
-            // 使用與側邊欄列表相似的結構來呈現卡片
             const ul = document.createElement('ul');
-            ul.classList.add('bookmarks-card-list'); // 新增一個類別以便CSS樣式化
+            ul.classList.add('bookmarks-card-list');
 
             bookmarkedRentals.forEach((property, index) => {
                 const li = document.createElement('li');
-                li.classList.add('bookmark-card-item'); // 新增一個類別
-                li.dataset.propertyId = property.id; // 可用於後續點擊操作
-
-                // 判斷房源狀態（若API回傳的收藏資料中有此資訊）
-                // 這裡假設收藏列表只會顯示房源名稱和基本資訊，且不一定有詳細的 posts 資訊
-                // 如果 posts 資訊不完整，就只顯示房源的 coverImage 和名稱
+                li.classList.add('bookmark-card-item'); 
                 
                 let coverImageUrl = property.coverImage;
                 if (coverImageUrl) {
@@ -325,7 +301,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     coverImageUrl = defaultCoverImage;
                 }
                 
-                // 建立卡片內容
                 const cardHtml = `
                     <img src="${coverImageUrl}" class="bookmark-cover-image" onerror="this.src='${defaultCoverImage}';" alt="${property.name}">
                     <div class="bookmark-text-info">
@@ -339,17 +314,51 @@ document.addEventListener("DOMContentLoaded", function () {
                 `;
 
                 li.innerHTML = cardHtml;
+
+                
+                li.addEventListener('click', () => {
+                    const propertyId = property.id;
+                    
+                    // 從 allMapProperties 中尋找完整的房源資料
+                    const fullPropertyData = allMapProperties.find(p => p.id === propertyId);
+
+                    if (fullPropertyData && fullPropertyData.coordinates) {
+                        // 找到了，移動地圖並開啟側邊欄
+                        map.flyTo([fullPropertyData.coordinates.latitude, fullPropertyData.coordinates.longitude], 17, {
+                            animate: true,
+                            duration: 1.0 // 飛行時間 1 秒
+                        });
+                        openSidebar(fullPropertyData);
+                        hideBookmarksPanel(); // 關閉收藏面板
+                    } else {
+                        // 如果 'allMapProperties' 中沒有 (可能地圖還沒滑到那)
+                        // 我們嘗試使用從 bookmark API 拿到的座標 (如果有的話)
+                        if (property.coordinates && property.coordinates.latitude) {
+                             map.flyTo([property.coordinates.latitude, property.coordinates.longitude], 17, {
+                                animate: true,
+                                duration: 1.0
+                            });
+                             // 警告：此 'property' 物件可能是不完整的 (缺少 posts)
+                             // 所以我們只移動地圖，並提示使用者
+                             alert('已將您移動到房源位置，但找不到完整的房源詳細資料。\n請嘗試點擊地圖上的「重新整理」按鈕後，再點擊地圖標記。');
+                             hideBookmarksPanel();
+                        } else {
+                            // 真的找不到座標
+                            alert('在地圖上找不到此房源的座標或詳細資料。\n請嘗試移動地圖到房源所在區域並點擊「重新整理」按鈕後，再試一次。');
+                        }
+                    }
+                });
+                
+
                 ul.appendChild(li);
             });
             bookmarksListContainer.appendChild(ul);
             
-            // 替每個「移除」按鈕添加事件監聽器
             ul.querySelectorAll('.remove-bookmark-btn').forEach(button => {
                 button.addEventListener('click', function(e) {
-                    e.stopPropagation(); // 避免觸發可能存在的卡片點擊事件
+                    e.stopPropagation(); // 關鍵：防止觸發 li 的點擊事件
                     const rentId = this.dataset.rentId;
                     if (confirm('您確定要從收藏中移除此項目嗎？')) {
-                        // 呼叫新的移除收藏函式（您需要實作此 API 呼叫）
                         handleRemoveBookmark(currentUserData.userID, rentId);
                     }
                 });
@@ -361,61 +370,48 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
     
-    // ----- vvvvv 這裡是修改後的函式 vvvvv -----
+
     function handleRemoveBookmark(userId, rentId) { 
         console.log(`嘗試移除收藏: UserID: ${userId}, RentID: ${rentId}`);
-
-        // 修正：根據 API 文件，URL 應包含 userID 和 rentId
         const deleteUrl = `${baseUrl}/Users/${userId}/bookmarks/${rentId}`;
 
         fetch(deleteUrl, {
-            method: 'DELETE' // 方法正確
-            // 修正：DELETE 請求根據您的 API 文件不需要 body 和 Content-Type
+            method: 'DELETE'
         }).then(response => {
-            if (response.ok) return response.json(); // 200 OK
-            
-            // 可以在此處加入更詳細的錯誤日誌
+            if (response.ok) return response.json(); 
             console.error('移除收藏 API 回應錯誤:', response.status, response.statusText);
             throw new Error('移除收藏失敗，請稍後再試。');
         }).then(data => {
             alert('移除收藏成功！');
-            // 移除成功後，重新載入收藏清單
             showBookmarksPanel(); 
         }).catch(error => {
             console.error('移除收藏時發生錯誤:', error);
             alert(error.message);
         });
     }
-    // ----- ^^^^^ 這裡是修改後的函式 ^^^^^ -----
     
     function displayMarkers(markerData) {
-    rentMarkers.clearLayers();
-    if (markerData && markerData.length > 0) {
-        markerData.forEach(property => {
-            if (property.coordinates) {
-                // 如果 API 沒有提供 ringColor，就使用預設的藍色
-                const iconColor = property.ringColor || '#3498db';
-
-                // 為每個 marker 動態創建一個帶有顏色的 icon
-                const dynamicIcon = L.divIcon({
-                    className: 'css-icon',
-                    html: `<div style="background-color: ${iconColor};"></div>`,
-                    iconSize: [26, 26],
-                    iconAnchor: [13, 26]
-                });
-
-                const tooltipContent = `<b>${property.name}</b><br>租金範圍: ${formatPriceRange(property.rentPriceRange)}`;
-                
-                // 在創建 marker 時傳入動態生成的 icon
-                const marker = L.marker([property.coordinates.latitude, property.coordinates.longitude], { icon: dynamicIcon })
-                    .addTo(rentMarkers)
-                    .bindTooltip(tooltipContent);
-
-                marker.on('click', () => openSidebar(property));
-            }
-        });
+        rentMarkers.clearLayers();
+        if (markerData && markerData.length > 0) {
+            markerData.forEach(property => {
+                if (property.coordinates) {
+                    const iconColor = property.ringColor || '#3498db';
+                    const dynamicIcon = L.divIcon({
+                        className: 'css-icon',
+                        html: `<div style="background-color: ${iconColor};"></div>`,
+                        iconSize: [26, 26],
+                        iconAnchor: [13, 26]
+                    });
+                    const tooltipContent = `<b>${property.name}</b><br>租金範圍: ${formatPriceRange(property.rentPriceRange)}`;
+                    const marker = L.marker([property.coordinates.latitude, property.coordinates.longitude], { icon: dynamicIcon })
+                        .addTo(rentMarkers)
+                        .bindTooltip(tooltipContent);
+                    marker.on('click', () => openSidebar(property));
+                }
+            });
+        }
     }
-}
+    
     
     function loadRentalsInView() {
         const bounds = map.getBounds();
@@ -428,18 +424,19 @@ document.addEventListener("DOMContentLoaded", function () {
         fetch(url, { headers: { 'Accept': 'application/json' } })
             .then(response => response.ok ? response.json() : Promise.reject(response))
             .then(data => {
-                // 將 API 回傳的資料與靜態測試資料合併
                 const apiData = data.map(item => ({ ...item, type: 'rent' }));
                 const combinedData = [...apiData, sunshineApartmentData, sunshineApartmentData2];
+                allMapProperties = combinedData; // 更新全域房源資料
                 displayMarkers(combinedData);
             })
             .catch(error => {
                 console.error('載入房源資料時發生錯誤:', error);
                 console.log('API 請求失敗，顯示預設測試資料點...');
-                // API 失敗時，一樣顯示測試資料
+                allMapProperties = [sunshineApartmentData, sunshineApartmentData2]; // API 失敗時也更新
                 displayMarkers([sunshineApartmentData, sunshineApartmentData2]);
             });
     }
+    
 
     function loadRestaurantsInView() {
         const bounds = map.getBounds();
@@ -477,9 +474,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const sidebarImgPlaceholder = document.getElementById('sidebar-img-placeholder');
         const priceElement = document.getElementById('sidebar-price');
         const postsList = document.getElementById('sidebar-posts');
-        
         const bookmarkButton = document.getElementById('bookmark-button'); 
-        
         const titleElement = document.getElementById('sidebar-title');
         const contentElement = document.getElementById('sidebar-content');
         const cityElement = document.getElementById('sidebar-city');
@@ -496,9 +491,7 @@ document.addEventListener("DOMContentLoaded", function () {
             sidebarImg.onerror = () => { sidebarImg.src = 'images/DefaultRestaurant.jpg'; };
             if (priceElement) priceElement.style.display = 'none';
             if (postsList) postsList.style.display = 'none';
-            
             if (bookmarkButton) bookmarkButton.style.display = 'none';
-            
         } else {
             let imageUrl = 'images/DefaultHotel.jpg';
             if (property.coverImage) {
@@ -564,7 +557,7 @@ document.addEventListener("DOMContentLoaded", function () {
             
             if (bookmarkButton) {
                 if (currentUserData) {
-                    bookmarkButton.style.display = 'block'; // 'block' 或 'flex' 都可以
+                    bookmarkButton.style.display = 'block';
                 } else {
                     bookmarkButton.style.display = 'none';
                 }
@@ -606,6 +599,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // --- 事件監聽與初始設定 ---
     displayMarkers([sunshineApartmentData, sunshineApartmentData2]); // 初始顯示測試資料
+    allMapProperties = [sunshineApartmentData, sunshineApartmentData2]; 
     loadRestaurantsInView(); // 也載入餐廳
 
     map.on('moveend', function() {
@@ -671,22 +665,13 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // 房間圖片放大-點擊燈箱背景時關閉燈箱
     lightboxOverlay.addEventListener('click', function(event) {
-    // 確保點擊的是背景本身，而不是圖片、按鈕等子元素
         if (event.target === lightboxOverlay) {
-            // 取得滑鼠點擊處的 X 座標
             const clickX = event.clientX;
-            
-            // 取得整個視窗的寬度
             const windowWidth = window.innerWidth;
-
-            // 判斷點擊位置是在左半邊還是右半邊
             if (clickX < windowWidth / 2) {
-                // 點擊了左半邊，切換到上一張圖
                 prevImage();
             } else {
-                // 點擊了右半邊，切換到下一張圖
                 nextImage();
             }
         }

@@ -20,10 +20,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let currentRoomIndex = 0;
     let currentImageIndex = 0;
     let currentPropertyData = null; // 儲存當前側邊欄顯示的物件資料
-    
-    
     let allMapProperties = []; // 儲存所有地圖上的房源資料
-    
 
     // 原始的靜態測試物件
     const sunshineApartmentData = {
@@ -261,7 +258,6 @@ document.addEventListener("DOMContentLoaded", function () {
         bookmarksPanel.classList.remove('open');
     }
 
-    
     function showBookmarksPanel() {
         if (!currentUserData) {
             alert('請先登入！');
@@ -315,40 +311,54 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 li.innerHTML = cardHtml;
 
-                
+                // --- 綁定卡片點擊事件 ---
                 li.addEventListener('click', () => {
                     const propertyId = property.id;
-                    
-                    // 從 allMapProperties 中尋找完整的房源資料
                     const fullPropertyData = allMapProperties.find(p => p.id === propertyId);
 
                     if (fullPropertyData && fullPropertyData.coordinates) {
-                        // 找到了，移動地圖並開啟側邊欄
+                        // 情況 1：資料已存在，直接飛過去並開啟
                         map.flyTo([fullPropertyData.coordinates.latitude, fullPropertyData.coordinates.longitude], 17, {
                             animate: true,
-                            duration: 1.0 // 飛行時間 1 秒
+                            duration: 1.0
                         });
                         openSidebar(fullPropertyData);
-                        hideBookmarksPanel(); // 關閉收藏面板
-                    } else {
-                        // 如果 'allMapProperties' 中沒有 (可能地圖還沒滑到那)
-                        // 我們嘗試使用從 bookmark API 拿到的座標 (如果有的話)
-                        if (property.coordinates && property.coordinates.latitude) {
-                             map.flyTo([property.coordinates.latitude, property.coordinates.longitude], 17, {
-                                animate: true,
-                                duration: 1.0
+                        hideBookmarksPanel();
+                    } else if (property.coordinates && property.coordinates.latitude) {
+                        // 情況 2：資料不存在，執行「飛-刷-開」流程
+                        console.log(`找不到 ${propertyId} 的本地資料，開始自動刷新...`);
+                        hideBookmarksPanel(); // 先關閉面板
+
+                        // 飛到目的地
+                        map.flyTo([property.coordinates.latitude, property.coordinates.longitude], 17, {
+                            animate: true,
+                            duration: 1.0
+                        });
+
+                        // 監聽「飛行結束」事件
+                        map.once('moveend', function() {
+                            console.log('地圖移動完畢，開始自動刷新...');
+                            
+                            // 呼叫 loadRentalsInView 並等待它完成
+                            loadRentalsInView().then(updatedProperties => {
+                                // 刷新完畢後，再次尋找資料
+                                const newFullPropertyData = allMapProperties.find(p => p.id === propertyId);
+                                
+                                if (newFullPropertyData) {
+                                    console.log('刷新後找到了資料，開啟側邊欄...');
+                                    openSidebar(newFullPropertyData);
+                                } else {
+                                    console.log('刷新後還是找不到資料...');
+                                    alert('已刷新資料，但在地圖上仍找不到此房源的詳細資訊。');
+                                }
                             });
-                             // 警告：此 'property' 物件可能是不完整的 (缺少 posts)
-                             // 所以我們只移動地圖，並提示使用者
-                             alert('已將您移動到房源位置，但找不到完整的房源詳細資料。\n請嘗試點擊地圖上的「重新整理」按鈕後，再點擊地圖標記。');
-                             hideBookmarksPanel();
-                        } else {
-                            // 真的找不到座標
-                            alert('在地圖上找不到此房源的座標或詳細資料。\n請嘗試移動地圖到房源所在區域並點擊「重新整理」按鈕後，再試一次。');
-                        }
+                        });
+                    } else {
+                        // 情況 3：連座標都沒有，無法處理
+                        alert('在地圖上找不到此房源的座標或詳細資料。\n請嘗試移動地圖到房源所在區域並點擊「重新整理」按鈕後，再試一次。');
                     }
                 });
-                
+                // --- 綁定卡片點擊事件結束 ---
 
                 ul.appendChild(li);
             });
@@ -356,7 +366,7 @@ document.addEventListener("DOMContentLoaded", function () {
             
             ul.querySelectorAll('.remove-bookmark-btn').forEach(button => {
                 button.addEventListener('click', function(e) {
-                    e.stopPropagation(); // 關鍵：防止觸發 li 的點擊事件
+                    e.stopPropagation(); 
                     const rentId = this.dataset.rentId;
                     if (confirm('您確定要從收藏中移除此項目嗎？')) {
                         handleRemoveBookmark(currentUserData.userID, rentId);
@@ -369,7 +379,6 @@ document.addEventListener("DOMContentLoaded", function () {
             bookmarksListContainer.innerHTML = '<p>載入失敗，請稍後再試。</p>';
         });
     }
-    
 
     function handleRemoveBookmark(userId, rentId) { 
         console.log(`嘗試移除收藏: UserID: ${userId}, RentID: ${rentId}`);
@@ -391,27 +400,26 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     
     function displayMarkers(markerData) {
-        rentMarkers.clearLayers();
-        if (markerData && markerData.length > 0) {
-            markerData.forEach(property => {
-                if (property.coordinates) {
-                    const iconColor = property.ringColor || '#3498db';
-                    const dynamicIcon = L.divIcon({
-                        className: 'css-icon',
-                        html: `<div style="background-color: ${iconColor};"></div>`,
-                        iconSize: [26, 26],
-                        iconAnchor: [13, 26]
-                    });
-                    const tooltipContent = `<b>${property.name}</b><br>租金範圍: ${formatPriceRange(property.rentPriceRange)}`;
-                    const marker = L.marker([property.coordinates.latitude, property.coordinates.longitude], { icon: dynamicIcon })
-                        .addTo(rentMarkers)
-                        .bindTooltip(tooltipContent);
-                    marker.on('click', () => openSidebar(property));
-                }
-            });
-        }
+    rentMarkers.clearLayers();
+    if (markerData && markerData.length > 0) {
+        markerData.forEach(property => {
+            if (property.coordinates) {
+                const iconColor = property.ringColor || '#3498db';
+                const dynamicIcon = L.divIcon({
+                    className: 'css-icon',
+                    html: `<div style="background-color: ${iconColor};"></div>`,
+                    iconSize: [26, 26],
+                    iconAnchor: [13, 26]
+                });
+                const tooltipContent = `<b>${property.name}</b><br>租金範圍: ${formatPriceRange(property.rentPriceRange)}`;
+                const marker = L.marker([property.coordinates.latitude, property.coordinates.longitude], { icon: dynamicIcon })
+                    .addTo(rentMarkers)
+                    .bindTooltip(tooltipContent);
+                marker.on('click', () => openSidebar(property));
+            }
+        });
     }
-    
+}
     
     function loadRentalsInView() {
         const bounds = map.getBounds();
@@ -421,22 +429,25 @@ document.addEventListener("DOMContentLoaded", function () {
         const url = new URL(rentRegionMapUrl);
         url.search = new URLSearchParams({ latitude: center.lat, longitude: center.lng, latitudeDelta, longitudeDelta }).toString();
         
-        fetch(url, { headers: { 'Accept': 'application/json' } })
+        return fetch(url, { headers: { 'Accept': 'application/json' } })
             .then(response => response.ok ? response.json() : Promise.reject(response))
             .then(data => {
                 const apiData = data.map(item => ({ ...item, type: 'rent' }));
                 const combinedData = [...apiData, sunshineApartmentData, sunshineApartmentData2];
-                allMapProperties = combinedData; // 更新全域房源資料
+                allMapProperties = combinedData; 
                 displayMarkers(combinedData);
+                return combinedData; 
             })
             .catch(error => {
                 console.error('載入房源資料時發生錯誤:', error);
                 console.log('API 請求失敗，顯示預設測試資料點...');
-                allMapProperties = [sunshineApartmentData, sunshineApartmentData2]; // API 失敗時也更新
-                displayMarkers([sunshineApartmentData, sunshineApartmentData2]);
+                const staticData = [sunshineApartmentData, sunshineApartmentData2];
+                allMapProperties = staticData; 
+                displayMarkers(staticData);
+                return staticData; 
             });
     }
-    
+
 
     function loadRestaurantsInView() {
         const bounds = map.getBounds();
@@ -599,7 +610,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // --- 事件監聽與初始設定 ---
     displayMarkers([sunshineApartmentData, sunshineApartmentData2]); // 初始顯示測試資料
-    allMapProperties = [sunshineApartmentData, sunshineApartmentData2]; 
+    allMapProperties = [sunshineApartmentData, sunshineApartmentData2]; // <-- 初始化全域變數
     loadRestaurantsInView(); // 也載入餐廳
 
     map.on('moveend', function() {

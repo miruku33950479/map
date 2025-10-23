@@ -212,6 +212,12 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function handleBookmarkClick(userId, rentId) {
+        console.log('--- 收藏按鈕被點擊 ---');
+        console.log(`嘗試新增收藏: UserID: ${userId}, Type: ${propertyType}, ID: ${propertyId}`);
+        if (!userId || !propertyType || !propertyId) {
+        alert('請先登入，或房源資料不完整。');
+        return;
+        }
         const requestData = { userID: userId, ID: rentId };
         fetch(`${baseUrl}/Users/bookmarks`, {
             method: 'POST',
@@ -223,6 +229,7 @@ document.addEventListener("DOMContentLoaded", function () {
             throw new Error('加入收藏失敗，請稍後再試。');
         }).then(data => {
             alert('加入收藏成功！');
+            console.log('API 回傳成功：已加入收藏');
         }).catch(error => {
             alert(error.message);
         });

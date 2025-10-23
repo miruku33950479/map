@@ -203,7 +203,6 @@
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
         }
 
-        /* ----- vvvvv 美化收藏清單面板 vvvvv ----- */
         #bookmarks-panel {
             position: fixed;
             top: 0;
@@ -219,13 +218,11 @@
             overflow-y: auto;
             box-sizing: border-box;
         }
-        /* ----- ^^^^^ 美化收藏清單面板 ^^^^^ ----- */
 
         #bookmarks-panel.open {
             left: 0;
         }
 
-        /* ----- vvvvv 美化收藏清單標題 vvvvv ----- */
         #bookmarks-panel h2 {
             font-weight: 600;
             color: #333;
@@ -234,7 +231,6 @@
             margin-top: 0;
             margin-bottom: 20px;
         }
-        /* ----- ^^^^^ 美化收藏清單標題 ^^^^^ ----- */
 
         #close-bookmarks-panel-btn {
             position: absolute;
@@ -258,7 +254,7 @@
             padding: 12px; 
             margin-bottom: 10px;
             display: flex;
-            align-items: center; /* 保持垂直置中 */
+            align-items: center; 
             gap: 15px;
             cursor: pointer; 
             transition: background-color 0.2s ease;
@@ -309,7 +305,6 @@
              font-weight: normal;
         }
         
-        /* ----- vvvvv 美化移除按鈕 vvvvv ----- */
         .remove-bookmark-btn {
             background-color: #e74c3c;
             color: white;
@@ -319,11 +314,9 @@
             font-size: 12px;
             cursor: pointer;
             transition: background-color 0.2s ease;
-            /* align-self: flex-end; */ /* 移除這行 */
-            margin-left: 10px; /* 新增：與文字區塊的間距 */
-            flex-shrink: 0; /* 新增：防止按鈕變形 */
+            margin-left: 10px; 
+            flex-shrink: 0; 
         }
-        /* ----- ^^^^^ 美化移除按鈕 ^^^^^ ----- */
         
         .remove-bookmark-btn:hover {
             background-color: #c0392b;
@@ -434,27 +427,39 @@
             margin-top: 15px;
         }
 
-        .contact-item {
+        /* ----- vvvvv 這裡是修改後的聯絡資訊樣式 vvvvv ----- */
+        #sidebar-contact-card {
             background-color: #f9f9f9;
             border: 1px solid #eee;
             border-radius: 15px;
             padding: 15px;
-            margin: 0 0 10px 0;
+            margin: 0; 
+        }
+
+        .contact-item {
+            /* background-color: #f9f9f9; */ /* 移除背景色 */
+            /* border: 1px solid #eee; */ /* 移除邊框 */
+            /* border-radius: 15px; */ /* 移除圓角 */
+            padding: 10px 0; /* 調整垂直 padding */
+            margin: 0; /* 移除 margin */
             font-size: 14px;
             color: #666;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border-bottom: 1px solid #eee; /* 改用底線分隔 */
         }
 
-        .contact-item:last-child {
+        #sidebar-contact-card .contact-item:last-child {
             margin-bottom: 0;
+            border-bottom: none; /* 最後一項不需要底線 */
         }
 
         .contact-item span {
             font-weight: bold;
             color: #333;
         }
+        /* ----- ^^^^^ 這裡是修改後的聯絡資訊樣式 ^^^^^ ----- */
 
         #sidebar-posts {
             list-style-type: none;
@@ -755,11 +760,10 @@
         <ul id="sidebar-posts"></ul>
 
         <div class="contact-section">
-            <p id="sidebar-phone" class="contact-item"></p>
-            <p id="sidebar-line" class="contact-item"></p>
-            <p id="sidebar-mail" class="contact-item"></p>
+             <div id="sidebar-contact-card">
+                 </div>
         </div>
-    </div>
+        </div>
 
     <div id="overlay" class="hidden">
         <div id="auth-modal">

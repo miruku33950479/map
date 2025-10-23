@@ -304,6 +304,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     coverImageUrl = defaultCoverImage;
                 }
                 
+                // --- 修正 cardHtml 結構 ---
                 const cardHtml = `
                     <img src="${coverImageUrl}" class="bookmark-cover-image" onerror="this.src='${defaultCoverImage}';" alt="${property.name}">
                     <div class="bookmark-text-info">
@@ -324,32 +325,17 @@ document.addEventListener("DOMContentLoaded", function () {
                     const fullPropertyData = allMapProperties.find(p => p.id === propertyId);
 
                     if (fullPropertyData && fullPropertyData.coordinates) {
-
-                        map.flyTo([fullPropertyData.coordinates.latitude, fullPropertyData.coordinates.longitude], 17, {
-                            animate: true,
-                            duration: 1.0
-                        });
+                        map.flyTo([fullPropertyData.coordinates.latitude, fullPropertyData.coordinates.longitude], 17, { animate: true, duration: 1.0 });
                         openSidebar(fullPropertyData);
                         hideBookmarksPanel();
                     } else if (property.coordinates && property.coordinates.latitude) {
                         console.log(`找不到 ${propertyId} 的本地資料，開始自動刷新...`);
-                        hideBookmarksPanel(); // 先關閉面板
-
-                        // 飛到目的地
-                        map.flyTo([property.coordinates.latitude, property.coordinates.longitude], 17, {
-                            animate: true,
-                            duration: 1.0
-                        });
-
-                        // 監聽「飛行結束」事件
+                        hideBookmarksPanel(); 
+                        map.flyTo([property.coordinates.latitude, property.coordinates.longitude], 17, { animate: true, duration: 1.0 });
                         map.once('moveend', function() {
                             console.log('地圖移動完畢，開始自動刷新...');
-                            
-                            // 呼叫 loadRentalsInView 並等待它完成
                             loadRentalsInView().then(updatedProperties => {
-                                // 刷新完畢後，再次尋找資料
                                 const newFullPropertyData = allMapProperties.find(p => p.id === propertyId);
-                                
                                 if (newFullPropertyData) {
                                     console.log('刷新後找到了資料，開啟側邊欄...');
                                     openSidebar(newFullPropertyData);
@@ -360,7 +346,6 @@ document.addEventListener("DOMContentLoaded", function () {
                             });
                         });
                     } else {
-
                         alert('在地圖上找不到此房源的座標或詳細資料。\n請嘗試移動地圖到房源所在區域並點擊「重新整理」按鈕後，再試一次。');
                     }
                 });
@@ -482,6 +467,7 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     }
 
+    // ----- vvvvv 這裡是修改後的 openSidebar vvvvv -----
     function openSidebar(property) {
         currentPropertyData = property; // 儲存當前物件資料
         closeLightbox();
@@ -495,6 +481,11 @@ document.addEventListener("DOMContentLoaded", function () {
         const contentElement = document.getElementById('sidebar-content');
         const cityElement = document.getElementById('sidebar-city');
         
+        // --- 新增：獲取聯絡資訊區塊 ---
+        const contactSection = document.querySelector('.contact-section');
+        const contactCard = document.getElementById('sidebar-contact-card');
+        // --- 新增結束 ---
+
         sidebarImg.style.display = 'none';
         sidebarImgPlaceholder.style.display = 'flex';
 
@@ -508,7 +499,11 @@ document.addEventListener("DOMContentLoaded", function () {
             if (priceElement) priceElement.style.display = 'none';
             if (postsList) postsList.style.display = 'none';
             if (bookmarkButton) bookmarkButton.style.display = 'none';
-        } else {
+            
+            // --- 餐廳沒有聯絡資訊，隱藏區塊 ---
+            if(contactSection) contactSection.style.display = 'none';
+            
+        } else { // 這裡是 rent 的情況
             let imageUrl = 'images/DefaultHotel.jpg';
             if (property.coverImage) {
                 if (property.coverImage.startsWith('/')) {
@@ -578,6 +573,32 @@ document.addEventListener("DOMContentLoaded", function () {
                     bookmarkButton.style.display = 'none';
                 }
             }
+
+            // --- 開始建立聯絡資訊卡片 ---
+            let contactHtml = '';
+            if (property.urlPhone) {
+                const displayPhone = property.urlPhone.replace('tel:', '').replace('+886', '0');
+                contactHtml += `<div class="contact-item">電話：<span>${displayPhone}</span></div>`;
+            }
+            if (property.urlLine) {
+                const displayLine = property.urlLine.split('/').pop();
+                contactHtml += `<div class="contact-item">Line ID：<span>${displayLine}</span></div>`;
+            }
+            if (property.urlMail) {
+                const displayMail = property.urlMail.replace('mailto:', '');
+                contactHtml += `<div class="contact-item">電子郵件：<span>${displayMail}</span></div>`;
+            }
+
+            if (contactCard && contactSection) {
+                if (contactHtml) {
+                    contactCard.innerHTML = contactHtml;
+                    contactSection.style.display = 'block'; // 有資訊才顯示區塊
+                } else {
+                    contactCard.innerHTML = ''; // 清空
+                    contactSection.style.display = 'none'; // 沒有資訊就隱藏
+                }
+            }
+            // --- 聯絡資訊卡片建立結束 ---
         }
         sidebarImg.onload = () => {
             sidebarImg.style.display = 'block';
@@ -588,25 +609,17 @@ document.addEventListener("DOMContentLoaded", function () {
         if (cityElement) {
             // cityElement.innerHTML = '<strong>城市:</strong> ' + (property.cityName || '未提供');
         }
+        // --- 移除舊的聯絡資訊更新邏輯 ---
+        /*
         const phoneEl = document.getElementById('sidebar-phone');
         const lineEl = document.getElementById('sidebar-line');
         const mailEl = document.getElementById('sidebar-mail');
-        if (property.urlPhone) {
-            const displayPhone = property.urlPhone.replace('tel:', '').replace('+886', '0');
-            phoneEl.innerHTML = `電話：<span>${displayPhone}</span>`;
-            phoneEl.style.display = 'flex';
-        } else { phoneEl.style.display = 'none'; }
-        if (property.urlLine) {
-            const displayLine = property.urlLine.split('/').pop();
-            lineEl.innerHTML = `Line ID：<span>${displayLine}</span>`;
-            lineEl.style.display = 'flex';
-        } else { lineEl.style.display = 'none'; }
-        if (property.urlMail) {
-            const displayMail = property.urlMail.replace('mailto:', '');
-            mailEl.innerHTML = `電子郵件：<span>${displayMail}</span>`;
-            mailEl.style.display = 'flex';
-        } else { mailEl.style.display = 'none'; }
+        if (property.urlPhone) { ... } else { ... }
+        if (property.urlLine) { ... } else { ... }
+        if (property.urlMail) { ... } else { ... }
+        */
     }
+    // ----- ^^^^^ 這裡是修改後的 openSidebar ^^^^^ -----
 
     function closeSidebar() {
         sidebar.classList.add('closed');

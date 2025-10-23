@@ -223,6 +223,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    // ----- vvvvv 這裡是修改後的 handleBookmarkClick vvvvv -----
     function handleBookmarkClick(userId, rentId) {
         console.log('--- 收藏按鈕被點擊 ---');
         const propertyType = 'rent'; 
@@ -240,22 +241,47 @@ document.addEventListener("DOMContentLoaded", function () {
             body: JSON.stringify(requestData)
         }).then(response => {
             if (response.ok) return response.json();
-            if (response.status === 409) throw new Error('此項目已在您的收藏清單中。');
+            if (response.status === 409) {
+                 // --- 如果已收藏，直接更新按鈕狀態 ---
+                const bookmarkButton = document.getElementById('bookmark-button');
+                if (bookmarkButton) {
+                    bookmarkButton.innerText = '已加入收藏';
+                    bookmarkButton.disabled = true;
+                    bookmarkButton.style.backgroundColor = '#6c757d'; // 灰色
+                }
+                 // --- 更新結束 ---
+                throw new Error('此項目已在您的收藏清單中。');
+            }
             throw new Error('加入收藏失敗，請稍後再試。');
         }).then(data => {
             alert('加入收藏成功！');
             console.log('API 回傳成功：已加入收藏');
             
+            // --- 修改按鈕文字和狀態 ---
+            const bookmarkButton = document.getElementById('bookmark-button');
+            if (bookmarkButton) {
+                bookmarkButton.innerText = '已加入收藏';
+                bookmarkButton.disabled = true;
+                bookmarkButton.style.backgroundColor = '#6c757d'; // 灰色
+            }
+            // --- 修改結束 ---
+            
+            // --- 自動更新收藏清單 ---
             const bookmarksPanel = document.getElementById('bookmarks-panel');
             if (bookmarksPanel && bookmarksPanel.classList.contains('open')) {
                 console.log('收藏清單已開啟，正在自動刷新...');
                 showBookmarksPanel();
             }
+            // --- 自動更新結束 ---
 
         }).catch(error => {
-            alert(error.message);
+            // 只在不是「已收藏」錯誤時才顯示 alert
+            if (error.message !== '此項目已在您的收藏清單中。') {
+                alert(error.message);
+            }
         });
     }
+    // ----- ^^^^^ 這裡是修改後的 handleBookmarkClick ^^^^^ -----
 
     const bookmarksPanel = document.getElementById('bookmarks-panel');
     const bookmarksListContainer = document.getElementById('bookmarks-list-container');
@@ -304,7 +330,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     coverImageUrl = defaultCoverImage;
                 }
                 
-                // --- 修正 cardHtml 結構 ---
                 const cardHtml = `
                     <img src="${coverImageUrl}" class="bookmark-cover-image" onerror="this.src='${defaultCoverImage}';" alt="${property.name}">
                     <div class="bookmark-text-info">
@@ -427,7 +452,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const combinedData = [...apiData, sunshineApartmentData, sunshineApartmentData2];
                 allMapProperties = combinedData; 
                 displayMarkers(combinedData);
-                return combinedData; // 回傳資料，讓 .then() 可以接收
+                return combinedData; 
             })
             .catch(error => {
                 console.error('載入房源資料時發生錯誤:', error);
@@ -435,7 +460,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const staticData = [sunshineApartmentData, sunshineApartmentData2];
                 allMapProperties = staticData; 
                 displayMarkers(staticData);
-                return staticData; // 失敗時也回傳資料
+                return staticData; 
             });
     }
 
@@ -480,11 +505,8 @@ document.addEventListener("DOMContentLoaded", function () {
         const titleElement = document.getElementById('sidebar-title');
         const contentElement = document.getElementById('sidebar-content');
         const cityElement = document.getElementById('sidebar-city');
-        
-        // --- 新增：獲取聯絡資訊區塊 ---
         const contactSection = document.querySelector('.contact-section');
         const contactCard = document.getElementById('sidebar-contact-card');
-        // --- 新增結束 ---
 
         sidebarImg.style.display = 'none';
         sidebarImgPlaceholder.style.display = 'flex';
@@ -499,8 +521,6 @@ document.addEventListener("DOMContentLoaded", function () {
             if (priceElement) priceElement.style.display = 'none';
             if (postsList) postsList.style.display = 'none';
             if (bookmarkButton) bookmarkButton.style.display = 'none';
-            
-            // --- 餐廳沒有聯絡資訊，隱藏區塊 ---
             if(contactSection) contactSection.style.display = 'none';
             
         } else { // 這裡是 rent 的情況
@@ -566,13 +586,22 @@ document.addEventListener("DOMContentLoaded", function () {
                 postsList.appendChild(li);
             }
             
+            // --- 重設收藏按鈕狀態 ---
             if (bookmarkButton) {
                 if (currentUserData) {
+                    bookmarkButton.innerText = '加入收藏'; // 重設文字
+                    bookmarkButton.disabled = false;    // 啟用按鈕
+                    bookmarkButton.style.backgroundColor = '#007bff'; // 恢復藍色
                     bookmarkButton.style.display = 'block';
+
+                     // 這裡可以選擇性加入：檢查此房源是否已在收藏清單中
+                     // 如果需要，可以在登入後或打開面板時將收藏ID存儲在一個Set中以便快速查找
+                     // if (userBookmarksSet.has(property.id)) { ... }
                 } else {
                     bookmarkButton.style.display = 'none';
                 }
             }
+            // --- 重設結束 ---
 
             // --- 開始建立聯絡資訊卡片 ---
             let contactHtml = '';
@@ -592,10 +621,10 @@ document.addEventListener("DOMContentLoaded", function () {
             if (contactCard && contactSection) {
                 if (contactHtml) {
                     contactCard.innerHTML = contactHtml;
-                    contactSection.style.display = 'block'; // 有資訊才顯示區塊
+                    contactSection.style.display = 'block'; 
                 } else {
-                    contactCard.innerHTML = ''; // 清空
-                    contactSection.style.display = 'none'; // 沒有資訊就隱藏
+                    contactCard.innerHTML = ''; 
+                    contactSection.style.display = 'none'; 
                 }
             }
             // --- 聯絡資訊卡片建立結束 ---
@@ -609,15 +638,6 @@ document.addEventListener("DOMContentLoaded", function () {
         if (cityElement) {
             // cityElement.innerHTML = '<strong>城市:</strong> ' + (property.cityName || '未提供');
         }
-        // --- 移除舊的聯絡資訊更新邏輯 ---
-        /*
-        const phoneEl = document.getElementById('sidebar-phone');
-        const lineEl = document.getElementById('sidebar-line');
-        const mailEl = document.getElementById('sidebar-mail');
-        if (property.urlPhone) { ... } else { ... }
-        if (property.urlLine) { ... } else { ... }
-        if (property.urlMail) { ... } else { ... }
-        */
     }
     // ----- ^^^^^ 這裡是修改後的 openSidebar ^^^^^ -----
 
@@ -627,12 +647,11 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // --- 事件監聽與初始設定 ---
-    displayMarkers([sunshineApartmentData, sunshineApartmentData2]); // 初始顯示測試資料
-    allMapProperties = [sunshineApartmentData, sunshineApartmentData2]; // <-- 初始化全域變數
-    loadRestaurantsInView(); // 也載入餐廳
+    displayMarkers([sunshineApartmentData, sunshineApartmentData2]); 
+    allMapProperties = [sunshineApartmentData, sunshineApartmentData2]; 
+    loadRestaurantsInView(); 
 
     map.on('moveend', function() {
-        // 當地圖移動停止時，可以選擇是否要自動載入新資料
         // loadRentalsInView(); 
         // loadRestaurantsInView();
     });
@@ -641,11 +660,10 @@ document.addEventListener("DOMContentLoaded", function () {
         navigator.geolocation.getCurrentPosition(
             position => {
                 map.setView([position.coords.latitude, position.coords.longitude], 16);
-                loadRentalsInView(); // 取得位置後再載入真實資料
+                loadRentalsInView(); 
             },
             error => {
                 console.error('獲取使用者位置失敗:', error.message);
-                // 失敗時，測試資料已經顯示了
             }
         );
     } else {

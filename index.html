@@ -238,18 +238,21 @@
             margin-top: 15px;
         }
 
+        /* ----- vvvvv 這裡是修改後的卡片樣式 vvvvv ----- */
         .bookmark-card-item {
-            background-color: #f9f9f9;
+            background-color: #ffffff; /* 改為白色 */
             border: 1px solid #eee;
             border-radius: 15px;
-            padding: 10px;
+            padding: 12px; /* 增加 padding */
             margin-bottom: 10px;
             display: flex;
             align-items: center;
             gap: 15px;
             cursor: pointer; /* 讓它看起來可點擊 */
             transition: background-color 0.2s ease;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1); /* 加上陰影 */
         }
+        /* ----- ^^^^^ 這裡是修改後的卡片樣式 ^^^^^ ----- */
 
         .bookmark-card-item:hover {
             background-color: #f0f0f0;
@@ -271,13 +274,16 @@
             gap: 5px;
         }
 
+        /* ----- vvvvv 這裡是修改後的 meta 樣式 vvvvv ----- */
         .bookmark-meta {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column; /* 改為垂直排列 */
+            align-items: flex-start; /* 靠左對齊 */
+            gap: 4px; /* 增加垂直間距 */
             font-size: 13px;
             color: #666;
         }
+        /* ----- ^^^^^ 這裡是修改後的 meta 樣式 ^^^^^ ----- */
 
         .bookmark-name {
             font-weight: bold;

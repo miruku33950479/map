@@ -431,7 +431,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const titleElement = document.getElementById('sidebar-title');
         const contentElement = document.getElementById('sidebar-content');
         const cityElement = document.getElementById('sidebar-city');
-
+        
         sidebarImg.style.display = 'none';
         sidebarImgPlaceholder.style.display = 'flex';
 

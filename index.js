@@ -223,6 +223,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    // ----- vvvvv 這裡是修改後的 handleBookmarkClick vvvvv -----
     function handleBookmarkClick(userId, rentId) {
         console.log('--- 收藏按鈕被點擊 ---');
         const propertyType = 'rent'; 
@@ -245,10 +246,20 @@ document.addEventListener("DOMContentLoaded", function () {
         }).then(data => {
             alert('加入收藏成功！');
             console.log('API 回傳成功：已加入收藏');
+            
+            // --- 自動更新收藏清單 ---
+            const bookmarksPanel = document.getElementById('bookmarks-panel');
+            if (bookmarksPanel && bookmarksPanel.classList.contains('open')) {
+                console.log('收藏清單已開啟，正在自動刷新...');
+                showBookmarksPanel();
+            }
+            // --- 自動更新結束 ---
+
         }).catch(error => {
             alert(error.message);
         });
     }
+    // ----- ^^^^^ 這裡是修改後的 handleBookmarkClick ^^^^^ -----
 
     const bookmarksPanel = document.getElementById('bookmarks-panel');
     const bookmarksListContainer = document.getElementById('bookmarks-list-container');
@@ -436,7 +447,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const combinedData = [...apiData, sunshineApartmentData, sunshineApartmentData2];
                 allMapProperties = combinedData; 
                 displayMarkers(combinedData);
-                return combinedData; 
+                return combinedData; // 回傳資料，讓 .then() 可以接收
             })
             .catch(error => {
                 console.error('載入房源資料時發生錯誤:', error);
@@ -444,10 +455,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 const staticData = [sunshineApartmentData, sunshineApartmentData2];
                 allMapProperties = staticData; 
                 displayMarkers(staticData);
-                return staticData; 
+                return staticData; // 失敗時也回傳資料
             });
     }
-
 
     function loadRestaurantsInView() {
         const bounds = map.getBounds();

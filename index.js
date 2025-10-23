@@ -92,19 +92,23 @@ document.addEventListener("DOMContentLoaded", function () {
     const loginButton = document.getElementById('login-button');
     const bookmarksListButton = document.getElementById('bookmarks-list-button');
     let currentUserData = null;
-
+    
+    const lightboxRoomNav = document.getElementById('lightbox-room-nav');
+    const lightboxRoomPrevBtn = document.getElementById('lightbox-room-prev');
+    const lightboxRoomNextBtn = document.getElementById('lightbox-room-next');
     const lightboxOverlay = document.getElementById('lightbox-overlay');
     const lightboxImage = document.getElementById('lightbox-image');
     const lightboxCloseBtn = document.getElementById('lightbox-close');
     const lightboxImagePrevBtn = document.getElementById('lightbox-image-prev');
     const lightboxImageNextBtn = document.getElementById('lightbox-image-next');
-    const lightboxRoomPrevBtn = document.getElementById('lightbox-room-prev');
-    const lightboxRoomNextBtn = document.getElementById('lightbox-room-next');
     const lightboxImageCounter = document.getElementById('lightbox-image-counter');
     const lightboxRoomCounter = document.getElementById('lightbox-room-counter');
     const lightboxRoomName = document.getElementById('lightbox-room-name');
     const postsListContainer = document.getElementById('sidebar-posts');
-    const lightboxRoomNav = document.getElementById('lightbox-room-nav');
+    
+    lightboxRoomNav.style.pointerEvents = 'auto'; 
+    lightboxRoomPrevBtn.style.pointerEvents = 'auto';
+    lightboxRoomNextBtn.style.pointerEvents = 'auto';
 
     function updateLightbox() {
         if (allPropertyPosts.length === 0 || !allPropertyPosts[currentRoomIndex]) return;

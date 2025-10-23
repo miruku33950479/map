@@ -19,7 +19,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let allPropertyPosts = [];
     let currentRoomIndex = 0;
     let currentImageIndex = 0;
-    let currentPropertyData = null;
+    let currentPropertyData = null; // 儲存當前側邊欄顯示的物件資料
 
     // 原始的靜態測試物件
     const sunshineApartmentData = {
@@ -92,6 +92,28 @@ document.addEventListener("DOMContentLoaded", function () {
     const loginButton = document.getElementById('login-button');
     const bookmarksListButton = document.getElementById('bookmarks-list-button');
     let currentUserData = null;
+    
+    // ----- vvvvv 修正 1：綁定收藏按鈕事件 vvvvv -----
+    const bookmarkButton = document.getElementById('bookmark-button');
+    if (bookmarkButton) {
+        bookmarkButton.addEventListener('click', function() {
+            // 檢查是否登入
+            if (!currentUserData) {
+                alert('請先登入才能收藏！');
+                showLoginModal(); // 顯示登入視窗
+                return;
+            }
+            // 檢查是否有點開租屋物件
+            if (!currentPropertyData || currentPropertyData.type !== 'rent') {
+                alert('請先選取一個租屋物件！');
+                return;
+            }
+            
+            // 呼叫收藏函式
+            handleBookmarkClick(currentUserData.userID, currentPropertyData.id);
+        });
+    }
+    // ----- ^^^^^ 修正 1：綁定收藏按鈕事件 ^^^^^ -----
     
     const lightboxRoomNav = document.getElementById('lightbox-room-nav');
     const lightboxRoomPrevBtn = document.getElementById('lightbox-room-prev');
@@ -202,6 +224,11 @@ document.addEventListener("DOMContentLoaded", function () {
         currentUserData = userData;
         loginButton.innerText = '登出';
         bookmarksListButton.style.display = 'block';
+        // 如果側邊欄是開啟的，更新收藏按鈕狀態
+        if (!sidebar.classList.contains('closed') && currentPropertyData && currentPropertyData.type === 'rent') {
+             const btn = document.getElementById('bookmark-button');
+             if(btn) btn.style.display = 'block';
+        }
     }
 
     function updateUIToLoggedOut() {
@@ -209,15 +236,26 @@ document.addEventListener("DOMContentLoaded", function () {
         localStorage.removeItem('userData');
         loginButton.innerText = '登入';
         bookmarksListButton.style.display = 'none';
+        // 如果側邊欄是開啟的，隱藏收藏按鈕
+        if (!sidebar.classList.contains('closed')) {
+             const btn = document.getElementById('bookmark-button');
+             if(btn) btn.style.display = 'none';
+        }
     }
 
+    // ----- vvvvv 修正 3：修正函式內部變數 vvvvv -----
     function handleBookmarkClick(userId, rentId) {
         console.log('--- 收藏按鈕被點擊 ---');
-        console.log(`嘗試新增收藏: UserID: ${userId}, Type: ${propertyType}, ID: ${propertyId}`);
-        if (!userId || !propertyType || !propertyId) {
-        alert('請先登入，或房源資料不完整。');
-        return;
+        // 修正：使用 'rent' 和 rentId
+        const propertyType = 'rent'; 
+        console.log(`嘗試新增收藏: UserID: ${userId}, Type: ${propertyType}, ID: ${rentId}`);
+        
+        // 修正：檢查 rentId
+        if (!userId || !propertyType || !rentId) {
+            alert('請先登入，或房源資料不完整。');
+            return;
         }
+        
         const requestData = { userID: userId, ID: rentId };
         fetch(`${baseUrl}/Users/bookmarks`, {
             method: 'POST',
@@ -234,6 +272,7 @@ document.addEventListener("DOMContentLoaded", function () {
             alert(error.message);
         });
     }
+    // ----- ^^^^^ 修正 3：修正函式內部變數 ^^^^^ -----
 
     const bookmarksPanel = document.getElementById('bookmarks-panel');
     const bookmarksListContainer = document.getElementById('bookmarks-list-container');
@@ -426,15 +465,19 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     }
 
+    // ----- vvvvv 修正 2：修正 `openSidebar` 內的 ID vvvvv -----
     function openSidebar(property) {
-        currentPropertyData = property;
+        currentPropertyData = property; // 儲存當前物件資料
         closeLightbox();
         sidebar.classList.remove('closed');
         const sidebarImg = document.getElementById('sidebar-img');
         const sidebarImgPlaceholder = document.getElementById('sidebar-img-placeholder');
         const priceElement = document.getElementById('sidebar-price');
         const postsList = document.getElementById('sidebar-posts');
-        const bookmarkButtonWrapper = document.getElementById('bookmark-button-wrapper');
+        
+        // 修正：使用 'bookmark-button'
+        const bookmarkButton = document.getElementById('bookmark-button'); 
+        
         const titleElement = document.getElementById('sidebar-title');
         const contentElement = document.getElementById('sidebar-content');
         const cityElement = document.getElementById('sidebar-city');
@@ -451,7 +494,10 @@ document.addEventListener("DOMContentLoaded", function () {
             sidebarImg.onerror = () => { sidebarImg.src = 'images/DefaultRestaurant.jpg'; };
             if (priceElement) priceElement.style.display = 'none';
             if (postsList) postsList.style.display = 'none';
-            if (bookmarkButtonWrapper) bookmarkButtonWrapper.style.display = 'none';
+            
+            // 修正：使用正確的變數
+            if (bookmarkButton) bookmarkButton.style.display = 'none';
+            
         } else {
             let imageUrl = 'images/DefaultHotel.jpg';
             if (property.coverImage) {
@@ -514,10 +560,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 li.textContent = '暫無房源資訊';
                 postsList.appendChild(li);
             }
-            if (currentUserData) {
-                if (bookmarkButtonWrapper) bookmarkButtonWrapper.style.display = 'flex';
-            } else {
-                if (bookmarkButtonWrapper) bookmarkButtonWrapper.style.display = 'none';
+            
+            // 修正：使用正確的變數和顯示邏輯
+            if (bookmarkButton) {
+                if (currentUserData) {
+                    bookmarkButton.style.display = 'block'; // 'block' 或 'flex' 都可以
+                } else {
+                    bookmarkButton.style.display = 'none';
+                }
             }
         }
         sidebarImg.onload = () => {
@@ -548,6 +598,7 @@ document.addEventListener("DOMContentLoaded", function () {
             mailEl.style.display = 'flex';
         } else { mailEl.style.display = 'none'; }
     }
+    // ----- ^^^^^ 修正 2：修正 `openSidebar` 內的 ID ^^^^^ -----
 
     function closeSidebar() {
         sidebar.classList.add('closed');

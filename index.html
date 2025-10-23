@@ -203,6 +203,7 @@
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
         }
 
+        /* ----- vvvvv 美化收藏清單面板 vvvvv ----- */
         #bookmarks-panel {
             position: fixed;
             top: 0;
@@ -210,7 +211,7 @@
             width: 400px;
             max-width: 90%;
             height: 100vh;
-            background: white;
+            background-color: #f8f9fa; /* 改為淺灰色 */
             box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
             padding: 20px;
             transition: left 0.3s ease;
@@ -218,10 +219,22 @@
             overflow-y: auto;
             box-sizing: border-box;
         }
+        /* ----- ^^^^^ 美化收藏清單面板 ^^^^^ ----- */
 
         #bookmarks-panel.open {
             left: 0;
         }
+
+        /* ----- vvvvv 美化收藏清單標題 vvvvv ----- */
+        #bookmarks-panel h2 {
+            font-weight: 600;
+            color: #333;
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 15px;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+        /* ----- ^^^^^ 美化收藏清單標題 ^^^^^ ----- */
 
         #close-bookmarks-panel-btn {
             position: absolute;
@@ -238,21 +251,19 @@
             margin-top: 15px;
         }
 
-        /* ----- vvvvv 這裡是修改後的卡片樣式 vvvvv ----- */
         .bookmark-card-item {
-            background-color: #ffffff; /* 改為白色 */
+            background-color: #ffffff; 
             border: 1px solid #eee;
             border-radius: 15px;
-            padding: 12px; /* 增加 padding */
+            padding: 12px; 
             margin-bottom: 10px;
             display: flex;
-            align-items: center;
+            align-items: center; /* 保持垂直置中 */
             gap: 15px;
-            cursor: pointer; /* 讓它看起來可點擊 */
+            cursor: pointer; 
             transition: background-color 0.2s ease;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.1); /* 加上陰影 */
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1); 
         }
-        /* ----- ^^^^^ 這裡是修改後的卡片樣式 ^^^^^ ----- */
 
         .bookmark-card-item:hover {
             background-color: #f0f0f0;
@@ -274,16 +285,14 @@
             gap: 5px;
         }
 
-        /* ----- vvvvv 這裡是修改後的 meta 樣式 vvvvv ----- */
         .bookmark-meta {
             display: flex;
-            flex-direction: column; /* 改為垂直排列 */
-            align-items: flex-start; /* 靠左對齊 */
-            gap: 4px; /* 增加垂直間距 */
+            flex-direction: column; 
+            align-items: flex-start; 
+            gap: 4px; 
             font-size: 13px;
             color: #666;
         }
-        /* ----- ^^^^^ 這裡是修改後的 meta 樣式 ^^^^^ ----- */
 
         .bookmark-name {
             font-weight: bold;
@@ -300,6 +309,7 @@
              font-weight: normal;
         }
         
+        /* ----- vvvvv 美化移除按鈕 vvvvv ----- */
         .remove-bookmark-btn {
             background-color: #e74c3c;
             color: white;
@@ -309,15 +319,18 @@
             font-size: 12px;
             cursor: pointer;
             transition: background-color 0.2s ease;
-            align-self: flex-end; /* 靠右下角對齊 */
+            /* align-self: flex-end; */ /* 移除這行 */
+            margin-left: 10px; /* 新增：與文字區塊的間距 */
+            flex-shrink: 0; /* 新增：防止按鈕變形 */
         }
+        /* ----- ^^^^^ 美化移除按鈕 ^^^^^ ----- */
         
         .remove-bookmark-btn:hover {
             background-color: #c0392b;
         }
         
         #bookmarks-list-container li {
-            padding: 0; /* 重設為 0，讓 .bookmark-card-item 的 padding 生效 */
+            padding: 0; 
             border-bottom: none;
         }
         

@@ -223,7 +223,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // ----- vvvvv 這裡是修改後的 handleBookmarkClick vvvvv -----
     function handleBookmarkClick(userId, rentId) {
         console.log('--- 收藏按鈕被點擊 ---');
         const propertyType = 'rent'; 
@@ -247,19 +246,16 @@ document.addEventListener("DOMContentLoaded", function () {
             alert('加入收藏成功！');
             console.log('API 回傳成功：已加入收藏');
             
-            // --- 自動更新收藏清單 ---
             const bookmarksPanel = document.getElementById('bookmarks-panel');
             if (bookmarksPanel && bookmarksPanel.classList.contains('open')) {
                 console.log('收藏清單已開啟，正在自動刷新...');
                 showBookmarksPanel();
             }
-            // --- 自動更新結束 ---
 
         }).catch(error => {
             alert(error.message);
         });
     }
-    // ----- ^^^^^ 這裡是修改後的 handleBookmarkClick ^^^^^ -----
 
     const bookmarksPanel = document.getElementById('bookmarks-panel');
     const bookmarksListContainer = document.getElementById('bookmarks-list-container');
@@ -316,8 +312,8 @@ document.addEventListener("DOMContentLoaded", function () {
                             <span class="bookmark-city">${property.cityName || '城市未定'}</span>
                             <span class="bookmark-price-range">${property.rentPriceRange ? '租金:' + formatPriceRange(property.rentPriceRange) : '租金範圍未提供'}</span>
                         </div>
-                        <button class="remove-bookmark-btn" data-rent-id="${property.id}">&times; 移除</button>
                     </div>
+                    <button class="remove-bookmark-btn" data-rent-id="${property.id}">&times; 移除</button>
                 `;
 
                 li.innerHTML = cardHtml;
@@ -328,7 +324,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     const fullPropertyData = allMapProperties.find(p => p.id === propertyId);
 
                     if (fullPropertyData && fullPropertyData.coordinates) {
-                        // 情況 1：資料已存在，直接飛過去並開啟
+
                         map.flyTo([fullPropertyData.coordinates.latitude, fullPropertyData.coordinates.longitude], 17, {
                             animate: true,
                             duration: 1.0
@@ -336,7 +332,6 @@ document.addEventListener("DOMContentLoaded", function () {
                         openSidebar(fullPropertyData);
                         hideBookmarksPanel();
                     } else if (property.coordinates && property.coordinates.latitude) {
-                        // 情況 2：資料不存在，執行「飛-刷-開」流程
                         console.log(`找不到 ${propertyId} 的本地資料，開始自動刷新...`);
                         hideBookmarksPanel(); // 先關閉面板
 
@@ -365,7 +360,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             });
                         });
                     } else {
-                        // 情況 3：連座標都沒有，無法處理
+
                         alert('在地圖上找不到此房源的座標或詳細資料。\n請嘗試移動地圖到房源所在區域並點擊「重新整理」按鈕後，再試一次。');
                     }
                 });

@@ -93,7 +93,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const bookmarksListButton = document.getElementById('bookmarks-list-button');
     let currentUserData = null;
     
-    // ----- vvvvv 修正 1：綁定收藏按鈕事件 vvvvv -----
     const bookmarkButton = document.getElementById('bookmark-button');
     if (bookmarkButton) {
         bookmarkButton.addEventListener('click', function() {
@@ -113,7 +112,6 @@ document.addEventListener("DOMContentLoaded", function () {
             handleBookmarkClick(currentUserData.userID, currentPropertyData.id);
         });
     }
-    // ----- ^^^^^ 修正 1：綁定收藏按鈕事件 ^^^^^ -----
     
     const lightboxRoomNav = document.getElementById('lightbox-room-nav');
     const lightboxRoomPrevBtn = document.getElementById('lightbox-room-prev');
@@ -243,7 +241,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // ----- vvvvv 修正 3：修正函式內部變數 vvvvv -----
     function handleBookmarkClick(userId, rentId) {
         console.log('--- 收藏按鈕被點擊 ---');
         // 修正：使用 'rent' 和 rentId
@@ -272,7 +269,6 @@ document.addEventListener("DOMContentLoaded", function () {
             alert(error.message);
         });
     }
-    // ----- ^^^^^ 修正 3：修正函式內部變數 ^^^^^ -----
 
     const bookmarksPanel = document.getElementById('bookmarks-panel');
     const bookmarksListContainer = document.getElementById('bookmarks-list-container');
@@ -364,25 +360,33 @@ document.addEventListener("DOMContentLoaded", function () {
             bookmarksListContainer.innerHTML = '<p>載入失敗，請稍後再試。</p>';
         });
     }
-    // 新增的移除收藏函式
+    
+    // ----- vvvvv 這裡是修改後的函式 vvvvv -----
     function handleRemoveBookmark(userId, rentId) { 
-        // 假設移除收藏的 API 也是 /Users/bookmarks，但使用 DELETE 方法
-        const requestData = { userID: userId, ID: rentId };
-        fetch(`${baseUrl}/Users/bookmarks`, {
-            method: 'DELETE', // 假設使用 DELETE 方法
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(requestData)
+        console.log(`嘗試移除收藏: UserID: ${userId}, RentID: ${rentId}`);
+
+        // 修正：根據 API 文件，URL 應包含 userID 和 rentId
+        const deleteUrl = `${baseUrl}/Users/${userId}/bookmarks/${rentId}`;
+
+        fetch(deleteUrl, {
+            method: 'DELETE' // 方法正確
+            // 修正：DELETE 請求根據您的 API 文件不需要 body 和 Content-Type
         }).then(response => {
-            if (response.ok) return response.json();
+            if (response.ok) return response.json(); // 200 OK
+            
+            // 可以在此處加入更詳細的錯誤日誌
+            console.error('移除收藏 API 回應錯誤:', response.status, response.statusText);
             throw new Error('移除收藏失敗，請稍後再試。');
         }).then(data => {
             alert('移除收藏成功！');
             // 移除成功後，重新載入收藏清單
             showBookmarksPanel(); 
         }).catch(error => {
+            console.error('移除收藏時發生錯誤:', error);
             alert(error.message);
         });
     }
+    // ----- ^^^^^ 這裡是修改後的函式 ^^^^^ -----
     
     function displayMarkers(markerData) {
     rentMarkers.clearLayers();
@@ -465,7 +469,6 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     }
 
-    // ----- vvvvv 修正 2：修正 `openSidebar` 內的 ID vvvvv -----
     function openSidebar(property) {
         currentPropertyData = property; // 儲存當前物件資料
         closeLightbox();
@@ -475,7 +478,6 @@ document.addEventListener("DOMContentLoaded", function () {
         const priceElement = document.getElementById('sidebar-price');
         const postsList = document.getElementById('sidebar-posts');
         
-        // 修正：使用 'bookmark-button'
         const bookmarkButton = document.getElementById('bookmark-button'); 
         
         const titleElement = document.getElementById('sidebar-title');
@@ -495,7 +497,6 @@ document.addEventListener("DOMContentLoaded", function () {
             if (priceElement) priceElement.style.display = 'none';
             if (postsList) postsList.style.display = 'none';
             
-            // 修正：使用正確的變數
             if (bookmarkButton) bookmarkButton.style.display = 'none';
             
         } else {
@@ -561,7 +562,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 postsList.appendChild(li);
             }
             
-            // 修正：使用正確的變數和顯示邏輯
             if (bookmarkButton) {
                 if (currentUserData) {
                     bookmarkButton.style.display = 'block'; // 'block' 或 'flex' 都可以
@@ -598,7 +598,6 @@ document.addEventListener("DOMContentLoaded", function () {
             mailEl.style.display = 'flex';
         } else { mailEl.style.display = 'none'; }
     }
-    // ----- ^^^^^ 修正 2：修正 `openSidebar` 內的 ID ^^^^^ -----
 
     function closeSidebar() {
         sidebar.classList.add('closed');

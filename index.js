@@ -21,6 +21,10 @@ document.addEventListener("DOMContentLoaded", function () {
     let currentImageIndex = 0;
     let currentPropertyData = null; // 儲存當前側邊欄顯示的物件資料
     let allMapProperties = []; // 儲存所有地圖上的房源資料
+    
+    // ----- vvvvv 新增：儲存已收藏的 Rent ID vvvvv -----
+    let userBookmarkedRentIds = new Set();
+    // ----- ^^^^^ 新增：儲存已收藏的 Rent ID ^^^^^ -----
 
     // 原始的靜態測試物件
     const sunshineApartmentData = {
@@ -96,6 +100,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 alert('請先選取一個租屋物件！');
                 return;
             }
+            // 避免重複點擊已加入的
+            if (bookmarkButton.disabled) return;
             handleBookmarkClick(currentUserData.userID, currentPropertyData.id);
         });
     }
@@ -206,6 +212,9 @@ document.addEventListener("DOMContentLoaded", function () {
         currentUserData = userData;
         loginButton.innerText = '登出';
         bookmarksListButton.style.display = 'block';
+        // 登入後，清空舊的收藏 ID，稍後打開面板時會重新獲取
+        userBookmarkedRentIds.clear(); 
+        
         if (!sidebar.classList.contains('closed') && currentPropertyData && currentPropertyData.type === 'rent') {
              const btn = document.getElementById('bookmark-button');
              if(btn) btn.style.display = 'block';
@@ -217,13 +226,16 @@ document.addEventListener("DOMContentLoaded", function () {
         localStorage.removeItem('userData');
         loginButton.innerText = '登入';
         bookmarksListButton.style.display = 'none';
+        // 登出後清空收藏 ID
+        userBookmarkedRentIds.clear();
+        
         if (!sidebar.classList.contains('closed')) {
              const btn = document.getElementById('bookmark-button');
              if(btn) btn.style.display = 'none';
         }
     }
 
-    // ----- vvvvv 這裡是修改後的 handleBookmarkClick vvvvv -----
+    // ----- vvvvv 修改後的 handleBookmarkClick vvvvv -----
     function handleBookmarkClick(userId, rentId) {
         console.log('--- 收藏按鈕被點擊 ---');
         const propertyType = 'rent'; 
@@ -242,14 +254,14 @@ document.addEventListener("DOMContentLoaded", function () {
         }).then(response => {
             if (response.ok) return response.json();
             if (response.status === 409) {
-                 // --- 如果已收藏，直接更新按鈕狀態 ---
                 const bookmarkButton = document.getElementById('bookmark-button');
-                if (bookmarkButton) {
+                if (bookmarkButton && !bookmarkButton.disabled) { // 避免重複設定
                     bookmarkButton.innerText = '已加入收藏';
                     bookmarkButton.disabled = true;
-                    bookmarkButton.style.backgroundColor = '#6c757d'; // 灰色
+                    bookmarkButton.style.backgroundColor = '#6c757d'; 
                 }
-                 // --- 更新結束 ---
+                // 雖然已收藏，還是更新一下 Set (以防萬一)
+                userBookmarkedRentIds.add(rentId);
                 throw new Error('此項目已在您的收藏清單中。');
             }
             throw new Error('加入收藏失敗，請稍後再試。');
@@ -262,10 +274,13 @@ document.addEventListener("DOMContentLoaded", function () {
             if (bookmarkButton) {
                 bookmarkButton.innerText = '已加入收藏';
                 bookmarkButton.disabled = true;
-                bookmarkButton.style.backgroundColor = '#6c757d'; // 灰色
+                bookmarkButton.style.backgroundColor = '#6c757d'; 
             }
             // --- 修改結束 ---
             
+            // --- 加入收藏 ID 到 Set ---
+            userBookmarkedRentIds.add(rentId);
+
             // --- 自動更新收藏清單 ---
             const bookmarksPanel = document.getElementById('bookmarks-panel');
             if (bookmarksPanel && bookmarksPanel.classList.contains('open')) {
@@ -275,13 +290,15 @@ document.addEventListener("DOMContentLoaded", function () {
             // --- 自動更新結束 ---
 
         }).catch(error => {
-            // 只在不是「已收藏」錯誤時才顯示 alert
             if (error.message !== '此項目已在您的收藏清單中。') {
-                alert(error.message);
+                 console.error('加入收藏時發生錯誤:', error); // 加入 console 方便除錯
+                 alert(error.message);
+            } else {
+                 console.log('項目已在收藏中，不顯示 alert。');
             }
         });
     }
-    // ----- ^^^^^ 這裡是修改後的 handleBookmarkClick ^^^^^ -----
+    // ----- ^^^^^ 修改後的 handleBookmarkClick ^^^^^ -----
 
     const bookmarksPanel = document.getElementById('bookmarks-panel');
     const bookmarksListContainer = document.getElementById('bookmarks-list-container');
@@ -291,6 +308,7 @@ document.addEventListener("DOMContentLoaded", function () {
         bookmarksPanel.classList.remove('open');
     }
 
+    // ----- vvvvv 修改後的 showBookmarksPanel vvvvv -----
     function showBookmarksPanel() {
         if (!currentUserData) {
             alert('請先登入！');
@@ -308,6 +326,16 @@ document.addEventListener("DOMContentLoaded", function () {
           .then(data => {
             const bookmarkedRentals = data.bookmarks.Rent;
             bookmarksListContainer.innerHTML = ''; 
+
+            // --- 更新已收藏 ID 的 Set ---
+            userBookmarkedRentIds.clear(); // 先清空
+            if (bookmarkedRentals && bookmarkedRentals.length > 0) {
+                 bookmarkedRentals.forEach(item => userBookmarkedRentIds.add(item.id));
+                 console.log('已更新收藏 ID Set:', userBookmarkedRentIds);
+            } else {
+                 console.log('收藏清單為空，清空 Set。');
+            }
+            // --- 更新結束 ---
 
             if (!bookmarkedRentals || bookmarkedRentals.length === 0) {
                 bookmarksListContainer.innerHTML = '<p>您尚未收藏任何房源。</p>';
@@ -393,9 +421,13 @@ document.addEventListener("DOMContentLoaded", function () {
         }).catch(error => {
             console.error('獲取收藏清單時發生錯誤:', error);
             bookmarksListContainer.innerHTML = '<p>載入失敗，請稍後再試。</p>';
+             // 即使獲取失敗，也清空 Set
+             userBookmarkedRentIds.clear();
         });
     }
+    // ----- ^^^^^ 修改後的 showBookmarksPanel ^^^^^ -----
 
+    // ----- vvvvv 修改後的 handleRemoveBookmark vvvvv -----
     function handleRemoveBookmark(userId, rentId) { 
         console.log(`嘗試移除收藏: UserID: ${userId}, RentID: ${rentId}`);
         const deleteUrl = `${baseUrl}/Users/${userId}/bookmarks/${rentId}`;
@@ -408,12 +440,30 @@ document.addEventListener("DOMContentLoaded", function () {
             throw new Error('移除收藏失敗，請稍後再試。');
         }).then(data => {
             alert('移除收藏成功！');
+            
+            // --- 從 Set 中移除 ID ---
+            userBookmarkedRentIds.delete(rentId);
+            
+            // --- 重新整理收藏清單 ---
             showBookmarksPanel(); 
+
+             // --- 如果移除的是當前側邊欄的項目，更新按鈕狀態 ---
+             if (currentPropertyData && currentPropertyData.id === rentId) {
+                  const bookmarkButton = document.getElementById('bookmark-button');
+                  if (bookmarkButton) {
+                       bookmarkButton.innerText = '加入收藏';
+                       bookmarkButton.disabled = false;
+                       bookmarkButton.style.backgroundColor = '#007bff';
+                  }
+             }
+             // --- 更新結束 ---
+
         }).catch(error => {
             console.error('移除收藏時發生錯誤:', error);
             alert(error.message);
         });
     }
+    // ----- ^^^^^ 修改後的 handleRemoveBookmark ^^^^^ -----
     
     function displayMarkers(markerData) {
     rentMarkers.clearLayers();
@@ -492,7 +542,7 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     }
 
-    // ----- vvvvv 這裡是修改後的 openSidebar vvvvv -----
+    // ----- vvvvv 修改後的 openSidebar vvvvv -----
     function openSidebar(property) {
         currentPropertyData = property; // 儲存當前物件資料
         closeLightbox();
@@ -586,22 +636,25 @@ document.addEventListener("DOMContentLoaded", function () {
                 postsList.appendChild(li);
             }
             
-            // --- 重設收藏按鈕狀態 ---
+            // --- 根據是否已收藏來設定按鈕狀態 ---
             if (bookmarkButton) {
                 if (currentUserData) {
-                    bookmarkButton.innerText = '加入收藏'; // 重設文字
-                    bookmarkButton.disabled = false;    // 啟用按鈕
-                    bookmarkButton.style.backgroundColor = '#007bff'; // 恢復藍色
+                    // 檢查 Set 中是否有此 ID
+                    if (userBookmarkedRentIds.has(property.id)) {
+                         bookmarkButton.innerText = '已加入收藏';
+                         bookmarkButton.disabled = true;
+                         bookmarkButton.style.backgroundColor = '#6c757d'; 
+                    } else {
+                         bookmarkButton.innerText = '加入收藏'; 
+                         bookmarkButton.disabled = false;    
+                         bookmarkButton.style.backgroundColor = '#007bff'; 
+                    }
                     bookmarkButton.style.display = 'block';
-
-                     // 這裡可以選擇性加入：檢查此房源是否已在收藏清單中
-                     // 如果需要，可以在登入後或打開面板時將收藏ID存儲在一個Set中以便快速查找
-                     // if (userBookmarksSet.has(property.id)) { ... }
                 } else {
                     bookmarkButton.style.display = 'none';
                 }
             }
-            // --- 重設結束 ---
+            // --- 按鈕狀態設定結束 ---
 
             // --- 開始建立聯絡資訊卡片 ---
             let contactHtml = '';
@@ -639,7 +692,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // cityElement.innerHTML = '<strong>城市:</strong> ' + (property.cityName || '未提供');
         }
     }
-    // ----- ^^^^^ 這裡是修改後的 openSidebar ^^^^^ -----
+    // ----- ^^^^^ 修改後的 openSidebar ^^^^^ -----
 
     function closeSidebar() {
         sidebar.classList.add('closed');

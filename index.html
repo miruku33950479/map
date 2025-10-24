@@ -269,21 +269,21 @@
             background-color: #f9f9f9;
             border: 1px solid #eee;
             border-radius: 15px;
-             /* 上 18, 右 6, 下 18, 左 15 */
-            padding: 18px 6px 18px 15px;
+            padding: 15px; /* 上下左右皆 15px */
             margin-bottom: 10px;
             display: flex;
-            align-items: flex-start;
+            align-items: center; /* 改回垂直居中 */
             gap: 10px;
             cursor: pointer;
             transition: background-color 0.2s ease;
         }
-
+        /* ----- ^^^^^ 修改後的收藏卡片樣式 ^^^^^ ----- */
 
         .bookmark-card-item:hover {
             background-color: #f0f0f0;
         }
 
+        /* ----- vvvvv 移除圖片 margin-left vvvvv ----- */
         .bookmark-cover-image {
             width: 80px;
             height: 60px;
@@ -291,21 +291,22 @@
             border-radius: 8px;
             flex-shrink: 0;
             object-fit: cover;
-            
+            /* margin-left: 6px; */ /* 移除 */
         }
+        /* ----- ^^^^^ 移除圖片 margin-left ^^^^^ ----- */
 
         .bookmark-text-info {
             display: flex;
             flex-direction: column;
             flex-grow: 1;
-            gap: 5px; /* 調整標題和 meta 的間距 */
-             min-width: 0; /* 允許文字區塊縮小 */
+            gap: 5px;
+             min-width: 0;
         }
 
         .bookmark-meta {
             display: flex;
-            flex-direction: column; /* 改回垂直排列 */
-            align-items: flex-start; /* 靠左對齊 */
+            flex-direction: column;
+            align-items: flex-start;
             gap: 4px;
             font-size: 13px;
             color: #666;
@@ -319,13 +320,15 @@
              white-space: nowrap;
              overflow: hidden;
              text-overflow: ellipsis;
+             margin-bottom: 2px;
         }
 
         .bookmark-price-range {
-            color: #1bad47;
+            color: #333; /* 深灰色 */
             font-weight: bold;
-            font-size: 14px; /* 稍小字體 */
+            font-size: 14px;
             white-space: nowrap;
+            line-height: 1.4;
         }
 
         .bookmark-city {
@@ -333,12 +336,15 @@
              white-space: nowrap;
              overflow: hidden;
              text-overflow: ellipsis;
+             margin-bottom: 4px;
         }
+
         .bookmark-action-area {
             display: flex;
             flex-direction: column;
             align-items: flex-end;
             margin-left: auto;
+            /* padding-left: 10px; */ /* 由父元素 padding 控制 */
             flex-shrink: 0;
         }
 
@@ -358,7 +364,7 @@
             overflow: hidden;
             white-space: nowrap;
             line-height: 1;
-            margin-bottom: 8px; /* 按鈕和狀態文字間距 */
+            margin-bottom: 8px;
         }
 
         .bookmark-action-btn:hover {
@@ -387,15 +393,13 @@
             white-space: nowrap;
             color: white;
             text-align: center;
-            line-height: 1.4; /* 微調行高 */
-            margin-top: auto; /* 將狀態盡量推到底部 */
+            line-height: 1.4;
+            /* margin-top: auto; */ /* 移除，讓它自然排列在按鈕下方 */
         }
 
-        /* 狀態顏色 */
         .bookmark-status.status-available { background-color: #2ecc71; }
         .bookmark-status.status-upcoming { background-color: #f39c12; }
         .bookmark-status.status-rented { background-color: #95a5a6; }
-        /* ----- ^^^^^ 修改後的動作按鈕區塊樣式 ^^^^^ ----- */
 
         #bookmarks-list-container li {
             padding: 0;

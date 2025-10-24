@@ -32,6 +32,8 @@ document.addEventListener("DOMContentLoaded", function () {
         mainContent: "這是一個預設標註在地圖上的地點，主要用途是作為系統功能測試與展示之用。",
         id: "test_id",
         type: 'rent',
+        vacantRooms: 0,
+        upcomingVacancies: 1,
         posts: [
             { id: "test1", rentMoney: 10000, roomName: "測試房A", rentPostStatus: "可預約", rentStatus: 1, imageResources: [] },
             { id: "test2", rentMoney: 15000, roomName: "測試房B", rentPostStatus: "已出租", rentStatus: 3, imageResources: [] }
@@ -49,6 +51,8 @@ document.addEventListener("DOMContentLoaded", function () {
         mainContent: "這是「測試2」的預設標註，使用本地圖片。",
         id: "test_id_2",
         type: 'rent',
+        vacantRooms: 2,
+        upcomingVacancies: 0,
         posts: [
             { id: "test1", rentMoney: 10000, roomName: "測試房A", rentPostStatus: "可預約", rentStatus: 1, imageResources: ["images/Room1.jpg", "images/Room2.jpg"],lightboxDescription: "這是一段測試房A的說明文字，大約三十個字，用來展示燈箱中的浮動資訊卡片效果。" },
             { id: "test2", rentMoney: 15002, roomName: "測試房B", rentPostStatus: "已出租", rentStatus: 3, imageResources: [],lightboxDescription: "這是測試房B的說明，風格簡約，採光良好，交通便利，是您居住的最佳選擇，歡迎隨時預約看房。" },
@@ -294,7 +298,7 @@ document.addEventListener("DOMContentLoaded", function () {
         bookmarksPanel.classList.remove('open');
     }
 
-    // ----- vvvvv 修改後的 showBookmarksPanel vvvvv -----
+    // ----- vvvvv 修改後的 showBookmarksPanel (更新 HTML 結構) vvvvv -----
     function showBookmarksPanel() {
         if (!currentUserData) {
             alert('請先登入！');
@@ -342,6 +346,25 @@ document.addEventListener("DOMContentLoaded", function () {
                     coverImageUrl = defaultCoverImage;
                 }
 
+                // --- 判斷狀態文字和 class ---
+                let statusText = '狀態不明';
+                let statusClass = 'status-rented';
+                const vacantRooms = property.vacantRooms ?? 0;
+                const upcomingVacancies = property.upcomingVacancies ?? 0;
+
+                if (vacantRooms > 0) {
+                    statusText = `尚有 ${vacantRooms} 間空房`;
+                    statusClass = 'status-available';
+                } else if (upcomingVacancies > 0) {
+                    statusText = `即將釋出 ${upcomingVacancies} 間房`;
+                    statusClass = 'status-upcoming';
+                } else {
+                    statusText = '完租';
+                }
+                // --- 狀態判斷結束 ---
+
+
+                // --- 修改 HTML 結構，加入 bookmark-right-column ---
                 const cardHtml = `
                     <img src="${coverImageUrl}" class="bookmark-cover-image" onerror="this.src='${defaultCoverImage}';" alt="${property.name}">
                     <div class="bookmark-text-info">
@@ -351,7 +374,10 @@ document.addEventListener("DOMContentLoaded", function () {
                             <span class="bookmark-price-range">${property.rentPriceRange ? '租金:' + formatPriceRange(property.rentPriceRange) : '租金範圍未提供'}</span>
                         </div>
                     </div>
-                    <button class="bookmark-action-btn" data-rent-id="${property.id}">⋮</button>
+                    <div class="bookmark-action-area">
+                         <button class="bookmark-action-btn" data-rent-id="${property.id}">⋮</button>
+                         <span class="bookmark-status ${statusClass}">${statusText}</span>
+                    </div>
                 `;
 
                 li.innerHTML = cardHtml;
@@ -423,16 +449,13 @@ document.addEventListener("DOMContentLoaded", function () {
                             this.innerHTML = '&times; 移除';
                         }
                     });
-                    
-                    // ----- vvvvv 新增 mouseleave 事件 vvvvv -----
+
                     actionBtn.addEventListener('mouseleave', function() {
-                        // 如果按鈕當前是移除模式，則恢復
                         if (this.classList.contains('is-remove-mode')) {
                              this.classList.remove('is-remove-mode');
                              this.innerHTML = '⋮';
                         }
                     });
-                    // ----- ^^^^^ 新增 mouseleave 事件 ^^^^^ -----
                 }
                  // --- 按鈕事件綁定結束 ---
             });
@@ -512,6 +535,11 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(response => response.ok ? response.json() : Promise.reject(response))
             .then(data => {
                 const apiData = data.map(item => ({ ...item, type: 'rent' }));
+                if (sunshineApartmentData.vacantRooms === undefined) sunshineApartmentData.vacantRooms = 0;
+                if (sunshineApartmentData.upcomingVacancies === undefined) sunshineApartmentData.upcomingVacancies = 0;
+                if (sunshineApartmentData2.vacantRooms === undefined) sunshineApartmentData2.vacantRooms = 0;
+                if (sunshineApartmentData2.upcomingVacancies === undefined) sunshineApartmentData2.upcomingVacancies = 0;
+
                 const combinedData = [...apiData, sunshineApartmentData, sunshineApartmentData2];
                 allMapProperties = combinedData;
                 displayMarkers(combinedData);
@@ -520,6 +548,11 @@ document.addEventListener("DOMContentLoaded", function () {
             .catch(error => {
                 console.error('載入房源資料時發生錯誤:', error);
                 console.log('API 請求失敗，顯示預設測試資料點...');
+                if (sunshineApartmentData.vacantRooms === undefined) sunshineApartmentData.vacantRooms = 0;
+                if (sunshineApartmentData.upcomingVacancies === undefined) sunshineApartmentData.upcomingVacancies = 0;
+                if (sunshineApartmentData2.vacantRooms === undefined) sunshineApartmentData2.vacantRooms = 0;
+                if (sunshineApartmentData2.upcomingVacancies === undefined) sunshineApartmentData2.upcomingVacancies = 0;
+
                 const staticData = [sunshineApartmentData, sunshineApartmentData2];
                 allMapProperties = staticData;
                 displayMarkers(staticData);

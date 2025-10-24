@@ -332,47 +332,67 @@
              overflow: hidden;
              text-overflow: ellipsis;
         }
-
+        .bookmark-action-area {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            margin-left: auto; /* 自動推到最右邊 */
+            padding-left: 10px; /* 與文字區塊的間距 */
+            flex-shrink: 0;
+        }
         /* ----- 收藏清單動作按鈕樣式 ----- */
         .bookmark-action-btn {
-            background-color: transparent; /* 預設透明 */
-            color: #6c757d; /* 圖示顏色 */
-            border: none; /* 無邊框 */
-            /* padding: 6px 10px; */ /* padding 由 width/height 控制 */
-            border-radius: 50%; /* 圓形 */
-            font-size: 18px; /* 圖示大小 */
+            background-color: transparent;
+            color: #6c757d;
+            border: none;
+            border-radius: 50%;
+            font-size: 18px;
             cursor: pointer;
             transition: background-color 0.2s ease, color 0.2s ease, width 0.2s ease;
-            margin-left: 10px;
-            flex-shrink: 0;
-            width: 32px; /* 寬度 */
-            height: 32px; /* 高度 */
+            /* margin-left: 10px; */ /* 移除 */
+            width: 32px;
+            height: 32px;
             display: flex;
             justify-content: center;
             align-items: center;
             overflow: hidden;
             white-space: nowrap;
-            line-height: 1; /* 確保圖示垂直置中 */
+            line-height: 1;
+            margin-bottom: 8px; /* 與下方狀態文字的間距 */
         }
 
         .bookmark-action-btn:hover {
-            background-color: rgba(0, 0, 0, 0.08); /* 滑鼠懸停時淺灰色背景 */
-            color: #333; /* 滑鼠懸停時圖示深一點 */
+            background-color: rgba(0, 0, 0, 0.08);
+            color: #333;
         }
 
-        /* 移除模式 */
         .bookmark-action-btn.is-remove-mode {
             background-color: #e74c3c;
-            color: white; /* 文字顏色 */
+            color: white;
             font-size: 12px;
-            width: 65px; /* 移除模式時變寬 */
-            border-radius: 5px; /* 變回方角 */
-             padding: 5px 10px; /* 恢復文字 padding */
+            width: 65px;
+            border-radius: 5px;
+             padding: 5px 10px;
         }
 
-         .bookmark-action-btn.is-remove-mode:hover {
+        .bookmark-action-btn.is-remove-mode:hover {
              background-color: #c0392b;
          }
+
+        .bookmark-status {
+            font-size: 11px; /* 狀態文字稍小 */
+            font-weight: bold;
+            padding: 2px 8px; /* 微調 padding */
+            border-radius: 10px; /* 圓角 */
+            white-space: nowrap;
+            color: white; /* 預設文字白色 */
+            text-align: center;
+            line-height: 1.3; /* 調整行高，嘗試對齊 */
+            margin-top: auto;
+        }
+        .bookmark-status.status-available { background-color: #2ecc71; } /* 綠色 */
+        .bookmark-status.status-upcoming { background-color: #f39c12; } /* 橘色 */
+        .bookmark-status.status-rented { background-color: #95a5a6; }   /* 灰色 */
         /* ----- 按鈕樣式結束 ----- */
 
         #bookmarks-list-container li {

@@ -298,7 +298,7 @@ document.addEventListener("DOMContentLoaded", function () {
         bookmarksPanel.classList.remove('open');
     }
 
-    // ----- vvvvv 修改後的 showBookmarksPanel (更新 HTML 結構) vvvvv -----
+    // ----- vvvvv 修改後的 showBookmarksPanel (更新 HTML 結構 + 金額 span) vvvvv -----
     function showBookmarksPanel() {
         if (!currentUserData) {
             alert('請先登入！');
@@ -363,15 +363,17 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
                 // --- 狀態判斷結束 ---
 
+                // --- 格式化金額 ---
+                const priceText = property.rentPriceRange ? formatPriceRange(property.rentPriceRange) : '範圍未提供';
 
-                // --- 修改 HTML 結構，加入 bookmark-right-column ---
+                // --- 修改 HTML 結構，加入 bookmark-right-column 和 金額 span ---
                 const cardHtml = `
                     <img src="${coverImageUrl}" class="bookmark-cover-image" onerror="this.src='${defaultCoverImage}';" alt="${property.name}">
                     <div class="bookmark-text-info">
                         <span class="bookmark-name">${property.name || '未提供房名'}</span>
                         <div class="bookmark-meta">
                             <span class="bookmark-city">${property.cityName || '城市未定'}</span>
-                            <span class="bookmark-price-range">${property.rentPriceRange ? '租金:' + formatPriceRange(property.rentPriceRange) : '租金範圍未提供'}</span>
+                            <span class="bookmark-price-range">租金:<span class="bookmark-price-amount">${priceText}</span></span>
                         </div>
                     </div>
                     <div class="bookmark-action-area">

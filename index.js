@@ -21,10 +21,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let currentImageIndex = 0;
     let currentPropertyData = null; // 儲存當前側邊欄顯示的物件資料
     let allMapProperties = []; // 儲存所有地圖上的房源資料
-    
-    // ----- vvvvv 新增：儲存已收藏的 Rent ID vvvvv -----
-    let userBookmarkedRentIds = new Set();
-    // ----- ^^^^^ 新增：儲存已收藏的 Rent ID ^^^^^ -----
+    let userBookmarkedRentIds = new Set(); // 儲存已收藏的 Rent ID
 
     // 原始的靜態測試物件
     const sunshineApartmentData = {
@@ -87,7 +84,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const loginButton = document.getElementById('login-button');
     const bookmarksListButton = document.getElementById('bookmarks-list-button');
     let currentUserData = null;
-    
+
     const bookmarkButton = document.getElementById('bookmark-button');
     if (bookmarkButton) {
         bookmarkButton.addEventListener('click', function() {
@@ -100,12 +97,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 alert('請先選取一個租屋物件！');
                 return;
             }
-            // 避免重複點擊已加入的
             if (bookmarkButton.disabled) return;
             handleBookmarkClick(currentUserData.userID, currentPropertyData.id);
         });
     }
-    
+
     const lightboxRoomNav = document.getElementById('lightbox-room-nav');
     const lightboxRoomPrevBtn = document.getElementById('lightbox-room-prev');
     const lightboxRoomNextBtn = document.getElementById('lightbox-room-next');
@@ -118,8 +114,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const lightboxRoomCounter = document.getElementById('lightbox-room-counter');
     const lightboxRoomName = document.getElementById('lightbox-room-name');
     const postsListContainer = document.getElementById('sidebar-posts');
-    
-    lightboxRoomNav.style.pointerEvents = 'auto'; 
+
+    lightboxRoomNav.style.pointerEvents = 'auto';
     lightboxRoomPrevBtn.style.pointerEvents = 'auto';
     lightboxRoomNextBtn.style.pointerEvents = 'auto';
 
@@ -207,14 +203,13 @@ document.addEventListener("DOMContentLoaded", function () {
             updateLightbox();
         }
     }
-    
+
     function updateUIToLoggedIn(userData) {
         currentUserData = userData;
         loginButton.innerText = '登出';
         bookmarksListButton.style.display = 'block';
-        // 登入後，清空舊的收藏 ID，稍後打開面板時會重新獲取
-        userBookmarkedRentIds.clear(); 
-        
+        userBookmarkedRentIds.clear();
+
         if (!sidebar.classList.contains('closed') && currentPropertyData && currentPropertyData.type === 'rent') {
              const btn = document.getElementById('bookmark-button');
              if(btn) btn.style.display = 'block';
@@ -226,26 +221,24 @@ document.addEventListener("DOMContentLoaded", function () {
         localStorage.removeItem('userData');
         loginButton.innerText = '登入';
         bookmarksListButton.style.display = 'none';
-        // 登出後清空收藏 ID
         userBookmarkedRentIds.clear();
-        
+
         if (!sidebar.classList.contains('closed')) {
              const btn = document.getElementById('bookmark-button');
              if(btn) btn.style.display = 'none';
         }
     }
 
-    // ----- vvvvv 修改後的 handleBookmarkClick vvvvv -----
     function handleBookmarkClick(userId, rentId) {
         console.log('--- 收藏按鈕被點擊 ---');
-        const propertyType = 'rent'; 
+        const propertyType = 'rent';
         console.log(`嘗試新增收藏: UserID: ${userId}, Type: ${propertyType}, ID: ${rentId}`);
-        
+
         if (!userId || !propertyType || !rentId) {
             alert('請先登入，或房源資料不完整。');
             return;
         }
-        
+
         const requestData = { userID: userId, ID: rentId };
         fetch(`${baseUrl}/Users/bookmarks`, {
             method: 'POST',
@@ -255,12 +248,11 @@ document.addEventListener("DOMContentLoaded", function () {
             if (response.ok) return response.json();
             if (response.status === 409) {
                 const bookmarkButton = document.getElementById('bookmark-button');
-                if (bookmarkButton && !bookmarkButton.disabled) { // 避免重複設定
+                if (bookmarkButton && !bookmarkButton.disabled) {
                     bookmarkButton.innerText = '已加入收藏';
                     bookmarkButton.disabled = true;
-                    bookmarkButton.style.backgroundColor = '#6c757d'; 
+                    bookmarkButton.style.backgroundColor = '#6c757d';
                 }
-                // 雖然已收藏，還是更新一下 Set (以防萬一)
                 userBookmarkedRentIds.add(rentId);
                 throw new Error('此項目已在您的收藏清單中。');
             }
@@ -268,37 +260,31 @@ document.addEventListener("DOMContentLoaded", function () {
         }).then(data => {
             alert('加入收藏成功！');
             console.log('API 回傳成功：已加入收藏');
-            
-            // --- 修改按鈕文字和狀態 ---
+
             const bookmarkButton = document.getElementById('bookmark-button');
             if (bookmarkButton) {
                 bookmarkButton.innerText = '已加入收藏';
                 bookmarkButton.disabled = true;
-                bookmarkButton.style.backgroundColor = '#6c757d'; 
+                bookmarkButton.style.backgroundColor = '#6c757d';
             }
-            // --- 修改結束 ---
-            
-            // --- 加入收藏 ID 到 Set ---
+
             userBookmarkedRentIds.add(rentId);
 
-            // --- 自動更新收藏清單 ---
             const bookmarksPanel = document.getElementById('bookmarks-panel');
             if (bookmarksPanel && bookmarksPanel.classList.contains('open')) {
                 console.log('收藏清單已開啟，正在自動刷新...');
                 showBookmarksPanel();
             }
-            // --- 自動更新結束 ---
 
         }).catch(error => {
             if (error.message !== '此項目已在您的收藏清單中。') {
-                 console.error('加入收藏時發生錯誤:', error); // 加入 console 方便除錯
+                 console.error('加入收藏時發生錯誤:', error);
                  alert(error.message);
             } else {
                  console.log('項目已在收藏中，不顯示 alert。');
             }
         });
     }
-    // ----- ^^^^^ 修改後的 handleBookmarkClick ^^^^^ -----
 
     const bookmarksPanel = document.getElementById('bookmarks-panel');
     const bookmarksListContainer = document.getElementById('bookmarks-list-container');
@@ -325,17 +311,15 @@ document.addEventListener("DOMContentLoaded", function () {
         }).then(response => response.ok ? response.json() : Promise.reject(response))
           .then(data => {
             const bookmarkedRentals = data.bookmarks.Rent;
-            bookmarksListContainer.innerHTML = ''; 
+            bookmarksListContainer.innerHTML = '';
 
-            // --- 更新已收藏 ID 的 Set ---
-            userBookmarkedRentIds.clear(); // 先清空
+            userBookmarkedRentIds.clear();
             if (bookmarkedRentals && bookmarkedRentals.length > 0) {
                  bookmarkedRentals.forEach(item => userBookmarkedRentIds.add(item.id));
                  console.log('已更新收藏 ID Set:', userBookmarkedRentIds);
             } else {
                  console.log('收藏清單為空，清空 Set。');
             }
-            // --- 更新結束 ---
 
             if (!bookmarkedRentals || bookmarkedRentals.length === 0) {
                 bookmarksListContainer.innerHTML = '<p>您尚未收藏任何房源。</p>';
@@ -347,8 +331,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
             bookmarkedRentals.forEach((property, index) => {
                 const li = document.createElement('li');
-                li.classList.add('bookmark-card-item'); 
-                
+                li.classList.add('bookmark-card-item');
+
                 let coverImageUrl = property.coverImage;
                 if (coverImageUrl) {
                     if (coverImageUrl.startsWith('/')) {
@@ -357,7 +341,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 } else {
                     coverImageUrl = defaultCoverImage;
                 }
-                
+
                 const cardHtml = `
                     <img src="${coverImageUrl}" class="bookmark-cover-image" onerror="this.src='${defaultCoverImage}';" alt="${property.name}">
                     <div class="bookmark-text-info">
@@ -367,7 +351,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             <span class="bookmark-price-range">${property.rentPriceRange ? '租金:' + formatPriceRange(property.rentPriceRange) : '租金範圍未提供'}</span>
                         </div>
                     </div>
-                    <button class="remove-bookmark-btn" data-rent-id="${property.id}">&times; 移除</button>
+                    <button class="bookmark-action-btn" data-rent-id="${property.id}">⋮</button>
                 `;
 
                 li.innerHTML = cardHtml;
@@ -377,13 +361,19 @@ document.addEventListener("DOMContentLoaded", function () {
                     const propertyId = property.id;
                     const fullPropertyData = allMapProperties.find(p => p.id === propertyId);
 
+                    const actionBtn = li.querySelector('.bookmark-action-btn');
+                    if (actionBtn && actionBtn.classList.contains('is-remove-mode')) {
+                        actionBtn.classList.remove('is-remove-mode');
+                        actionBtn.innerHTML = '⋮';
+                    }
+
                     if (fullPropertyData && fullPropertyData.coordinates) {
                         map.flyTo([fullPropertyData.coordinates.latitude, fullPropertyData.coordinates.longitude], 17, { animate: true, duration: 1.0 });
                         openSidebar(fullPropertyData);
-                        hideBookmarksPanel();
+                        // hideBookmarksPanel(); // 維持開啟
                     } else if (property.coordinates && property.coordinates.latitude) {
                         console.log(`找不到 ${propertyId} 的本地資料，開始自動刷新...`);
-                        hideBookmarksPanel(); 
+                        // hideBookmarksPanel(); // 維持開啟
                         map.flyTo([property.coordinates.latitude, property.coordinates.longitude], 17, { animate: true, duration: 1.0 });
                         map.once('moveend', function() {
                             console.log('地圖移動完畢，開始自動刷新...');
@@ -405,49 +395,74 @@ document.addEventListener("DOMContentLoaded", function () {
                 // --- 綁定卡片點擊事件結束 ---
 
                 ul.appendChild(li);
+
+                // --- 為新的動作按鈕綁定事件 ---
+                const actionBtn = li.querySelector('.bookmark-action-btn');
+                if (actionBtn) {
+                    actionBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+
+                        const rentId = this.dataset.rentId;
+                        const isRemoveMode = this.classList.contains('is-remove-mode');
+
+                        if (isRemoveMode) {
+                            if (confirm('您確定要從收藏中移除此項目嗎？')) {
+                                handleRemoveBookmark(currentUserData.userID, rentId);
+                            } else {
+                                this.classList.remove('is-remove-mode');
+                                this.innerHTML = '⋮';
+                            }
+                        } else {
+                            ul.querySelectorAll('.bookmark-action-btn.is-remove-mode').forEach(otherBtn => {
+                                if (otherBtn !== this) {
+                                     otherBtn.classList.remove('is-remove-mode');
+                                     otherBtn.innerHTML = '⋮';
+                                }
+                            });
+                            this.classList.add('is-remove-mode');
+                            this.innerHTML = '&times; 移除';
+                        }
+                    });
+                    
+                    // ----- vvvvv 新增 mouseleave 事件 vvvvv -----
+                    actionBtn.addEventListener('mouseleave', function() {
+                        // 如果按鈕當前是移除模式，則恢復
+                        if (this.classList.contains('is-remove-mode')) {
+                             this.classList.remove('is-remove-mode');
+                             this.innerHTML = '⋮';
+                        }
+                    });
+                    // ----- ^^^^^ 新增 mouseleave 事件 ^^^^^ -----
+                }
+                 // --- 按鈕事件綁定結束 ---
             });
             bookmarksListContainer.appendChild(ul);
-            
-            ul.querySelectorAll('.remove-bookmark-btn').forEach(button => {
-                button.addEventListener('click', function(e) {
-                    e.stopPropagation(); 
-                    const rentId = this.dataset.rentId;
-                    if (confirm('您確定要從收藏中移除此項目嗎？')) {
-                        handleRemoveBookmark(currentUserData.userID, rentId);
-                    }
-                });
-            });
 
         }).catch(error => {
             console.error('獲取收藏清單時發生錯誤:', error);
             bookmarksListContainer.innerHTML = '<p>載入失敗，請稍後再試。</p>';
-             // 即使獲取失敗，也清空 Set
              userBookmarkedRentIds.clear();
         });
     }
     // ----- ^^^^^ 修改後的 showBookmarksPanel ^^^^^ -----
 
-    // ----- vvvvv 修改後的 handleRemoveBookmark vvvvv -----
-    function handleRemoveBookmark(userId, rentId) { 
+    function handleRemoveBookmark(userId, rentId) {
         console.log(`嘗試移除收藏: UserID: ${userId}, RentID: ${rentId}`);
         const deleteUrl = `${baseUrl}/Users/${userId}/bookmarks/${rentId}`;
 
         fetch(deleteUrl, {
             method: 'DELETE'
         }).then(response => {
-            if (response.ok) return response.json(); 
+            if (response.ok) return response.json();
             console.error('移除收藏 API 回應錯誤:', response.status, response.statusText);
             throw new Error('移除收藏失敗，請稍後再試。');
         }).then(data => {
             alert('移除收藏成功！');
-            
-            // --- 從 Set 中移除 ID ---
-            userBookmarkedRentIds.delete(rentId);
-            
-            // --- 重新整理收藏清單 ---
-            showBookmarksPanel(); 
 
-             // --- 如果移除的是當前側邊欄的項目，更新按鈕狀態 ---
+            userBookmarkedRentIds.delete(rentId);
+
+            showBookmarksPanel();
+
              if (currentPropertyData && currentPropertyData.id === rentId) {
                   const bookmarkButton = document.getElementById('bookmark-button');
                   if (bookmarkButton) {
@@ -456,15 +471,13 @@ document.addEventListener("DOMContentLoaded", function () {
                        bookmarkButton.style.backgroundColor = '#007bff';
                   }
              }
-             // --- 更新結束 ---
 
         }).catch(error => {
             console.error('移除收藏時發生錯誤:', error);
             alert(error.message);
         });
     }
-    // ----- ^^^^^ 修改後的 handleRemoveBookmark ^^^^^ -----
-    
+
     function displayMarkers(markerData) {
     rentMarkers.clearLayers();
     if (markerData && markerData.length > 0) {
@@ -486,7 +499,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 }
-    
+
     function loadRentalsInView() {
         const bounds = map.getBounds();
         const center = bounds.getCenter();
@@ -494,23 +507,23 @@ document.addEventListener("DOMContentLoaded", function () {
         const longitudeDelta = bounds.getEast() - bounds.getWest();
         const url = new URL(rentRegionMapUrl);
         url.search = new URLSearchParams({ latitude: center.lat, longitude: center.lng, latitudeDelta, longitudeDelta }).toString();
-        
+
         return fetch(url, { headers: { 'Accept': 'application/json' } })
             .then(response => response.ok ? response.json() : Promise.reject(response))
             .then(data => {
                 const apiData = data.map(item => ({ ...item, type: 'rent' }));
                 const combinedData = [...apiData, sunshineApartmentData, sunshineApartmentData2];
-                allMapProperties = combinedData; 
+                allMapProperties = combinedData;
                 displayMarkers(combinedData);
-                return combinedData; 
+                return combinedData;
             })
             .catch(error => {
                 console.error('載入房源資料時發生錯誤:', error);
                 console.log('API 請求失敗，顯示預設測試資料點...');
                 const staticData = [sunshineApartmentData, sunshineApartmentData2];
-                allMapProperties = staticData; 
+                allMapProperties = staticData;
                 displayMarkers(staticData);
-                return staticData; 
+                return staticData;
             });
     }
 
@@ -542,7 +555,6 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     }
 
-    // ----- vvvvv 修改後的 openSidebar vvvvv -----
     function openSidebar(property) {
         currentPropertyData = property; // 儲存當前物件資料
         closeLightbox();
@@ -551,7 +563,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const sidebarImgPlaceholder = document.getElementById('sidebar-img-placeholder');
         const priceElement = document.getElementById('sidebar-price');
         const postsList = document.getElementById('sidebar-posts');
-        const bookmarkButton = document.getElementById('bookmark-button'); 
+        const bookmarkButton = document.getElementById('bookmark-button');
         const titleElement = document.getElementById('sidebar-title');
         const contentElement = document.getElementById('sidebar-content');
         const cityElement = document.getElementById('sidebar-city');
@@ -572,7 +584,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (postsList) postsList.style.display = 'none';
             if (bookmarkButton) bookmarkButton.style.display = 'none';
             if(contactSection) contactSection.style.display = 'none';
-            
+
         } else { // 這裡是 rent 的情況
             let imageUrl = 'images/DefaultHotel.jpg';
             if (property.coverImage) {
@@ -584,9 +596,9 @@ document.addEventListener("DOMContentLoaded", function () {
             }
             sidebarImg.src = imageUrl;
             sidebarImg.onerror = () => { sidebarImg.src = 'images/DefaultHotel.jpg'; };
-            
+
             allPropertyPosts = property.posts || [];
-            
+
             if (priceElement) {
                 priceElement.innerHTML = '';
                 priceElement.style.display = 'none';
@@ -607,7 +619,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     } else {
                         li.classList.add('status-rented');
                     }
-                    
+
                     let roomImageHtml;
                     if (post.imageResources && post.imageResources.length > 0) {
                         const firstImageUrl = post.imageResources[0].startsWith('/') ? baseUrl + post.imageResources[0] : post.imageResources[0];
@@ -620,7 +632,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         post.imageResources[0] = defaultImageSrc;
                         roomImageHtml = `<img src="${defaultImageSrc}" class="room-image" data-room-index="${index}">`;
                     }
-                    
+
                     const roomNameSpan = `<span class="room-name">${post.roomName || '未提供房名'}</span>`;
                     const rentMoneySpan = `<span class="room-money">${formatNumberWithCommas(post.rentMoney)}</span>`;
                     const rentStatusSpan = `<span class="room-status">${statusStringFromServer}</span>`;
@@ -635,28 +647,24 @@ document.addEventListener("DOMContentLoaded", function () {
                 li.textContent = '暫無房源資訊';
                 postsList.appendChild(li);
             }
-            
-            // --- 根據是否已收藏來設定按鈕狀態 ---
+
             if (bookmarkButton) {
                 if (currentUserData) {
-                    // 檢查 Set 中是否有此 ID
                     if (userBookmarkedRentIds.has(property.id)) {
                          bookmarkButton.innerText = '已加入收藏';
                          bookmarkButton.disabled = true;
-                         bookmarkButton.style.backgroundColor = '#6c757d'; 
+                         bookmarkButton.style.backgroundColor = '#6c757d';
                     } else {
-                         bookmarkButton.innerText = '加入收藏'; 
-                         bookmarkButton.disabled = false;    
-                         bookmarkButton.style.backgroundColor = '#007bff'; 
+                         bookmarkButton.innerText = '加入收藏';
+                         bookmarkButton.disabled = false;
+                         bookmarkButton.style.backgroundColor = '#007bff';
                     }
                     bookmarkButton.style.display = 'block';
                 } else {
                     bookmarkButton.style.display = 'none';
                 }
             }
-            // --- 按鈕狀態設定結束 ---
 
-            // --- 開始建立聯絡資訊卡片 ---
             let contactHtml = '';
             if (property.urlPhone) {
                 const displayPhone = property.urlPhone.replace('tel:', '').replace('+886', '0');
@@ -674,13 +682,12 @@ document.addEventListener("DOMContentLoaded", function () {
             if (contactCard && contactSection) {
                 if (contactHtml) {
                     contactCard.innerHTML = contactHtml;
-                    contactSection.style.display = 'block'; 
+                    contactSection.style.display = 'block';
                 } else {
-                    contactCard.innerHTML = ''; 
-                    contactSection.style.display = 'none'; 
+                    contactCard.innerHTML = '';
+                    contactSection.style.display = 'none';
                 }
             }
-            // --- 聯絡資訊卡片建立結束 ---
         }
         sidebarImg.onload = () => {
             sidebarImg.style.display = 'block';
@@ -692,7 +699,6 @@ document.addEventListener("DOMContentLoaded", function () {
             // cityElement.innerHTML = '<strong>城市:</strong> ' + (property.cityName || '未提供');
         }
     }
-    // ----- ^^^^^ 修改後的 openSidebar ^^^^^ -----
 
     function closeSidebar() {
         sidebar.classList.add('closed');
@@ -700,12 +706,12 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // --- 事件監聽與初始設定 ---
-    displayMarkers([sunshineApartmentData, sunshineApartmentData2]); 
-    allMapProperties = [sunshineApartmentData, sunshineApartmentData2]; 
-    loadRestaurantsInView(); 
+    displayMarkers([sunshineApartmentData, sunshineApartmentData2]);
+    allMapProperties = [sunshineApartmentData, sunshineApartmentData2];
+    loadRestaurantsInView();
 
     map.on('moveend', function() {
-        // loadRentalsInView(); 
+        // loadRentalsInView();
         // loadRestaurantsInView();
     });
 
@@ -713,7 +719,7 @@ document.addEventListener("DOMContentLoaded", function () {
         navigator.geolocation.getCurrentPosition(
             position => {
                 map.setView([position.coords.latitude, position.coords.longitude], 16);
-                loadRentalsInView(); 
+                loadRentalsInView();
             },
             error => {
                 console.error('獲取使用者位置失敗:', error.message);
@@ -877,6 +883,22 @@ document.addEventListener("DOMContentLoaded", function () {
         if (storedUserData) {
             const userData = JSON.parse(storedUserData);
             updateUIToLoggedIn(userData);
+             if (userData) {
+                 fetch(`${baseUrl}/Users/${userData.userID}/bookmarks`, {
+                      method: 'GET',
+                      headers: { 'Accept': 'application/json' }
+                 }).then(response => response.ok ? response.json() : Promise.reject(response))
+                 .then(data => {
+                      const bookmarkedRentals = data.bookmarks.Rent;
+                      userBookmarkedRentIds.clear();
+                      if (bookmarkedRentals && bookmarkedRentals.length > 0) {
+                           bookmarkedRentals.forEach(item => userBookmarkedRentIds.add(item.id));
+                           console.log('初始載入，已更新收藏 ID Set:', userBookmarkedRentIds);
+                      }
+                 }).catch(error => {
+                       console.error('初始獲取收藏清單失敗:', error);
+                 });
+             }
         }
     }
     checkInitialLoginState();

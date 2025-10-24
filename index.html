@@ -61,7 +61,7 @@
                 transition: right 0.3s ease;
                 height: auto;
                 max-height: 85vh;
-                border-radius: 0 0 0 20px;
+                border-radius: 0 0 20px 0; /* 右下角圓角 */
             }
 
             #sidebar.closed {
@@ -69,7 +69,8 @@
             }
 
             #sidebar:not(.closed) {
-                right: 5%;
+                 /* 稍微調整手機版右側邊距 */
+                right: 2.5%;
             }
         }
 
@@ -205,22 +206,39 @@
 
         #bookmarks-panel {
             position: fixed;
-            top: 0;
+            top: 60px;
             left: -450px;
             width: 400px;
             max-width: 90%;
-            height: 100vh;
-            background-color: #f8f9fa; /* 改為淺灰色 */
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+            max-height: 80vh;
+            background-color: #ffffff; /* 白色背景 */
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
             padding: 20px;
             transition: left 0.3s ease;
             z-index: 1500;
             overflow-y: auto;
             box-sizing: border-box;
+            border-radius: 40px;
+            margin-left: 20px;
         }
 
         #bookmarks-panel.open {
-            left: 0;
+            left: 20px;
+        }
+
+        @media (max-width: 600px) {
+            #bookmarks-panel {
+                width: 95%;
+                max-width: 95%;
+                left: -100%;
+                top: 0;
+                margin: 0;
+                max-height: 85vh;
+                 border-radius: 0 0 20px 0;
+            }
+             #bookmarks-panel.open {
+                 left: 2.5%;
+             }
         }
 
         #bookmarks-panel h2 {
@@ -248,18 +266,18 @@
         }
 
         .bookmark-card-item {
-            background-color: #ffffff; 
+            background-color: #f9f9f9; /* 淺灰色背景 */
             border: 1px solid #eee;
             border-radius: 15px;
-            padding: 12px; 
+            padding: 18px 12px; /* 增加上下 padding */
             margin-bottom: 10px;
             display: flex;
-            align-items: center; 
+            align-items: center;
             gap: 15px;
-            cursor: pointer; 
+            cursor: pointer;
             transition: background-color 0.2s ease;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.1); 
         }
+
 
         .bookmark-card-item:hover {
             background-color: #f0f0f0;
@@ -278,55 +296,90 @@
             display: flex;
             flex-direction: column;
             flex-grow: 1;
-            gap: 5px;
+            gap: 5px; /* 調整標題和 meta 的間距 */
+             min-width: 0; /* 允許文字區塊縮小 */
         }
 
         .bookmark-meta {
             display: flex;
-            flex-direction: column; 
-            align-items: flex-start; 
-            gap: 4px; 
+            flex-direction: column; /* 改回垂直排列 */
+            align-items: flex-start; /* 靠左對齊 */
+            gap: 4px;
             font-size: 13px;
             color: #666;
         }
+
 
         .bookmark-name {
             font-weight: bold;
             font-size: 16px;
             color: #333;
+             white-space: nowrap;
+             overflow: hidden;
+             text-overflow: ellipsis;
         }
 
         .bookmark-price-range {
             color: #1bad47;
             font-weight: bold;
+            font-size: 14px; /* 稍小字體 */
+            white-space: nowrap;
         }
-        
+
         .bookmark-city {
              font-weight: normal;
+             white-space: nowrap;
+             overflow: hidden;
+             text-overflow: ellipsis;
         }
-        
-        .remove-bookmark-btn {
-            background-color: #e74c3c;
-            color: white;
-            border: none;
-            padding: 4px 8px;
-            border-radius: 5px;
-            font-size: 12px;
+
+        /* ----- 收藏清單動作按鈕樣式 ----- */
+        .bookmark-action-btn {
+            background-color: transparent; /* 預設透明 */
+            color: #6c757d; /* 圖示顏色 */
+            border: none; /* 無邊框 */
+            /* padding: 6px 10px; */ /* padding 由 width/height 控制 */
+            border-radius: 50%; /* 圓形 */
+            font-size: 18px; /* 圖示大小 */
             cursor: pointer;
-            transition: background-color 0.2s ease;
-            margin-left: 10px; 
-            flex-shrink: 0; 
+            transition: background-color 0.2s ease, color 0.2s ease, width 0.2s ease;
+            margin-left: 10px;
+            flex-shrink: 0;
+            width: 32px; /* 寬度 */
+            height: 32px; /* 高度 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            white-space: nowrap;
+            line-height: 1; /* 確保圖示垂直置中 */
         }
-        
-        .remove-bookmark-btn:hover {
-            background-color: #c0392b;
+
+        .bookmark-action-btn:hover {
+            background-color: rgba(0, 0, 0, 0.08); /* 滑鼠懸停時淺灰色背景 */
+            color: #333; /* 滑鼠懸停時圖示深一點 */
         }
-        
+
+        /* 移除模式 */
+        .bookmark-action-btn.is-remove-mode {
+            background-color: #e74c3c;
+            color: white; /* 文字顏色 */
+            font-size: 12px;
+            width: 65px; /* 移除模式時變寬 */
+            border-radius: 5px; /* 變回方角 */
+             padding: 5px 10px; /* 恢復文字 padding */
+        }
+
+         .bookmark-action-btn.is-remove-mode:hover {
+             background-color: #c0392b;
+         }
+        /* ----- 按鈕樣式結束 ----- */
+
         #bookmarks-list-container li {
-            padding: 0; 
+            padding: 0;
             border-bottom: none;
         }
-        
+
 
         .css-icon {
             position: relative;
@@ -396,11 +449,16 @@
             z-index: 1001;
         }
 
-        #bookmark-button:hover {
+         #bookmark-button:disabled {
+             background-color: #6c757d;
+             cursor: not-allowed;
+         }
+
+        #bookmark-button:hover:not(:disabled) {
             background-color: #0056b3;
         }
 
-        #bookmark-button:active {
+        #bookmark-button:active:not(:disabled) {
             transform: scale(0.95);
             background-color: #004494;
         }
@@ -427,39 +485,34 @@
             margin-top: 15px;
         }
 
-        /* ----- vvvvv 這裡是修改後的聯絡資訊樣式 vvvvv ----- */
         #sidebar-contact-card {
             background-color: #f9f9f9;
             border: 1px solid #eee;
             border-radius: 15px;
             padding: 15px;
-            margin: 0; 
+            margin: 0;
         }
 
         .contact-item {
-            /* background-color: #f9f9f9; */ /* 移除背景色 */
-            /* border: 1px solid #eee; */ /* 移除邊框 */
-            /* border-radius: 15px; */ /* 移除圓角 */
-            padding: 10px 0; /* 調整垂直 padding */
-            margin: 0; /* 移除 margin */
+            padding: 10px 0;
+            margin: 0;
             font-size: 14px;
             color: #666;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid #eee; /* 改用底線分隔 */
+            border-bottom: 1px solid #eee;
         }
 
         #sidebar-contact-card .contact-item:last-child {
             margin-bottom: 0;
-            border-bottom: none; /* 最後一項不需要底線 */
+            border-bottom: none;
         }
 
         .contact-item span {
             font-weight: bold;
             color: #333;
         }
-        /* ----- ^^^^^ 這裡是修改後的聯絡資訊樣式 ^^^^^ ----- */
 
         #sidebar-posts {
             list-style-type: none;
@@ -518,6 +571,7 @@
             flex-direction: column;
             flex-grow: 1;
             gap: 8px;
+             min-width: 0; /* 允許文字區塊縮小 */
         }
 
         .room-meta {
@@ -529,6 +583,9 @@
         .room-name {
             font-weight: bold;
             font-size: 16px;
+             white-space: nowrap;
+             overflow: hidden;
+             text-overflow: ellipsis;
         }
 
         .room-money {
@@ -579,11 +636,10 @@
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.3s ease, visibility 0.3s ease;
-            /*防止全選圖片*/
-            -webkit-user-select: none; /* Safari */
-            -moz-user-select: none;    /* Firefox */
-            -ms-user-select: none;     /* IE10+ */
-            user-select: none;         /* 標準語法 */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
 
         #lightbox-overlay:not(.hidden) {
@@ -618,37 +674,37 @@
             top: 50%;
             transform: translateY(-50%);
             background: none;
-            color: rgba(255, 255, 255, 0.8); /* 讓箭頭半透明 */
-            text-shadow: 0 0 5px rgba(0, 0, 0, 0.9); /* 增加文字陰影，讓箭頭更突出 */
+            color: rgba(255, 255, 255, 0.8);
+            text-shadow: 0 0 5px rgba(0, 0, 0, 0.9);
             border: none;
-            font-size: 60px; /* 放大箭頭 */
+            font-size: 60px;
             font-weight: bold;
             cursor: pointer;
-            padding: 0 10px; /* 增加點擊區域 */
+            padding: 0 10px;
             width: auto;
             height: auto;
             transition: color 0.2s ease, transform 0.2s ease;
-            z-index: 3010; /* 確保它在圖片上方 */
+            z-index: 3010;
         }
 
         .lightbox-nav-btn:hover {
-            color: white; /* 懸停時完全不透明 */
-            transform: translateY(-50%) scale(1.1); /* 懸停時稍微放大 */
+            color: white;
+            transform: translateY(-50%) scale(1.1);
         }
         #lightbox-main-panel {
             display: flex;
-            justify-content: space-between; /* 讓內容靠兩側，中間自動撐開 */
-            align-items: flex-start;      /* 讓所有子元素頂部對齊 */
-            width: 95vw;                  /* 限制總寬度為螢幕的 95% */
+            justify-content: space-between;
+            align-items: flex-start;
+            width: 95vw;
             max-height: 70vh;
-            pointer-events: none;   
+            pointer-events: none;
         }
         #lightbox-room-description,
         #lightbox-description-placeholder {
-            width: 350px;       /* 兩邊都設定固定寬度 */
-            flex-shrink: 0;     /* 關鍵：防止被壓縮 */
+            width: 350px;
+            flex-shrink: 0;
             box-sizing: border-box;
-            visibility: hidden; /* 預設都隱藏 */
+            visibility: hidden;
             pointer-events: auto;
         }
         #lightbox-room-description {
@@ -658,8 +714,8 @@
             border-radius: 10px;
             font-size: 15px;
             line-height: 1.7;
-            max-height: 100%;    /* 高度不超過父容器 */
-            overflow-y: auto;    /* 文字過多時滾動 */
+            max-height: 100%;
+            overflow-y: auto;
         }
 
         #lightbox-image-prev {
@@ -763,7 +819,8 @@
              <div id="sidebar-contact-card">
                  </div>
         </div>
-        </div>
+
+    </div>
 
     <div id="overlay" class="hidden">
         <div id="auth-modal">

@@ -246,6 +246,7 @@
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
         }
 
+        /* --- 修改：面板改為 Flex 佈局 --- */
         #bookmarks-panel {
             position: fixed;
             top: 60px;
@@ -253,21 +254,17 @@
             width: 400px;
             max-width: 90%;
             max-height: 80vh;
-            background-color: #ffffff; /* 白色背景 */
+            background-color: #ffffff; 
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-            padding: 20px;
+            padding: 0; /* 移除 Padding */
             transition: left 0.3s ease;
             z-index: 1500;
-            overflow-y: auto;
             box-sizing: border-box;
             border-radius: 40px;
             margin-left: 20px;
-            scrollbar-width: none; /* <-- 新增 */
-            -ms-overflow-style: none; /* <-- 新增 */
-        }
-
-        #bookmarks-panel::-webkit-scrollbar { /* <-- 新增 */
-            display: none;
+            display: flex; /* 新增 */
+            flex-direction: column; /* 新增 */
+            /* 移除 overflow-y 和 scrollbar 樣式 */
         }
 
         #bookmarks-panel.open {
@@ -289,35 +286,64 @@
              }
         }
 
+        /* --- 新增：面板標頭樣式 --- */
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 20px 15px 20px;
+            border-bottom: 1px solid #dee2e6;
+            flex-shrink: 0; /* 確保標頭不會被壓縮 */
+        }
+
+        /* --- 修改：移除 h2 的邊框和間距 --- */
         #bookmarks-panel h2 {
             font-weight: 600;
             color: #333;
-            border-bottom: 1px solid #dee2e6;
-            padding-bottom: 15px;
+            border-bottom: none; /* 移除 */
+            padding-bottom: 0; /* 移除 */
             margin-top: 0;
-            margin-bottom: 20px;
+            margin-bottom: 0; /* 移除 */
         }
 
+        /* --- 修改：關閉按鈕改為相對定位 --- */
         #close-bookmarks-panel-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
+            position: relative; /* 修改 */
+            top: 0; /* 移除 */
+            right: 0; /* 移除 */
             font-size: 20px;
             cursor: pointer;
             border: none;
             background: none;
+            margin-left: 15px; /* 新增間距 */
         }
+        
+        /* --- 修改：列表容器改為可滾動 --- */
+        #bookmarks-list-container {
+            overflow-y: auto; /* 新增 */
+            flex-grow: 1; /* 新增 */
+            padding: 15px 20px 20px 20px; /* 新增內邊距 */
+            
+            /* 滾動條隱藏 */
+            scrollbar-width: none; 
+            -ms-overflow-style: none;
+        }
+        #bookmarks-list-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* --- 修改：移除 ul 的 margin-top --- */
         #bookmarks-list-container ul.bookmarks-card-list {
             list-style-type: none;
             padding: 0;
-            margin-top: 15px;
+            margin-top: 0; /* 修改 */
         }
 
         .bookmark-card-item {
             background-color: #f9f9f9;
             border: 1px solid #eee;
             border-radius: 15px;
-            padding: 20px 10px; /* 上下 20px, 左右 10px */
+            padding: 20px 10px; 
             margin-bottom: 10px;
             display: flex;
             align-items: center;
@@ -326,11 +352,9 @@
             transition: background-color 0.2s ease;
         }
         
-
         .bookmark-card-item:hover {
             background-color: #f0f0f0;
         }
-
         
         .bookmark-cover-image {
             width: 80px;
@@ -339,7 +363,7 @@
             border-radius: 8px;
             flex-shrink: 0;
             object-fit: cover;
-            margin-left: 10px; /* 新增左邊距 */
+            margin-left: 10px; 
         }
        
         .bookmark-text-info {
@@ -360,7 +384,6 @@
             margin-bottom: 10px;
         }
 
-
         .bookmark-name {
             font-weight: bold;
             font-size: 16px;
@@ -373,15 +396,15 @@
         }
 
         .bookmark-price-range {
-            color: #666; /* 標籤文字灰色 */
-            font-weight: normal; /* 標籤文字非粗體 */
+            color: #666; 
+            font-weight: normal; 
             font-size: 14px;
             white-space: nowrap;
             line-height: 1.4;
         }
         .bookmark-price-amount {
-            color: #1bad47; /* 金額數字綠色 */
-            font-weight: bold; /* 金額數字粗體 */
+            color: #1bad47; 
+            font-weight: bold; 
         }
 
         .bookmark-city {
@@ -943,7 +966,7 @@
             transform: scale(0.98);
         }
         
-        /* --- 新增房源清單面板樣式 --- */
+        /* --- 修改：房源清單面板改為 Flex 佈局 --- */
         #properties-panel {
             position: fixed;
             top: 60px;
@@ -953,19 +976,15 @@
             max-height: 80vh;
             background-color: #ffffff;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-            padding: 20px;
+            padding: 0; /* 移除 Padding */
             transition: left 0.3s ease;
             z-index: 1500;
-            overflow-y: auto;
             box-sizing: border-box;
             border-radius: 40px;
             margin-left: 20px;
-            scrollbar-width: none; /* <-- 新增 */
-            -ms-overflow-style: none; /* <-- 新增 */
-        }
-
-        #properties-panel::-webkit-scrollbar { /* <-- 新增 */
-            display: none;
+            display: flex; /* 新增 */
+            flex-direction: column; /* 新增 */
+            /* 移除 overflow-y 和 scrollbar 樣式 */
         }
 
         #properties-panel.open {
@@ -987,29 +1006,47 @@
              }
         }
 
+        /* --- 修改：移除 h2 的邊框和間距 --- */
         #properties-panel h2 {
             font-weight: 600;
             color: #333;
-            border-bottom: 1px solid #dee2e6;
-            padding-bottom: 15px;
+            border-bottom: none; /* 移除 */
+            padding-bottom: 0; /* 移除 */
             margin-top: 0;
-            margin-bottom: 20px;
+            margin-bottom: 0; /* 移除 */
         }
 
+        /* --- 修改：關閉按鈕改為相對定位 --- */
         #close-properties-panel-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
+            position: relative; /* 修改 */
+            top: 0; /* 移除 */
+            right: 0; /* 移除 */
             font-size: 20px;
             cursor: pointer;
             border: none;
             background: none;
+            margin-left: 15px; /* 新增間距 */
         }
 
+        /* --- 修改：列表容器改為可滾動 --- */
+        #properties-list-container {
+            overflow-y: auto; /* 新增 */
+            flex-grow: 1; /* 新增 */
+            padding: 15px 20px 20px 20px; /* 新增內邊距 */
+
+            /* 滾動條隱藏 */
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        #properties-list-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* --- 修改：移除 ul 的 margin-top --- */
         #properties-list-container ul.bookmarks-card-list {
             list-style-type: none;
             padding: 0;
-            margin-top: 15px;
+            margin-top: 0; /* 修改 */
         }
         /* --- 房源清單面板樣式結束 --- */
     </style>
@@ -1103,15 +1140,19 @@
     </div>
 
     <div id="bookmarks-panel">
-        <button id="close-bookmarks-panel-btn">&times;</button>
-        <h2>我的收藏清單</h2>
-        <div id="bookmarks-list-container">
+        <div class="panel-header">
+            <h2>我的收藏清單</h2>
+            <button id="close-bookmarks-panel-btn">&times;</button>
         </div>
+        <div id="bookmarks-list-container">
+            </div>
     </div>
 
     <div id="properties-panel">
-        <button id="close-properties-panel-btn">&times;</button>
-        <h2>目前地圖房源</h2>
+        <div class="panel-header">
+            <h2>目前地圖房源</h2>
+            <button id="close-properties-panel-btn">&times;</button>
+        </div>
         <div id="properties-list-container">
             </div>
     </div>

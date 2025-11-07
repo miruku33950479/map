@@ -956,7 +956,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-fs
     postsListContainer.addEventListener('click', function(e) {
         if (e.target && e.target.classList.contains('room-image')) {
             const roomIndex = parseInt(e.target.dataset.roomIndex, 10);

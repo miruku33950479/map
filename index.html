@@ -262,6 +262,12 @@
             box-sizing: border-box;
             border-radius: 40px;
             margin-left: 20px;
+            scrollbar-width: none; /* <-- 新增 */
+            -ms-overflow-style: none; /* <-- 新增 */
+        }
+
+        #bookmarks-panel::-webkit-scrollbar { /* <-- 新增 */
+            display: none;
         }
 
         #bookmarks-panel.open {
@@ -880,15 +886,15 @@
 
         #bookmarks-list-button {
             right: 200px;
-            background-color: #17a2b8; /* <-- 修改：改為藍綠色 */
-            display: none; /* 保持 JS 控制的初始隱藏狀態 */
+            background-color: #17a2b8;
+            display: none; 
         }
         
         /* --- 新增房源清單按鈕樣式 --- */
         #properties-list-button {
             right: 100px;
-            background-color: #17a2b8; /* info 藍綠色 */
-            display: block; /* 始終顯示 */
+            background-color: #17a2b8; 
+            display: block; 
         }
         
         #properties-list-button:hover {
@@ -929,11 +935,11 @@
 
 
         #bookmarks-list-button:hover {
-            background-color: #138496; /* <-- 修改：改為藍綠色 (hover) */
+            background-color: #138496;
         }
 
         #bookmarks-list-button:active {
-            background-color: #117a8b; /* <-- 修改：改為藍綠色 (active) */
+            background-color: #117a8b;
             transform: scale(0.98);
         }
         
@@ -954,6 +960,12 @@
             box-sizing: border-box;
             border-radius: 40px;
             margin-left: 20px;
+            scrollbar-width: none; /* <-- 新增 */
+            -ms-overflow-style: none; /* <-- 新增 */
+        }
+
+        #properties-panel::-webkit-scrollbar { /* <-- 新增 */
+            display: none;
         }
 
         #properties-panel.open {

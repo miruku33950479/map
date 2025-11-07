@@ -35,8 +35,10 @@ document.addEventListener("DOMContentLoaded", function () {
         vacantRooms: 0,
         upcomingVacancies: 1,
         posts: [
-            { id: "test1", rentMoney: 10000, roomName: "測試房A", rentPostStatus: "可預約", rentStatus: 1, imageResources: [] },
-            { id: "test2", rentMoney: 15000, roomName: "測試房B", rentPostStatus: "已出租", rentStatus: 3, imageResources: [] }
+            // --- 修改：名稱不重要了，邏輯會覆蓋為「公共區域」 ---
+            { id: "test_public", rentMoney: 0, roomName: "公共區域", publicArea: true, imageResources: ["images/Room3.jpg"] },
+            { id: "test1", rentMoney: 10000, roomName: "測試房A", rentPostStatus: "可預約", rentStatus: 1, imageResources: [], publicArea: false },
+            { id: "test2", rentMoney: 15000, roomName: "測試房B", rentPostStatus: "已出租", rentStatus: 3, imageResources: [], publicArea: false }
         ],
         urlPhone: "tel:+886123456789", urlLine: "https://line.me/ti/p/testline", urlMail: "mailto:test@test.com",
         rentPriceRange: "10000~15000"
@@ -54,9 +56,11 @@ document.addEventListener("DOMContentLoaded", function () {
         vacantRooms: 2,
         upcomingVacancies: 0,
         posts: [
-            { id: "test1", rentMoney: 10000, roomName: "測試房A", rentPostStatus: "可預約", rentStatus: 1, imageResources: ["images/Room1.jpg", "images/Room2.jpg"],lightboxDescription: "這是一段測試房A的說明文字，大約三十個字，用來展示燈箱中的浮動資訊卡片效果。" },
-            { id: "test2", rentMoney: 15002, roomName: "測試房B", rentPostStatus: "已出租", rentStatus: 3, imageResources: [],lightboxDescription: "這是測試房B的說明，風格簡約，採光良好，交通便利，是您居住的最佳選擇，歡迎隨時預約看房。" },
-            { id: "test3", rentMoney: 17352, roomName: "測試房CCC", rentPostStatus: "即將釋出", rentStatus: 2, imageResources: ["images/Room3.jpg"] }
+            // --- 新增：為測試2也加入一筆公共區域資料 ---
+             { id: "test_public_2", rentMoney: 0, roomName: "健身房", publicArea: true, imageResources: ["images/Room2.jpg"] },
+            { id: "test1", rentMoney: 10000, roomName: "測試房A", rentPostStatus: "可預約", rentStatus: 1, imageResources: ["images/Room1.jpg", "images/Room2.jpg"],lightboxDescription: "這是一段測試房A的說明文字，大約三十個字，用來展示燈箱中的浮動資訊卡片效果。", publicArea: false },
+            { id: "test2", rentMoney: 15002, roomName: "測試房B", rentPostStatus: "已出租", rentStatus: 3, imageResources: [],lightboxDescription: "這是測試房B的說明，風格簡約，採光良好，交通便利，是您居住的最佳選擇，歡迎隨時預約看房。", publicArea: false },
+            { id: "test3", rentMoney: 17352, roomName: "測試房CCC", rentPostStatus: "即將釋出", rentStatus: 2, imageResources: ["images/Room3.jpg"], publicArea: false }
         ],
         urlPhone: "tel:+886123456789", urlLine: "https://line.me/ti/p/testline", urlMail: "mailto:test@test.com",
         rentPriceRange: "10000~17532"
@@ -153,9 +157,25 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
             lightboxImage.src = 'images/DefaultHotel.jpg';
         }
-        lightboxRoomName.textContent = currentRoom.roomName || '房間詳情';
+        
+        // --- 修改：燈箱標題也檢查 publicArea ---
+        if (currentRoom.publicArea === true) {
+             lightboxRoomName.textContent = '公共區域'; // <-- 修改：強制命名
+        } else {
+             lightboxRoomName.textContent = currentRoom.roomName || '房間詳情';
+        }
+        
         lightboxImageCounter.textContent = currentImages.length > 0 ? `${currentImageIndex + 1} / ${currentImages.length}` : '0 / 0';
-        lightboxRoomCounter.textContent = `房間 ${currentRoomIndex + 1} / ${allPropertyPosts.length}`;
+        // --- 修改：調整燈箱計數器文字 ---
+        let roomCounterText = "項目"; 
+        if(currentRoom.publicArea === true) {
+            roomCounterText = "公共空間";
+        } else {
+            roomCounterText = "房間";
+        }
+        lightboxRoomCounter.textContent = `${roomCounterText} ${currentRoomIndex + 1} / ${allPropertyPosts.length}`;
+        // --- 修改結束 ---
+        
         lightboxImagePrevBtn.style.display = currentImages.length > 1 ? 'block' : 'none';
         lightboxImageNextBtn.style.display = currentImages.length > 1 ? 'block' : 'none';
         lightboxRoomNav.style.display = allPropertyPosts.length > 1 ? 'flex' : 'none';
@@ -310,17 +330,14 @@ document.addEventListener("DOMContentLoaded", function () {
         propertiesPanel.classList.remove('open');
     }
 
-    // --- 修改：showPropertiesPanel 函式 (加入 API 呼叫) ---
     function showPropertiesPanel() {
-        hideBookmarksPanel(); // 關閉另一個面板
+        hideBookmarksPanel(); 
         propertiesPanel.classList.add('open');
-        propertiesListContainer.innerHTML = '<p>載入中...</p>'; // 顯示載入中
+        propertiesListContainer.innerHTML = '<p>載入中...</p>'; 
 
         const defaultCoverImage = 'images/DefaultHotel.jpg';
 
-        // --- 修改：先呼叫 API 載入最新資料 ---
         loadRentalsInView().then(updatedProperties => {
-            // allMapProperties 已經在 loadRentalsInView 中被更新
             const currentMapProperties = allMapProperties; 
 
             if (!currentMapProperties || currentMapProperties.length === 0) {
@@ -328,17 +345,16 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
             }
             
-            propertiesListContainer.innerHTML = ''; // 清除「載入中」
+            propertiesListContainer.innerHTML = ''; 
 
             const ul = document.createElement('ul');
-            ul.classList.add('bookmarks-card-list'); // 重複使用收藏清單的卡片列表樣式
+            ul.classList.add('bookmarks-card-list'); 
 
             currentMapProperties.forEach((property, index) => {
-                // 只顯示租屋類型的房源
                 if (property.type !== 'rent') return;
                     
                 const li = document.createElement('li');
-                li.classList.add('bookmark-card-item'); // 重複使用收藏清單的卡片樣式
+                li.classList.add('bookmark-card-item'); 
 
                 let coverImageUrl = property.coverImage;
                 if (coverImageUrl) {
@@ -349,7 +365,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     coverImageUrl = defaultCoverImage;
                 }
 
-                // --- 判斷狀態文字和 class ---
                 let statusText = '狀態不明';
                 let statusClass = 'status-rented';
                 const vacantRooms = property.vacantRooms ?? 0;
@@ -364,12 +379,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 } else {
                     statusText = '完租';
                 }
-                // --- 狀態判斷結束 ---
-
-                // --- 格式化金額 ---
+                
                 const priceText = property.rentPriceRange ? formatPriceRange(property.rentPriceRange) : '範圍未提供';
 
-                // --- 修改 HTML 結構 (移除 ... 按鈕) ---
                 const cardHtml = `
                     <img src="${coverImageUrl}" class="bookmark-cover-image" onerror="this.src='${defaultCoverImage}';" alt="${property.name}">
                     <div class="bookmark-text-info">
@@ -386,31 +398,24 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 li.innerHTML = cardHtml;
 
-                // --- 綁定卡片點擊事件 ---
                 li.addEventListener('click', () => {
-                    // 檢查 'property' 變數（來自 forEach）是否有座標
                     if (property.coordinates && property.coordinates.latitude) {
                         map.flyTo([property.coordinates.latitude, property.coordinates.longitude], 17, { animate: true, duration: 1.0 });
                         openSidebar(property);
-                        // 保持面板開啟
-                        // hidePropertiesPanel(); 
                     } else {
                         alert('在地圖上找不到此房源的座標或詳細資料。');
                     }
                 });
-                // --- 綁定卡片點擊事件結束 ---
 
                 ul.appendChild(li);
             });
             propertiesListContainer.appendChild(ul);
             
         }).catch(error => {
-            // 處理 loadRentalsInView() 可能發生的錯誤
             console.error('在 showPropertiesPanel 中載入房源失敗:', error);
             propertiesListContainer.innerHTML = '<p>載入房源失敗，請稍後再試。</p>';
         });
     }
-    // --- 修改結束 ---
 
 
     function showBookmarksPanel() {
@@ -418,7 +423,7 @@ document.addEventListener("DOMContentLoaded", function () {
             alert('請先登入！');
             return;
         }
-        hidePropertiesPanel(); // <-- 新增：關閉另一個面板
+        hidePropertiesPanel(); 
         bookmarksPanel.classList.add('open');
         bookmarksListContainer.innerHTML = '<p>載入中...</p>';
 
@@ -461,7 +466,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     coverImageUrl = defaultCoverImage;
                 }
 
-                // --- 判斷狀態文字和 class ---
                 let statusText = '狀態不明';
                 let statusClass = 'status-rented';
                 const vacantRooms = property.vacantRooms ?? 0;
@@ -476,9 +480,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 } else {
                     statusText = '完租';
                 }
-                // --- 狀態判斷結束 ---
-
-                // --- 格式化金額 ---
+                
                 const priceText = property.rentPriceRange ? formatPriceRange(property.rentPriceRange) : '範圍未提供';
 
                 const cardHtml = `
@@ -498,7 +500,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 li.innerHTML = cardHtml;
 
-                // --- 綁定卡片點擊事件 ---
                 li.addEventListener('click', () => {
                     const propertyId = property.id;
                     const fullPropertyData = allMapProperties.find(p => p.id === propertyId);
@@ -532,11 +533,9 @@ document.addEventListener("DOMContentLoaded", function () {
                         alert('在地圖上找不到此房源的座標或詳細資料。\n請嘗試移動地圖到房源所在區域並點擊「重新整理」按鈕後，再試一次。');
                     }
                 });
-                // --- 綁定卡片點擊事件結束 ---
 
                 ul.appendChild(li);
 
-                // --- 為新的動作按鈕綁定事件 ---
                 const actionBtn = li.querySelector('.bookmark-action-btn');
                 if (actionBtn) {
                     actionBtn.addEventListener('click', function(e) {
@@ -571,7 +570,6 @@ document.addEventListener("DOMContentLoaded", function () {
                         }
                     });
                 }
-                 // --- 按鈕事件綁定結束 ---
             });
             bookmarksListContainer.appendChild(ul);
 
@@ -636,7 +634,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 }
 
-    // --- 修改：loadRentalsInView 函式 (移除自動刷新) ---
     function loadRentalsInView() {
         const bounds = map.getBounds();
         const center = bounds.getCenter();
@@ -655,11 +652,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (sunshineApartmentData2.upcomingVacancies === undefined) sunshineApartmentData2.upcomingVacancies = 0;
 
                 const combinedData = [...apiData, sunshineApartmentData, sunshineApartmentData2];
-                allMapProperties = combinedData; // <-- 更新全域變數
+                allMapProperties = combinedData; 
                 displayMarkers(combinedData);
-                
-                // --- 修改：移除自動刷新邏輯 ---
-                // (原來的 if propertiesPanel.classList.contains('open') ... 已被移除)
                 
                 return combinedData;
             })
@@ -672,16 +666,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (sunshineApartmentData2.upcomingVacancies === undefined) sunshineApartmentData2.upcomingVacancies = 0;
 
                 const staticData = [sunshineApartmentData, sunshineApartmentData2];
-                allMapProperties = staticData; // <-- 更新全域變數
+                allMapProperties = staticData; 
                 displayMarkers(staticData);
-                
-                // --- 修改：移除自動刷新邏輯 ---
-                // (原來的 if propertiesPanel.classList.contains('open') ... 已被移除)
                 
                 return staticData;
             });
     }
-    // --- 修改結束 ---
 
     function loadRestaurantsInView() {
         const bounds = map.getBounds();
@@ -711,8 +701,9 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     }
 
+    // --- 修改：openSidebar 函式 (主要修改處) ---
     function openSidebar(property) {
-        currentPropertyData = property; // 儲存當前物件資料
+        currentPropertyData = property; 
         closeLightbox();
         sidebar.classList.remove('closed');
         const sidebarImg = document.getElementById('sidebar-img');
@@ -753,6 +744,7 @@ document.addEventListener("DOMContentLoaded", function () {
             sidebarImg.src = imageUrl;
             sidebarImg.onerror = () => { sidebarImg.src = 'images/DefaultHotel.jpg'; };
 
+            // 我們不過濾，讓燈箱可以點擊全部項目
             allPropertyPosts = property.posts || [];
 
             if (priceElement) {
@@ -764,39 +756,70 @@ document.addEventListener("DOMContentLoaded", function () {
             postsList.innerHTML = '';
             if (property.posts && property.posts.length > 0) {
                 const defaultRoomImages = ['images/Room1.jpg', 'images/Room2.jpg', 'images/Room3.jpg'];
+                
+                // --- 修改：在這裡開始迴圈和判斷 ---
                 property.posts.forEach((post, index) => {
+                    
                     const li = document.createElement('li');
-                    const statusStringFromServer = post.rentPostStatus || '狀態不明';
-
-                    if (statusStringFromServer.includes('空房') || statusStringFromServer.includes('可預約')) {
-                        li.classList.add('status-available');
-                    } else if (statusStringFromServer.includes('即將釋出')) {
-                        li.classList.add('status-upcoming');
-                    } else {
-                        li.classList.add('status-rented');
-                    }
-
+                    
+                    // --- 決定圖片 ---
                     let roomImageHtml;
                     if (post.imageResources && post.imageResources.length > 0) {
                         const firstImageUrl = post.imageResources[0].startsWith('/') ? baseUrl + post.imageResources[0] : post.imageResources[0];
                         roomImageHtml = `<img src="${firstImageUrl}" class="room-image" data-room-index="${index}">`;
                     } else {
+                        // 如果是公共空間但沒有圖，也給一張預設圖
                         const defaultImageSrc = defaultRoomImages[index % defaultRoomImages.length];
                         if (!post.imageResources) {
                             post.imageResources = [];
                         }
-                        post.imageResources[0] = defaultImageSrc;
+                        // 確保 post 物件被更新，這樣燈箱才能抓到
+                        if (post.imageResources.length === 0) {
+                             post.imageResources.push(defaultImageSrc);
+                        }
                         roomImageHtml = `<img src="${defaultImageSrc}" class="room-image" data-room-index="${index}">`;
                     }
 
-                    const roomNameSpan = `<span class="room-name">${post.roomName || '未提供房名'}</span>`;
-                    const rentMoneySpan = `<span class="room-money">${formatNumberWithCommas(post.rentMoney)}</span>`;
-                    const rentStatusSpan = `<span class="room-status">${statusStringFromServer}</span>`;
-                    const metaInfo = `<div class="room-meta">${rentMoneySpan}${rentStatusSpan}</div>`;
-                    const textInfo = `<div class="room-text-info">${roomNameSpan}${metaInfo}</div>`;
-                    li.innerHTML = `${roomImageHtml}${textInfo}`;
-                    postsList.appendChild(li);
+                    // --- 判斷 publicArea ---
+                    if (post.publicArea === true) {
+                        // --- 這是公共空間卡片 ---
+                        li.classList.add('status-public');
+                        
+                        // --- 修改：強制命名為「公共區域」 ---
+                        const roomNameSpan = `<span class="room-name">公共區域</span>`;
+                        // metaInfo 留空，但用 div 佔位以保持對齊
+                        const metaInfo = `<div class="room-meta"></div>`; 
+                        const textInfo = `<div class="room-text-info">${roomNameSpan}${metaInfo}</div>`;
+                        li.innerHTML = `${roomImageHtml}${textInfo}`;
+                        
+                    } else if (post.publicArea === false) { // <-- 修改：明確判斷 false 才顯示
+                        // --- 這是標準房間卡片 ---
+                        const statusStringFromServer = post.rentPostStatus || '狀態不明';
+
+                        if (statusStringFromServer.includes('空房') || statusStringFromServer.includes('可預約')) {
+                            li.classList.add('status-available');
+                        } else if (statusStringFromServer.includes('即將釋出')) {
+                            li.classList.add('status-upcoming');
+                        } else {
+                            li.classList.add('status-rented');
+                        }
+
+                        const roomNameSpan = `<span class="room-name">${post.roomName || '未提供房名'}</span>`;
+                        const rentMoneySpan = `<span class="room-money">${formatNumberWithCommas(post.rentMoney)}</span>`;
+                        const rentStatusSpan = `<span class="room-status">${statusStringFromServer}</span>`;
+                        const metaInfo = `<div class="room-meta">${rentMoneySpan}${rentStatusSpan}</div>`;
+                        const textInfo = `<div class="room-text-info">${roomNameSpan}${metaInfo}</div>`;
+                        li.innerHTML = `${roomImageHtml}${textInfo}`;
+                    }
+                    // --- 修改：如果 publicArea 不是 true 也不是 false (例如 undefined)，則不顯示 ---
+                    
+                    // 只有 publicArea 是 true 或 false 時才加入 DOM
+                    if (post.publicArea === true || post.publicArea === false) {
+                         postsList.appendChild(li);
+                    }
                 });
+                // --- 迴圈結束 ---
+                
             } else {
                 allPropertyPosts = [];
                 const li = document.createElement('li');
@@ -855,6 +878,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // cityElement.innerHTML = '<strong>城市:</strong> ' + (property.cityName || '未提供');
         }
     }
+    // --- openSidebar 修改結束 ---
 
     function closeSidebar() {
         sidebar.classList.add('closed');

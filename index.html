@@ -666,6 +666,24 @@
             border-left: 5px solid #f39c12;
         }
 
+        /* --- 修改：公共空間卡片樣式 --- */
+        #sidebar-posts li.status-public {
+            border-left: 5px solid #2ecc71; /* <-- 修改：顏色比照 available */
+        }
+        
+        /* 隱藏公共空間卡片的金額和狀態 */
+        .status-public .room-money,
+        .status-public .room-status {
+            display: none;
+        }
+        
+        /* 讓公共空間卡片的 "room-meta" 不會佔據空間，但保持對齊 */
+        .status-public .room-meta {
+            min-height: 20px; /* 估算一個狀態標籤的高度以保持對齊 */
+        }
+        /* --- 樣式結束 --- */
+
+
         .room-image,
         .room-image-placeholder {
             width: 80px;

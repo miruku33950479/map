@@ -819,7 +819,7 @@
         /* --- 按鈕樣式 (已修改) --- */
         #login-button, 
         #bookmarks-list-button,
-        #properties-list-button /* <-- 新增 */ {
+        #properties-list-button {
             position: absolute;
             top: 20px;
             z-index: 1001;
@@ -837,14 +837,14 @@
         }
 
         #bookmarks-list-button {
-            right: 100px; /* <-- 修改 right 值 */
+            right: 200px; /* <-- 修改：換到左邊 */
             background-color: #6c757d;
             display: none; /* 保持 JS 控制的初始隱藏狀態 */
         }
         
         /* --- 新增房源清單按鈕樣式 --- */
         #properties-list-button {
-            right: 200px; /* <-- 放在收藏清單左邊 */
+            right: 100px; /* <-- 修改：換到右邊 (登入按鈕旁) */
             background-color: #17a2b8; /* info 藍綠色 */
             display: block; /* 始終顯示 */
         }
@@ -963,8 +963,8 @@
 
 <body>
     <button id="properties-list-button">房源清單</button>
-
     <button id="bookmarks-list-button">收藏清單</button>
+    
     <button id="login-button">登入</button>
     
     <div id="map"></div>

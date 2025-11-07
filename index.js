@@ -211,6 +211,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function updateUIToLoggedIn(userData) {
         currentUserData = userData;
         loginButton.innerText = '登出';
+        loginButton.classList.add('logged-in'); // <-- 修改
         bookmarksListButton.style.display = 'block';
         userBookmarkedRentIds.clear();
 
@@ -224,6 +225,7 @@ document.addEventListener("DOMContentLoaded", function () {
         currentUserData = null;
         localStorage.removeItem('userData');
         loginButton.innerText = '登入';
+        loginButton.classList.remove('logged-in'); // <-- 修改
         bookmarksListButton.style.display = 'none';
         userBookmarkedRentIds.clear();
 
@@ -290,20 +292,131 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    // --- 修改：獲取新面板的元素 ---
     const bookmarksPanel = document.getElementById('bookmarks-panel');
     const bookmarksListContainer = document.getElementById('bookmarks-list-container');
     const closeBookmarksPanelBtn = document.getElementById('close-bookmarks-panel-btn');
+
+    const propertiesListButton = document.getElementById('properties-list-button');
+    const propertiesPanel = document.getElementById('properties-panel');
+    const propertiesListContainer = document.getElementById('properties-list-container');
+    const closePropertiesPanelBtn = document.getElementById('close-properties-panel-btn');
+    // --- 修改結束 ---
+
 
     function hideBookmarksPanel() {
         bookmarksPanel.classList.remove('open');
     }
 
-    // ----- vvvvv 修改後的 showBookmarksPanel (更新 HTML 結構 + 金額 span) vvvvv -----
+    // --- 新增：hidePropertiesPanel 函式 ---
+    function hidePropertiesPanel() {
+        propertiesPanel.classList.remove('open');
+    }
+    // --- 新增結束 ---
+
+    // --- 新增：showPropertiesPanel 函式 ---
+    // (複製自 showBookmarksPanel 並大幅修改)
+    function showPropertiesPanel() {
+        hideBookmarksPanel(); // 關閉另一個面板
+        propertiesPanel.classList.add('open');
+        propertiesListContainer.innerHTML = '<p>載入中...</p>';
+
+        const defaultCoverImage = 'images/DefaultHotel.jpg';
+
+        // 直接使用全域變數 allMapProperties
+        const currentMapProperties = allMapProperties;
+
+        if (!currentMapProperties || currentMapProperties.length === 0) {
+            propertiesListContainer.innerHTML = '<p>目前地圖範圍內沒有房源。<br>請試著移動地圖並點擊右下角的「重新整理」按鈕。</p>';
+            return;
+        }
+        
+        propertiesListContainer.innerHTML = ''; // 清除「載入中」
+
+        const ul = document.createElement('ul');
+        ul.classList.add('bookmarks-card-list'); // 重複使用收藏清單的卡片列表樣式
+
+        currentMapProperties.forEach((property, index) => {
+            // 只顯示租屋類型的房源
+            if (property.type !== 'rent') return;
+                
+            const li = document.createElement('li');
+            li.classList.add('bookmark-card-item'); // 重複使用收藏清單的卡片樣式
+
+            let coverImageUrl = property.coverImage;
+            if (coverImageUrl) {
+                if (coverImageUrl.startsWith('/')) {
+                    coverImageUrl = baseUrl + coverImageUrl;
+                }
+            } else {
+                coverImageUrl = defaultCoverImage;
+            }
+
+            // --- 判斷狀態文字和 class ---
+            let statusText = '狀態不明';
+            let statusClass = 'status-rented';
+            const vacantRooms = property.vacantRooms ?? 0;
+            const upcomingVacancies = property.upcomingVacancies ?? 0;
+
+            if (vacantRooms > 0) {
+                statusText = `尚有 ${vacantRooms} 間空房`;
+                statusClass = 'status-available';
+            } else if (upcomingVacancies > 0) {
+                statusText = `即將釋出 ${upcomingVacancies} 間房`;
+                statusClass = 'status-upcoming';
+            } else {
+                statusText = '完租';
+            }
+            // --- 狀態判斷結束 ---
+
+            // --- 格式化金額 ---
+            const priceText = property.rentPriceRange ? formatPriceRange(property.rentPriceRange) : '範圍未提供';
+
+            // --- 修改 HTML 結構 (移除 ... 按鈕) ---
+            const cardHtml = `
+                <img src="${coverImageUrl}" class="bookmark-cover-image" onerror="this.src='${defaultCoverImage}';" alt="${property.name}">
+                <div class="bookmark-text-info">
+                    <span class="bookmark-name">${property.name || '未提供房名'}</span>
+                    <div class="bookmark-meta">
+                        <span class="bookmark-city">${property.cityName || '城市未定'}</span>
+                        <span class="bookmark-price-range">租金:<span class="bookmark-price-amount">${priceText}</span></span>
+                    </div>
+                </div>
+                <div class="bookmark-action-area">
+                     <span class="bookmark-status ${statusClass}">${statusText}</span>
+                </div>
+            `;
+
+            li.innerHTML = cardHtml;
+
+            // --- 綁定卡片點擊事件 ---
+            li.addEventListener('click', () => {
+                // 檢查 'property' 變數（來自 forEach）是否有座標
+                if (property.coordinates && property.coordinates.latitude) {
+                    map.flyTo([property.coordinates.latitude, property.coordinates.longitude], 17, { animate: true, duration: 1.0 });
+                    openSidebar(property);
+                    // 保持面板開啟
+                    // hidePropertiesPanel(); 
+                } else {
+                    alert('在地圖上找不到此房源的座標或詳細資料。');
+                }
+            });
+            // --- 綁定卡片點擊事件結束 ---
+
+            ul.appendChild(li);
+        });
+        propertiesListContainer.appendChild(ul);
+    }
+    // --- 新增結束 ---
+
+
+    // ----- vvvvv 修改後的 showBookmarksPanel (加入 hidePropertiesPanel) vvvvv -----
     function showBookmarksPanel() {
         if (!currentUserData) {
             alert('請先登入！');
             return;
         }
+        hidePropertiesPanel(); // <-- 新增：關閉另一個面板
         bookmarksPanel.classList.add('open');
         bookmarksListContainer.innerHTML = '<p>載入中...</p>';
 
@@ -543,8 +656,16 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (sunshineApartmentData2.upcomingVacancies === undefined) sunshineApartmentData2.upcomingVacancies = 0;
 
                 const combinedData = [...apiData, sunshineApartmentData, sunshineApartmentData2];
-                allMapProperties = combinedData;
+                allMapProperties = combinedData; // <-- 更新全域變數
                 displayMarkers(combinedData);
+                
+                // --- 新增：如果房源清單開啟，則刷新 ---
+                if (propertiesPanel.classList.contains('open')) {
+                    console.log('房源清單已開啟，自動刷新內容...');
+                    showPropertiesPanel();
+                }
+                // --- 新增結束 ---
+                
                 return combinedData;
             })
             .catch(error => {
@@ -556,8 +677,16 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (sunshineApartmentData2.upcomingVacancies === undefined) sunshineApartmentData2.upcomingVacancies = 0;
 
                 const staticData = [sunshineApartmentData, sunshineApartmentData2];
-                allMapProperties = staticData;
+                allMapProperties = staticData; // <-- 更新全域變數
                 displayMarkers(staticData);
+                
+                // --- 新增：如果房源清單開啟，則刷新 ---
+                if (propertiesPanel.classList.contains('open')) {
+                    console.log('房源清單已開啟，自動刷新內容 (使用靜態資料)...');
+                    showPropertiesPanel();
+                }
+                // --- 新增結束 ---
+                
                 return staticData;
             });
     }
@@ -774,6 +903,15 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    // --- 新增：房源清單按鈕事件 ---
+    if (propertiesListButton) {
+        propertiesListButton.addEventListener('click', showPropertiesPanel);
+    }
+    if (closePropertiesPanelBtn) {
+        closePropertiesPanelBtn.addEventListener('click', hidePropertiesPanel);
+    }
+    // --- 新增結束 ---
+
     if (bookmarksListButton) {
         bookmarksListButton.addEventListener('click', showBookmarksPanel);
     }
@@ -818,6 +956,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
+fs
     postsListContainer.addEventListener('click', function(e) {
         if (e.target && e.target.classList.contains('room-image')) {
             const roomIndex = parseInt(e.target.dataset.roomIndex, 10);

@@ -211,7 +211,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function updateUIToLoggedIn(userData) {
         currentUserData = userData;
         loginButton.innerText = '登出';
-        loginButton.classList.add('logged-in'); // <-- 修改
+        loginButton.classList.add('logged-in'); 
         bookmarksListButton.style.display = 'block';
         userBookmarkedRentIds.clear();
 
@@ -225,7 +225,7 @@ document.addEventListener("DOMContentLoaded", function () {
         currentUserData = null;
         localStorage.removeItem('userData');
         loginButton.innerText = '登入';
-        loginButton.classList.remove('logged-in'); // <-- 修改
+        loginButton.classList.remove('logged-in'); 
         bookmarksListButton.style.display = 'none';
         userBookmarkedRentIds.clear();
 
@@ -292,7 +292,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // --- 修改：獲取新面板的元素 ---
     const bookmarksPanel = document.getElementById('bookmarks-panel');
     const bookmarksListContainer = document.getElementById('bookmarks-list-container');
     const closeBookmarksPanelBtn = document.getElementById('close-bookmarks-panel-btn');
@@ -301,116 +300,119 @@ document.addEventListener("DOMContentLoaded", function () {
     const propertiesPanel = document.getElementById('properties-panel');
     const propertiesListContainer = document.getElementById('properties-list-container');
     const closePropertiesPanelBtn = document.getElementById('close-properties-panel-btn');
-    // --- 修改結束 ---
 
 
     function hideBookmarksPanel() {
         bookmarksPanel.classList.remove('open');
     }
 
-    // --- 新增：hidePropertiesPanel 函式 ---
     function hidePropertiesPanel() {
         propertiesPanel.classList.remove('open');
     }
-    // --- 新增結束 ---
 
-    // --- 新增：showPropertiesPanel 函式 ---
-    // (複製自 showBookmarksPanel 並大幅修改)
+    // --- 修改：showPropertiesPanel 函式 (加入 API 呼叫) ---
     function showPropertiesPanel() {
         hideBookmarksPanel(); // 關閉另一個面板
         propertiesPanel.classList.add('open');
-        propertiesListContainer.innerHTML = '<p>載入中...</p>';
+        propertiesListContainer.innerHTML = '<p>載入中...</p>'; // 顯示載入中
 
         const defaultCoverImage = 'images/DefaultHotel.jpg';
 
-        // 直接使用全域變數 allMapProperties
-        const currentMapProperties = allMapProperties;
+        // --- 修改：先呼叫 API 載入最新資料 ---
+        loadRentalsInView().then(updatedProperties => {
+            // allMapProperties 已經在 loadRentalsInView 中被更新
+            const currentMapProperties = allMapProperties; 
 
-        if (!currentMapProperties || currentMapProperties.length === 0) {
-            propertiesListContainer.innerHTML = '<p>目前地圖範圍內沒有房源。<br>請試著移動地圖並點擊右下角的「重新整理」按鈕。</p>';
-            return;
-        }
-        
-        propertiesListContainer.innerHTML = ''; // 清除「載入中」
-
-        const ul = document.createElement('ul');
-        ul.classList.add('bookmarks-card-list'); // 重複使用收藏清單的卡片列表樣式
-
-        currentMapProperties.forEach((property, index) => {
-            // 只顯示租屋類型的房源
-            if (property.type !== 'rent') return;
-                
-            const li = document.createElement('li');
-            li.classList.add('bookmark-card-item'); // 重複使用收藏清單的卡片樣式
-
-            let coverImageUrl = property.coverImage;
-            if (coverImageUrl) {
-                if (coverImageUrl.startsWith('/')) {
-                    coverImageUrl = baseUrl + coverImageUrl;
-                }
-            } else {
-                coverImageUrl = defaultCoverImage;
+            if (!currentMapProperties || currentMapProperties.length === 0) {
+                propertiesListContainer.innerHTML = '<p>目前地圖範圍內沒有房源。<br>請試著移動地圖並點擊右下角的「重新整理」按鈕。</p>';
+                return;
             }
+            
+            propertiesListContainer.innerHTML = ''; // 清除「載入中」
 
-            // --- 判斷狀態文字和 class ---
-            let statusText = '狀態不明';
-            let statusClass = 'status-rented';
-            const vacantRooms = property.vacantRooms ?? 0;
-            const upcomingVacancies = property.upcomingVacancies ?? 0;
+            const ul = document.createElement('ul');
+            ul.classList.add('bookmarks-card-list'); // 重複使用收藏清單的卡片列表樣式
 
-            if (vacantRooms > 0) {
-                statusText = `尚有 ${vacantRooms} 間空房`;
-                statusClass = 'status-available';
-            } else if (upcomingVacancies > 0) {
-                statusText = `即將釋出 ${upcomingVacancies} 間房`;
-                statusClass = 'status-upcoming';
-            } else {
-                statusText = '完租';
-            }
-            // --- 狀態判斷結束 ---
+            currentMapProperties.forEach((property, index) => {
+                // 只顯示租屋類型的房源
+                if (property.type !== 'rent') return;
+                    
+                const li = document.createElement('li');
+                li.classList.add('bookmark-card-item'); // 重複使用收藏清單的卡片樣式
 
-            // --- 格式化金額 ---
-            const priceText = property.rentPriceRange ? formatPriceRange(property.rentPriceRange) : '範圍未提供';
-
-            // --- 修改 HTML 結構 (移除 ... 按鈕) ---
-            const cardHtml = `
-                <img src="${coverImageUrl}" class="bookmark-cover-image" onerror="this.src='${defaultCoverImage}';" alt="${property.name}">
-                <div class="bookmark-text-info">
-                    <span class="bookmark-name">${property.name || '未提供房名'}</span>
-                    <div class="bookmark-meta">
-                        <span class="bookmark-city">${property.cityName || '城市未定'}</span>
-                        <span class="bookmark-price-range">租金:<span class="bookmark-price-amount">${priceText}</span></span>
-                    </div>
-                </div>
-                <div class="bookmark-action-area">
-                     <span class="bookmark-status ${statusClass}">${statusText}</span>
-                </div>
-            `;
-
-            li.innerHTML = cardHtml;
-
-            // --- 綁定卡片點擊事件 ---
-            li.addEventListener('click', () => {
-                // 檢查 'property' 變數（來自 forEach）是否有座標
-                if (property.coordinates && property.coordinates.latitude) {
-                    map.flyTo([property.coordinates.latitude, property.coordinates.longitude], 17, { animate: true, duration: 1.0 });
-                    openSidebar(property);
-                    // 保持面板開啟
-                    // hidePropertiesPanel(); 
+                let coverImageUrl = property.coverImage;
+                if (coverImageUrl) {
+                    if (coverImageUrl.startsWith('/')) {
+                        coverImageUrl = baseUrl + coverImageUrl;
+                    }
                 } else {
-                    alert('在地圖上找不到此房源的座標或詳細資料。');
+                    coverImageUrl = defaultCoverImage;
                 }
+
+                // --- 判斷狀態文字和 class ---
+                let statusText = '狀態不明';
+                let statusClass = 'status-rented';
+                const vacantRooms = property.vacantRooms ?? 0;
+                const upcomingVacancies = property.upcomingVacancies ?? 0;
+
+                if (vacantRooms > 0) {
+                    statusText = `尚有 ${vacantRooms} 間空房`;
+                    statusClass = 'status-available';
+                } else if (upcomingVacancies > 0) {
+                    statusText = `即將釋出 ${upcomingVacancies} 間房`;
+                    statusClass = 'status-upcoming';
+                } else {
+                    statusText = '完租';
+                }
+                // --- 狀態判斷結束 ---
+
+                // --- 格式化金額 ---
+                const priceText = property.rentPriceRange ? formatPriceRange(property.rentPriceRange) : '範圍未提供';
+
+                // --- 修改 HTML 結構 (移除 ... 按鈕) ---
+                const cardHtml = `
+                    <img src="${coverImageUrl}" class="bookmark-cover-image" onerror="this.src='${defaultCoverImage}';" alt="${property.name}">
+                    <div class="bookmark-text-info">
+                        <span class="bookmark-name">${property.name || '未提供房名'}</span>
+                        <div class="bookmark-meta">
+                            <span class="bookmark-city">${property.cityName || '城市未定'}</span>
+                            <span class="bookmark-price-range">租金:<span class="bookmark-price-amount">${priceText}</span></span>
+                        </div>
+                    </div>
+                    <div class="bookmark-action-area">
+                         <span class="bookmark-status ${statusClass}">${statusText}</span>
+                    </div>
+                `;
+
+                li.innerHTML = cardHtml;
+
+                // --- 綁定卡片點擊事件 ---
+                li.addEventListener('click', () => {
+                    // 檢查 'property' 變數（來自 forEach）是否有座標
+                    if (property.coordinates && property.coordinates.latitude) {
+                        map.flyTo([property.coordinates.latitude, property.coordinates.longitude], 17, { animate: true, duration: 1.0 });
+                        openSidebar(property);
+                        // 保持面板開啟
+                        // hidePropertiesPanel(); 
+                    } else {
+                        alert('在地圖上找不到此房源的座標或詳細資料。');
+                    }
+                });
+                // --- 綁定卡片點擊事件結束 ---
+
+                ul.appendChild(li);
             });
-            // --- 綁定卡片點擊事件結束 ---
-
-            ul.appendChild(li);
+            propertiesListContainer.appendChild(ul);
+            
+        }).catch(error => {
+            // 處理 loadRentalsInView() 可能發生的錯誤
+            console.error('在 showPropertiesPanel 中載入房源失敗:', error);
+            propertiesListContainer.innerHTML = '<p>載入房源失敗，請稍後再試。</p>';
         });
-        propertiesListContainer.appendChild(ul);
     }
-    // --- 新增結束 ---
+    // --- 修改結束 ---
 
 
-    // ----- vvvvv 修改後的 showBookmarksPanel (加入 hidePropertiesPanel) vvvvv -----
     function showBookmarksPanel() {
         if (!currentUserData) {
             alert('請先登入！');
@@ -479,7 +481,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 // --- 格式化金額 ---
                 const priceText = property.rentPriceRange ? formatPriceRange(property.rentPriceRange) : '範圍未提供';
 
-                // --- 修改 HTML 結構，加入 bookmark-right-column 和 金額 span ---
                 const cardHtml = `
                     <img src="${coverImageUrl}" class="bookmark-cover-image" onerror="this.src='${defaultCoverImage}';" alt="${property.name}">
                     <div class="bookmark-text-info">
@@ -511,10 +512,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     if (fullPropertyData && fullPropertyData.coordinates) {
                         map.flyTo([fullPropertyData.coordinates.latitude, fullPropertyData.coordinates.longitude], 17, { animate: true, duration: 1.0 });
                         openSidebar(fullPropertyData);
-                        // hideBookmarksPanel(); // 維持開啟
                     } else if (property.coordinates && property.coordinates.latitude) {
                         console.log(`找不到 ${propertyId} 的本地資料，開始自動刷新...`);
-                        // hideBookmarksPanel(); // 維持開啟
                         map.flyTo([property.coordinates.latitude, property.coordinates.longitude], 17, { animate: true, duration: 1.0 });
                         map.once('moveend', function() {
                             console.log('地圖移動完畢，開始自動刷新...');
@@ -582,7 +581,6 @@ document.addEventListener("DOMContentLoaded", function () {
              userBookmarkedRentIds.clear();
         });
     }
-    // ----- ^^^^^ 修改後的 showBookmarksPanel ^^^^^ -----
 
     function handleRemoveBookmark(userId, rentId) {
         console.log(`嘗試移除收藏: UserID: ${userId}, RentID: ${rentId}`);
@@ -638,6 +636,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 }
 
+    // --- 修改：loadRentalsInView 函式 (移除自動刷新) ---
     function loadRentalsInView() {
         const bounds = map.getBounds();
         const center = bounds.getCenter();
@@ -659,12 +658,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 allMapProperties = combinedData; // <-- 更新全域變數
                 displayMarkers(combinedData);
                 
-                // --- 新增：如果房源清單開啟，則刷新 ---
-                if (propertiesPanel.classList.contains('open')) {
-                    console.log('房源清單已開啟，自動刷新內容...');
-                    showPropertiesPanel();
-                }
-                // --- 新增結束 ---
+                // --- 修改：移除自動刷新邏輯 ---
+                // (原來的 if propertiesPanel.classList.contains('open') ... 已被移除)
                 
                 return combinedData;
             })
@@ -680,16 +675,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 allMapProperties = staticData; // <-- 更新全域變數
                 displayMarkers(staticData);
                 
-                // --- 新增：如果房源清單開啟，則刷新 ---
-                if (propertiesPanel.classList.contains('open')) {
-                    console.log('房源清單已開啟，自動刷新內容 (使用靜態資料)...');
-                    showPropertiesPanel();
-                }
-                // --- 新增結束 ---
+                // --- 修改：移除自動刷新邏輯 ---
+                // (原來的 if propertiesPanel.classList.contains('open') ... 已被移除)
                 
                 return staticData;
             });
     }
+    // --- 修改結束 ---
 
     function loadRestaurantsInView() {
         const bounds = map.getBounds();
@@ -903,14 +895,12 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // --- 新增：房源清單按鈕事件 ---
     if (propertiesListButton) {
         propertiesListButton.addEventListener('click', showPropertiesPanel);
     }
     if (closePropertiesPanelBtn) {
         closePropertiesPanelBtn.addEventListener('click', hidePropertiesPanel);
     }
-    // --- 新增結束 ---
 
     if (bookmarksListButton) {
         bookmarksListButton.addEventListener('click', showBookmarksPanel);
@@ -955,7 +945,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
     });
-
+    
     postsListContainer.addEventListener('click', function(e) {
         if (e.target && e.target.classList.contains('room-image')) {
             const roomIndex = parseInt(e.target.dataset.roomIndex, 10);

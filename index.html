@@ -73,7 +73,8 @@
                 right: 2.5%;
             }
         }
-
+        
+        /* --- 登入/註冊 Modal 樣式 (已更新) --- */
         #overlay {
             position: fixed;
             top: 0;
@@ -85,35 +86,46 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
         }
 
-        #overlay.hidden {
-            display: none;
+        #overlay:not(.hidden) {
+            opacity: 1;
+            visibility: visible;
         }
 
         #auth-modal {
             background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            padding: 35px 30px; /* 增加內邊距 */
+            border-radius: 16px; /* 更圓的邊角 */
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15); /* 更柔和的陰影 */
             width: 400px;
-            max-width: 90%;
+            max-width: 95%;
             position: relative;
+            box-sizing: border-box;
         }
 
         #close-modal-btn {
             position: absolute;
-            top: 10px;
-            right: 10px;
-            font-size: 20px;
+            top: 15px;
+            right: 15px;
+            font-size: 26px; /* 加大 X */
+            color: #aaa;
             cursor: pointer;
             border: none;
             background: none;
+            line-height: 1;
+            transition: color 0.2s ease;
+        }
+        #close-modal-btn:hover {
+            color: #333;
         }
 
         #login-form,
         #register-form {
-            margin-bottom: 20px;
+            margin: 0; /* 移除 margin-bottom */
         }
 
         #login-form.hidden,
@@ -124,61 +136,91 @@
         #login-form h2,
         #register-form h2 {
             text-align: center;
-            margin-bottom: 15px;
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-size: 28px; /* 加大標題 */
+            font-weight: 700;
+            color: #333;
         }
 
         #login-form div,
         #register-form div {
-            margin-bottom: 10px;
+            margin-bottom: 15px; /* 增加輸入框間距 */
         }
 
         #login-form label,
         #register-form label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 8px; /* 標籤與輸入框的距離 */
+            font-size: 14px;
+            font-weight: 600;
+            color: #555;
         }
 
         #login-form input,
         #register-form input {
             width: 100%;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+            padding: 12px 15px; /* 增加輸入框內部空間 */
+            border: 1px solid #ddd; /* 淺色邊框 */
+            border-radius: 8px; /* 圓角 */
             box-sizing: border-box;
+            font-size: 16px;
+            transition: all 0.2s ease;
+        }
+
+        #login-form input:focus,
+        #register-form input:focus {
+            outline: none;
+            border-color: #007bff; /* Focus 時變色 */
+            box-shadow: 0 0 0 4px rgba(0,123,255,0.1); /* Focus 時的光暈 */
         }
 
         #login-form button,
         #register-form button {
             background-color: #007bff;
             color: white;
-            padding: 10px 15px;
+            padding: 12px 15px; /* 增加按鈕大小 */
             border: none;
-            border-radius: 4px;
+            border-radius: 8px; /* 圓角 */
             cursor: pointer;
             width: 100%;
+            font-size: 16px;
+            font-weight: 700;
+            margin-top: 15px; /* 與上方元素的間距 */
+            transition: background-color 0.2s ease;
         }
 
         #login-form button:hover,
         #register-form button:hover {
             background-color: #0056b3;
         }
+        
+        #login-form button:active,
+        #register-form button:active {
+            transform: scale(0.99); /* 點擊回饋 */
+        }
 
         #login-form p,
         #register-form p {
             text-align: center;
-            margin-top: 10px;
+            margin-top: 20px;
+            margin-bottom: 0;
+            font-size: 14px;
+            color: #666;
         }
 
         #login-form a,
         #register-form a {
             color: #007bff;
             text-decoration: none;
+            font-weight: 600;
         }
 
         #login-form a:hover,
         #register-form a:hover {
             text-decoration: underline;
         }
+        /* --- Modal 樣式結束 --- */
 
         #refresh-button {
             position: absolute;
@@ -837,14 +879,14 @@
         }
 
         #bookmarks-list-button {
-            right: 200px; /* <-- 修改：換到左邊 */
-            background-color: #6c757d;
+            right: 200px;
+            background-color: #17a2b8; /* <-- 修改：改為藍綠色 */
             display: none; /* 保持 JS 控制的初始隱藏狀態 */
         }
         
         /* --- 新增房源清單按鈕樣式 --- */
         #properties-list-button {
-            right: 100px; /* <-- 修改：換到右邊 (登入按鈕旁) */
+            right: 100px;
             background-color: #17a2b8; /* info 藍綠色 */
             display: block; /* 始終顯示 */
         }
@@ -887,11 +929,11 @@
 
 
         #bookmarks-list-button:hover {
-            background-color: #5a6268;
+            background-color: #138496; /* <-- 修改：改為藍綠色 (hover) */
         }
 
         #bookmarks-list-button:active {
-            background-color: #495057;
+            background-color: #117a8b; /* <-- 修改：改為藍綠色 (active) */
             transform: scale(0.98);
         }
         

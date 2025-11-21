@@ -414,9 +414,14 @@ document.addEventListener("DOMContentLoaded", function () {
         hidePropertiesPanel(); 
         profilePanel.classList.add('open');
         
+        // --- 加入除錯訊息：請按下F12看Console，確認 isVerify 的值 ---
         console.log('目前的 User Data:', currentUserData);
+        if(currentUserData) {
+            console.log('驗證狀態欄位值 (isVerify):', currentUserData.isVerify);
+        }
+        // -----------------------------------------------------
 
-        // --- 修改開始：驗證狀態顯示邏輯 ---
+        // --- 修改開始：驗證狀態顯示邏輯 (放寬判斷標準) ---
         let emailDisplay = '未提供';
         let rawEmail = '';
         let verifyButtonHtml = ''; 
@@ -434,9 +439,11 @@ document.addEventListener("DOMContentLoaded", function () {
             if (emailPattern.test(rawEmail)) {
                 emailDisplay = rawEmail;
 
-                // 判斷是否已驗證
-                if (currentUserData.isVerify === true || currentUserData.isVerify === "true") {
-                    // 狀態 A: 已驗證 (純文字顯示，帶勾勾)
+                // 判斷是否已驗證 (包含 boolean true, string "true", number 1, string "1")
+                const isVerified = String(currentUserData.isVerify) === "true" || String(currentUserData.isVerify) === "1";
+
+                if (isVerified) {
+                    // 狀態 A: 已驗證 (純文字顯示，帶勾勾，非按鈕樣式)
                     verifyButtonHtml = `<span style="margin-left:10px; color:#28a745; font-weight:bold; font-size:13px;">✓ 已完成信箱驗證</span>`;
                 } else {
                     // 狀態 B: 未驗證 (顯示紅色可點擊按鈕)
@@ -446,6 +453,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 emailDisplay = 'mail規則不符';
             }
         }
+        // --- 修改結束 ---
         
         const profileInfoContainer = document.getElementById('profile-info-section');
         profileInfoContainer.innerHTML = `
@@ -1129,6 +1137,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 
                 // --- 新增：即時更新本地的使用者狀態 (無需重新登入) ---
                 if (currentUserData) {
+                    // 這裡也一併更新成 "true" 或 true，視您的後端而定，這裡先設為 true
                     currentUserData.isVerify = true; 
                     localStorage.setItem('userData', JSON.stringify(currentUserData));
                 }

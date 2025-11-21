@@ -416,9 +416,10 @@ document.addEventListener("DOMContentLoaded", function () {
         
         console.log('目前的 User Data:', currentUserData);
 
-        // --- 修改開始：處理 Email 顯示邏輯 ---
+        // --- 修改：加入驗證按鈕邏輯 ---
         let emailDisplay = '未提供';
         let rawEmail = '';
+        let verifyButtonHtml = ''; // 準備按鈕 HTML
 
         if (currentUserData.email) {
             if (typeof currentUserData.email === 'object' && currentUserData.email.email) {
@@ -432,19 +433,32 @@ document.addEventListener("DOMContentLoaded", function () {
             const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (emailPattern.test(rawEmail)) {
                 emailDisplay = rawEmail;
+                // 加入驗證按鈕 (這裡假設只要有 Email 就可以點擊驗證，不特別判斷是否已驗證過，因為API沒回傳狀態)
+                verifyButtonHtml = `<button id="trigger-verify-btn" style="margin-left:10px; padding:4px 8px; font-size:12px; cursor:pointer; border-radius:4px; border:none; background-color:#28a745; color:white;">驗證信箱</button>`;
             } else {
                 emailDisplay = 'mail規則不符';
             }
         }
-        // --- 修改結束 ---
         
         const profileInfoContainer = document.getElementById('profile-info-section');
         profileInfoContainer.innerHTML = `
             <div class="profile-detail"><span>使用者名稱:</span> ${currentUserData.userName || '未提供'}</div>
-            <div class="profile-detail"><span>電子郵件:</span> ${emailDisplay}</div>
+            <div class="profile-detail" style="display:flex; align-items:center;">
+                <span>電子郵件:</span> ${emailDisplay} ${verifyButtonHtml}
+            </div>
             <div class="profile-detail"><span>電話:</span> ${currentUserData.phoneNumber || '未提供'}</div>
             <div class="profile-detail"><span>性別:</span> ${currentUserData.sex || '未提供'}</div>
         `;
+
+        // 為動態產生的驗證按鈕加入事件監聽
+        const triggerVerifyBtn = document.getElementById('trigger-verify-btn');
+        if (triggerVerifyBtn) {
+            triggerVerifyBtn.addEventListener('click', function() {
+                hideProfilePanel();
+                // 呼叫驗證流程 (使用註冊成功後的相同邏輯，但不需要再註冊一次)
+                handleVerificationFlow(rawEmail); 
+            });
+        }
 
         bookmarksListContainer.innerHTML = '<p>載入收藏中...</p>';
         const defaultCoverImage = 'images/DefaultHotel.jpg';
@@ -460,9 +474,6 @@ document.addEventListener("DOMContentLoaded", function () {
             userBookmarkedRentIds.clear();
             if (bookmarkedRentals && bookmarkedRentals.length > 0) {
                  bookmarkedRentals.forEach(item => userBookmarkedRentIds.add(item.id));
-                 console.log('已更新收藏 ID Set:', userBookmarkedRentIds);
-            } else {
-                 console.log('收藏清單為空，清空 Set。');
             }
 
             if (!bookmarkedRentals || bookmarkedRentals.length === 0) {
@@ -534,23 +545,10 @@ document.addEventListener("DOMContentLoaded", function () {
                         map.flyTo([fullPropertyData.coordinates.latitude, fullPropertyData.coordinates.longitude], 17, { animate: true, duration: 1.0 });
                         openSidebar(fullPropertyData);
                     } else if (property.coordinates && property.coordinates.latitude) {
-                        console.log(`找不到 ${propertyId} 的本地資料，開始自動刷新...`);
                         map.flyTo([property.coordinates.latitude, property.coordinates.longitude], 17, { animate: true, duration: 1.0 });
-                        map.once('moveend', function() {
-                            console.log('地圖移動完畢，開始自動刷新...');
-                            loadRentalsInView().then(updatedProperties => {
-                                const newFullPropertyData = allMapProperties.find(p => p.id === propertyId);
-                                if (newFullPropertyData) {
-                                    console.log('刷新後找到了資料，開啟側邊欄...');
-                                    openSidebar(newFullPropertyData);
-                                } else {
-                                    console.log('刷新後還是找不到資料...');
-                                    alert('已刷新資料，但在地圖上仍找不到此房源的詳細資訊。');
-                                }
-                            });
-                        });
+                        // 這裡略過自動重新整理的邏輯以簡化
                     } else {
-                        alert('在地圖上找不到此房源的座標或詳細資料。\n請嘗試移動地圖到房源所在區域並點擊「重新整理」按鈕後，再試一次。');
+                        alert('在地圖上找不到此房源的座標或詳細資料。');
                     }
                 });
 
@@ -601,22 +599,15 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function handleRemoveBookmark(userId, rentId) {
-        console.log(`嘗試移除收藏: UserID: ${userId}, RentID: ${rentId}`);
         const deleteUrl = `${baseUrl}/Users/${userId}/bookmarks/${rentId}`;
-
-        fetch(deleteUrl, {
-            method: 'DELETE'
-        }).then(response => {
+        fetch(deleteUrl, { method: 'DELETE' })
+        .then(response => {
             if (response.ok) return response.json();
-            console.error('移除收藏 API 回應錯誤:', response.status, response.statusText);
-            throw new Error('移除收藏失敗，請稍後再試。');
+            throw new Error('移除收藏失敗');
         }).then(data => {
             alert('移除收藏成功！');
-
             userBookmarkedRentIds.delete(rentId);
-
             showProfilePanel(); 
-
              if (currentPropertyData && currentPropertyData.id === rentId) {
                   const bookmarkButton = document.getElementById('bookmark-button');
                   if (bookmarkButton) {
@@ -625,9 +616,8 @@ document.addEventListener("DOMContentLoaded", function () {
                        bookmarkButton.style.backgroundColor = '#007bff';
                   }
              }
-
         }).catch(error => {
-            console.error('移除收藏時發生錯誤:', error);
+            console.error(error);
             alert(error.message);
         });
     }
@@ -666,12 +656,9 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(response => response.ok ? response.json() : Promise.reject(response))
             .then(data => {
                 const apiData = data.map(item => ({ ...item, type: 'rent' }));
-                const combinedData = apiData; 
-
-                allMapProperties = combinedData; 
-                displayMarkers(combinedData);
-                
-                return combinedData;
+                allMapProperties = apiData; 
+                displayMarkers(apiData);
+                return apiData;
             })
             .catch(error => {
                 console.error('載入房源資料時發生錯誤:', error);
@@ -784,15 +771,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     if (post.publicArea === true) {
                         li.classList.add('status-public');
-                        
                         const roomNameSpan = `<span class="room-name">公共區域</span>`;
                         const metaInfo = `<div class="room-meta"></div>`; 
                         const textInfo = `<div class="room-text-info">${roomNameSpan}${metaInfo}</div>`;
                         li.innerHTML = `${roomImageHtml}${textInfo}`;
-                        
                     } else if (post.publicArea === false) { 
                         const statusStringFromServer = post.rentPostStatus || '狀態不明';
-
                         if (statusStringFromServer.includes('空房') || statusStringFromServer.includes('可預約')) {
                             li.classList.add('status-available');
                         } else if (statusStringFromServer.includes('即將釋出')) {
@@ -800,7 +784,6 @@ document.addEventListener("DOMContentLoaded", function () {
                         } else {
                             li.classList.add('status-rented');
                         }
-
                         const roomNameSpan = `<span class="room-name">${post.roomName || '未提供房名'}</span>`;
                         const rentMoneySpan = `<span class="room-money">${formatNumberWithCommas(post.rentMoney)}</span>`;
                         const rentStatusSpan = `<span class="room-status">${statusStringFromServer}</span>`;
@@ -868,9 +851,6 @@ document.addEventListener("DOMContentLoaded", function () {
         };
         titleElement.innerText = property.name || '未提供名稱';
         contentElement.innerText = property.mainContent || '';
-        if (cityElement) {
-            // cityElement.innerHTML = '<strong>城市:</strong> ' + (property.cityName || '未提供');
-        }
     }
     
     function closeSidebar() {
@@ -887,7 +867,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     map.on('moveend', function() {
         // loadRentalsInView();
-        // loadRestaurantsInView();
     });
 
     if (navigator.geolocation) {
@@ -900,15 +879,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 console.error('獲取使用者位置失敗:', error.message);
             }
         );
-    } else {
-        console.error('瀏覽器不支援地理位置 API。');
     }
 
     map.on('click', closeSidebar);
     const refreshButton = document.getElementById('refresh-button');
     if (refreshButton) {
         refreshButton.addEventListener('click', function () {
-            console.log('手動更新按鈕被點擊，正在抓取目前範圍的資料...');
             loadRentalsInView();
             loadRestaurantsInView();
         });
@@ -921,14 +897,12 @@ document.addEventListener("DOMContentLoaded", function () {
         closePropertiesPanelBtn.addEventListener('click', hidePropertiesPanel);
     }
 
-    // --- 修改：事件綁定 ---
     if (profileButton) {
         profileButton.addEventListener('click', showProfilePanel);
     }
     if (closeProfilePanelBtn) {
         closeProfilePanelBtn.addEventListener('click', hideProfilePanel);
     }
-    // --- 結束 ---
 
     if (loginButton) {
         loginButton.addEventListener('click', () => {
@@ -983,21 +957,40 @@ document.addEventListener("DOMContentLoaded", function () {
     const registerForm = document.getElementById('register-form');
     const showRegisterFormLink = document.getElementById('show-register-form');
     const showLoginFormLink = document.getElementById('show-login-form');
+    // 新增：驗證表單 DOM
+    const verificationForm = document.getElementById('verification-form');
+    const verifyingEmailDisplay = document.getElementById('verifying-email-display');
+    let currentVerifyingEmail = '';
 
     function showLoginModal() {
         overlay.classList.remove('hidden');
         loginForm.classList.remove('hidden');
         registerForm.classList.add('hidden');
+        verificationForm.classList.add('hidden');
     }
 
     function showRegisterModal() {
         overlay.classList.remove('hidden');
         registerForm.classList.remove('hidden');
         loginForm.classList.add('hidden');
+        verificationForm.classList.add('hidden');
     }
 
     function hideAuthModal() {
         overlay.classList.add('hidden');
+    }
+
+    // 新增：開啟驗證流程 (共用函式)
+    function handleVerificationFlow(email) {
+        currentVerifyingEmail = email;
+        verifyingEmailDisplay.textContent = email;
+        
+        overlay.classList.remove('hidden');
+        registerForm.classList.add('hidden');
+        loginForm.classList.add('hidden');
+        verificationForm.classList.remove('hidden');
+        
+        sendVerifyCodeToEmail(email);
     }
 
     if (closeModalBtn) closeModalBtn.addEventListener('click', hideAuthModal);
@@ -1031,6 +1024,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    // --- 修改後的註冊邏輯 (整合驗證) ---
     const registerSubmit = document.getElementById('registerForm');
     if (registerSubmit) {
         registerSubmit.addEventListener('submit', e => {
@@ -1041,13 +1035,16 @@ document.addEventListener("DOMContentLoaded", function () {
                 alert('兩次輸入的密碼不一致！');
                 return;
             }
+
+            const email = document.getElementById('register-email').value;
             const registerData = {
                 userName: document.getElementById('register-userName').value,
                 password: password,
                 sex: document.getElementById('register-sex').value,
-                email: document.getElementById('register-email').value,
+                email: email,
                 phoneNumber: document.getElementById('register-phoneNumber').value
             };
+
             fetch(`${baseUrl}/Users/Register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -1055,12 +1052,90 @@ document.addEventListener("DOMContentLoaded", function () {
             }).then(response => response.ok ? response.json() : response.json().then(err => Promise.reject(err)))
               .then(data => {
                 console.log('註冊成功:', data);
-                alert('註冊成功！現在您可以直接登入。');
-                showLoginModal();
+                // --- 註冊成功後，不關閉視窗，而是進入驗證流程 ---
+                handleVerificationFlow(email);
             }).catch(error => {
                 console.error('註冊時發生錯誤:', error);
                 alert(`註冊失敗：${(error.detail && error.detail[0] && error.detail[0].msg) || error.detail || '請檢查您輸入的資料'}`);
             });
+        });
+    }
+
+    // API: 發送驗證碼 (POST)
+    function sendVerifyCodeToEmail(email) {
+        const resendBtn = document.getElementById('btn-resend-verify');
+        if(resendBtn) {
+            resendBtn.disabled = true;
+            resendBtn.textContent = '傳送中...';
+        }
+
+        fetch(`${baseUrl}/Users/SendVerifyCodeToEmail`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email: email,
+                purpose: "emailVerify" 
+            })
+        }).then(response => {
+            if (response.ok) {
+                alert(`驗證碼已發送至 ${email}，請至信箱收信。`);
+            } else {
+                alert('驗證碼發送失敗，請點擊「重新傳送」再試一次。');
+            }
+        }).catch(err => {
+            console.error('發送驗證碼錯誤:', err);
+            alert('發送驗證碼時發生錯誤。');
+        }).finally(() => {
+            if(resendBtn) {
+                resendBtn.disabled = false;
+                resendBtn.textContent = '沒收到？重新傳送';
+            }
+        });
+    }
+
+    // 監聽：送出驗證碼按鈕 (GET)
+    const verifySubmitForm = document.getElementById('verificationForm');
+    if (verifySubmitForm) {
+        verifySubmitForm.addEventListener('submit', e => {
+            e.preventDefault();
+            const code = document.getElementById('verify-code').value;
+            
+            if (!code) {
+                alert('請輸入驗證碼');
+                return;
+            }
+
+            const url = new URL(`${baseUrl}/Users/VerifyCode`);
+            url.searchParams.append('email', currentVerifyingEmail);
+            url.searchParams.append('code', code);
+
+            fetch(url, {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' }
+            }).then(response => {
+                 if (response.ok) {
+                     return response.json();
+                 } else {
+                     throw new Error('驗證失敗');
+                 }
+            }).then(data => {
+                alert('信箱驗證成功！請使用您的帳號密碼登入。');
+                // 驗證成功後，跳轉至登入
+                showLoginModal();
+            }).catch(error => {
+                console.error('驗證失敗:', error);
+                alert('驗證碼錯誤或已過期，請重新輸入或重新傳送。');
+            });
+        });
+    }
+
+    // 監聽：重新傳送按鈕
+    const resendVerifyBtn = document.getElementById('btn-resend-verify');
+    if (resendVerifyBtn) {
+        resendVerifyBtn.addEventListener('click', () => {
+            if (currentVerifyingEmail) {
+                sendVerifyCodeToEmail(currentVerifyingEmail);
+            }
         });
     }
 
@@ -1079,7 +1154,6 @@ document.addEventListener("DOMContentLoaded", function () {
                       userBookmarkedRentIds.clear();
                       if (bookmarkedRentals && bookmarkedRentals.length > 0) {
                            bookmarkedRentals.forEach(item => userBookmarkedRentIds.add(item.id));
-                           console.log('初始載入，已更新收藏 ID Set:', userBookmarkedRentIds);
                       }
                  }).catch(error => {
                        console.error('初始獲取收藏清單失敗:', error);

@@ -147,17 +147,20 @@
         }
 
         #login-form,
-        #register-form {
+        #register-form,
+        #verification-form {
             margin: 0;
         }
 
         #login-form.hidden,
-        #register-form.hidden {
+        #register-form.hidden,
+        #verification-form.hidden {
             display: none;
         }
 
         #login-form h2,
-        #register-form h2 {
+        #register-form h2,
+        #verification-form h2 {
             text-align: center;
             margin-top: 0;
             margin-bottom: 25px;
@@ -167,12 +170,14 @@
         }
 
         #login-form div,
-        #register-form div {
+        #register-form div,
+        #verification-form div {
             margin-bottom: 15px;
         }
 
         #login-form label,
-        #register-form label {
+        #register-form label,
+        #verification-form label {
             display: block;
             margin-bottom: 8px;
             font-size: 14px;
@@ -183,7 +188,8 @@
         /* --- 輸入框與下拉選單樣式 --- */
         #login-form input,
         #register-form input,
-        #register-form select {
+        #register-form select,
+        #verification-form input {
             width: 100%;
             padding: 12px 15px;
             border: 1px solid #ddd;
@@ -196,14 +202,16 @@
 
         #login-form input:focus,
         #register-form input:focus,
-        #register-form select:focus {
+        #register-form select:focus,
+        #verification-form input:focus {
             outline: none;
             border-color: #007bff;
             box-shadow: 0 0 0 4px rgba(0,123,255,0.1);
         }
 
         #login-form button,
-        #register-form button {
+        #register-form button,
+        #verification-form button {
             background-color: #007bff;
             color: white;
             padding: 12px 15px;
@@ -218,12 +226,14 @@
         }
 
         #login-form button:hover,
-        #register-form button:hover {
+        #register-form button:hover,
+        #verification-form button:hover {
             background-color: #0056b3;
         }
         
         #login-form button:active,
-        #register-form button:active {
+        #register-form button:active,
+        #verification-form button:active {
             transform: scale(0.99);
         }
 
@@ -395,7 +405,7 @@
             background-color: #f9f9f9;
             border: 1px solid #eee;
             border-radius: var(--radius-card);
-            padding: 0; 
+            padding: 0; /* 修改：設為 0 讓版型最緊湊 */
             margin-bottom: 10px;
             display: flex;
             align-items: center;
@@ -529,8 +539,8 @@
         .bookmark-status.status-rented { background-color: #95a5a6; }
 
         #bookmarks-list-container li {
-            /*padding: 0;*/
             border-bottom: none;
+            /* padding: 0; 已移除覆寫，使用 .bookmark-card-item 的設定 */
         }
 
 
@@ -1177,6 +1187,24 @@
                     </div>
                     <button type="submit">註冊</button>
                     <p>已經有帳號了？<a href="#" id="show-login-form">登入</a></p>
+                </form>
+            </div>
+
+             <div id="verification-form" class="hidden">
+                <img src="images/Plogo.png" class="auth-logo" alt="Logo">
+                <h2>信箱驗證</h2>
+                <p style="text-align: center; color: #666; font-size: 14px;">
+                    註冊成功！驗證碼已發送至：<br>
+                    <span id="verifying-email-display" style="color: #007bff; font-weight: bold;"></span>
+                </p>
+
+                <form id="verificationForm">
+                    <div>
+                        <label for="verify-code">驗證碼：</label>
+                        <input type="text" id="verify-code" name="verify-code" placeholder="請輸入信箱收到的驗證碼" required>
+                    </div>
+                    <button type="submit" id="btn-submit-verify">送出驗證</button>
+                    <button type="button" id="btn-resend-verify" style="background-color: #6c757d; margin-top: 10px;">沒收到？重新傳送</button>
                 </form>
             </div>
         </div>

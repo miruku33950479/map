@@ -434,12 +434,12 @@ document.addEventListener("DOMContentLoaded", function () {
             if (emailPattern.test(rawEmail)) {
                 emailDisplay = rawEmail;
 
-                // 判斷是否已驗證
+                // 判斷是否已驗證，如果是，顯示一個 disabled 的按鈕
                 if (currentUserData.isVerify === true || currentUserData.isVerify === "true") {
-                    // 狀態 A: 已驗證 (顯示綠色文字標籤，不可點擊)
-                    verifyButtonHtml = `<span style="margin-left:10px; padding:4px 8px; font-size:12px; border-radius:4px; background-color:#e9ecef; color:#28a745; font-weight:bold; cursor:default;">✓ 已完成信箱驗證</span>`;
+                    // 狀態 A: 已驗證 (顯示灰色按鈕，不可點擊)
+                    verifyButtonHtml = `<button disabled style="margin-left:10px; padding:4px 8px; font-size:12px; border-radius:4px; border:none; background-color:#6c757d; color:white; cursor:not-allowed; opacity: 0.8;">已完成信箱驗證</button>`;
                 } else {
-                    // 狀態 B: 未驗證 (顯示可點擊按鈕)
+                    // 狀態 B: 未驗證 (顯示紅色可點擊按鈕)
                     verifyButtonHtml = `<button id="trigger-verify-btn" style="margin-left:10px; padding:4px 8px; font-size:12px; cursor:pointer; border-radius:4px; border:none; background-color:#dc3545; color:white;">驗證信箱</button>`;
                 }
             } else {
@@ -457,7 +457,7 @@ document.addEventListener("DOMContentLoaded", function () {
             <div class="profile-detail"><span>性別:</span> ${currentUserData.sex || '未提供'}</div>
         `;
 
-        // 只在「未驗證」時，按鈕才存在，才需要加入監聽器
+        // 只在「未驗證」時，按鈕才存在 (因為有 id="trigger-verify-btn")，才需要加入監聽器
         const triggerVerifyBtn = document.getElementById('trigger-verify-btn');
         if (triggerVerifyBtn) {
             triggerVerifyBtn.addEventListener('click', function() {

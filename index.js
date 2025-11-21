@@ -24,46 +24,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let userBookmarkedRentIds = new Set(); // 儲存已收藏的 Rent ID
 
     /* --- 暫時隱藏測試資料 ---
-    // 原始的靜態測試物件
-    const sunshineApartmentData = {
-        coverImage: "https://media.gq.com.tw/photos/61e134dac128c151658f7506/16:9/w_1920,c_limit/casas%20caras%20cover.jpeg",
-        name: "陽光公寓 (測試)",
-        cityName: "台北市",
-        coordinates: { latitude: 23.7029651, longitude: 120.4287316 },
-        mainContent: "這是一個預設標註在地圖上的地點，主要用途是作為系統功能測試與展示之用。",
-        id: "test_id",
-        type: 'rent',
-        vacantRooms: 0,
-        upcomingVacancies: 1,
-        posts: [
-            { id: "test_public", rentMoney: 0, roomName: "公共區域", publicArea: true, imageResources: ["images/Room3.jpg"] },
-            { id: "test1", rentMoney: 10000, roomName: "測試房A", rentPostStatus: "可預約", rentStatus: 1, imageResources: [], publicArea: false },
-            { id: "test2", rentMoney: 15000, roomName: "測試房B", rentPostStatus: "已出租", rentStatus: 3, imageResources: [], publicArea: false }
-        ],
-        urlPhone: "tel:+886123456789", urlLine: "https://line.me/ti/p/testline", urlMail: "mailto:test@test.com",
-        rentPriceRange: "10000~15000"
-    };
-
-    // 新增的靜態測試物件 (測試2)
-    const sunshineApartmentData2 = {
-        coverImage: "images/DefaultHotel.jpg",
-        name: "陽光公寓(測試2)",
-        cityName: "台北市",
-        coordinates: { latitude: 23.7029651, longitude: 120.43364 },
-        mainContent: "這是「測試2」的預設標註，使用本地圖片。",
-        id: "test_id_2",
-        type: 'rent',
-        vacantRooms: 2,
-        upcomingVacancies: 0,
-        posts: [
-             { id: "test_public_2", rentMoney: 0, roomName: "健身房", publicArea: true, imageResources: ["images/Room2.jpg"] },
-            { id: "test1", rentMoney: 10000, roomName: "測試房A", rentPostStatus: "可預約", rentStatus: 1, imageResources: ["images/Room1.jpg", "images/Room2.jpg"],lightboxDescription: "這是一段測試房A的說明文字，大約三十個字，用來展示燈箱中的浮動資訊卡片效果。", publicArea: false },
-            { id: "test2", rentMoney: 15002, roomName: "測試房B", rentPostStatus: "已出租", rentStatus: 3, imageResources: [],lightboxDescription: "這是測試房B的說明，風格簡約，採光良好，交通便利，是您居住的最佳選擇，歡迎隨時預約看房。", publicArea: false },
-            { id: "test3", rentMoney: 17352, roomName: "測試房CCC", rentPostStatus: "即將釋出", rentStatus: 2, imageResources: ["images/Room3.jpg"], publicArea: false }
-        ],
-        urlPhone: "tel:+886123456789", urlLine: "https://line.me/ti/p/testline", urlMail: "mailto:test@test.com",
-        rentPriceRange: "10000~17532"
-    };
+       (已略過測試資料定義)
     */
 
     function formatNumberWithCommas(num) {
@@ -90,7 +51,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     const loginButton = document.getElementById('login-button');
-    // --- 修改：變數重命名 ---
     const profileButton = document.getElementById('profile-button');
     let currentUserData = null;
 
@@ -231,7 +191,7 @@ document.addEventListener("DOMContentLoaded", function () {
         currentUserData = userData;
         loginButton.innerText = '登出';
         loginButton.classList.add('logged-in'); 
-        profileButton.style.display = 'block'; // <-- 修改
+        profileButton.style.display = 'block'; 
         
         userBookmarkedRentIds.clear();
 
@@ -246,8 +206,8 @@ document.addEventListener("DOMContentLoaded", function () {
         localStorage.removeItem('userData');
         loginButton.innerText = '登入';
         loginButton.classList.remove('logged-in'); 
-        profileButton.style.display = 'none'; // <-- 修改
-        hideProfilePanel(); // <-- 新增
+        profileButton.style.display = 'none'; 
+        hideProfilePanel(); 
         userBookmarkedRentIds.clear();
 
         if (!sidebar.classList.contains('closed')) {
@@ -267,7 +227,8 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         const requestData = { userID: userId, ID: rentId };
-        fetch(`${baseUrl}/Users/bookmarks`, {
+        
+        return fetch(`${baseUrl}/Users/bookmarks`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(requestData)
@@ -297,12 +258,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
             userBookmarkedRentIds.add(rentId);
 
-            // --- 修改：檢查 profilePanel 並呼叫 showProfilePanel ---
             const profilePanel = document.getElementById('profile-panel');
             if (profilePanel && profilePanel.classList.contains('open')) {
                 console.log('個人資料面板已開啟，正在自動刷新...');
                 showProfilePanel();
             }
+            return true; 
 
         }).catch(error => {
             if (error.message !== '此項目已在您的收藏清單中。') {
@@ -311,10 +272,10 @@ document.addEventListener("DOMContentLoaded", function () {
             } else {
                  console.log('項目已在收藏中，不顯示 alert。');
             }
+            return false; 
         });
     }
 
-    // --- 修改：變數重命名 ---
     const profilePanel = document.getElementById('profile-panel');
     const bookmarksListContainer = document.getElementById('bookmarks-list-container');
     const closeProfilePanelBtn = document.getElementById('close-profile-panel-btn');
@@ -324,7 +285,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const propertiesListContainer = document.getElementById('properties-list-container');
     const closePropertiesPanelBtn = document.getElementById('close-properties-panel-btn');
 
-    // --- 修改：函式重命名 ---
     function hideProfilePanel() {
         profilePanel.classList.remove('open');
     }
@@ -334,7 +294,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function showPropertiesPanel() {
-        hideProfilePanel(); // <-- 修改
+        hideProfilePanel(); 
         propertiesPanel.classList.add('open');
         propertiesListContainer.innerHTML = '<p>載入中...</p>'; 
 
@@ -385,6 +345,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 
                 const priceText = property.rentPriceRange ? formatPriceRange(property.rentPriceRange) : '範圍未提供';
 
+                const isBookmarked = userBookmarkedRentIds.has(property.id);
+                const bookmarkIcon = isBookmarked ? '♥' : '♡'; 
+                const bookmarkBtnStyle = isBookmarked ? 'color: #ff4757; font-size: 24px;' : 'color: #6c757d; font-size: 24px;';
+
                 const cardHtml = `
                     <img src="${coverImageUrl}" class="bookmark-cover-image" onerror="this.src='${defaultCoverImage}';" alt="${property.name}">
                     <div class="bookmark-text-info">
@@ -395,13 +359,16 @@ document.addEventListener("DOMContentLoaded", function () {
                         </div>
                     </div>
                     <div class="bookmark-action-area">
+                         <button class="bookmark-action-btn" style="${bookmarkBtnStyle}" data-rent-id="${property.id}">${bookmarkIcon}</button>
                          <span class="bookmark-status ${statusClass}">${statusText}</span>
                     </div>
                 `;
 
                 li.innerHTML = cardHtml;
 
-                li.addEventListener('click', () => {
+                li.addEventListener('click', (e) => {
+                    if (e.target.closest('.bookmark-action-btn')) return;
+
                     if (property.coordinates && property.coordinates.latitude) {
                         map.flyTo([property.coordinates.latitude, property.coordinates.longitude], 17, { animate: true, duration: 1.0 });
                         openSidebar(property);
@@ -409,6 +376,25 @@ document.addEventListener("DOMContentLoaded", function () {
                         alert('在地圖上找不到此房源的座標或詳細資料。');
                     }
                 });
+
+                const bookmarkBtn = li.querySelector('.bookmark-action-btn');
+                if (bookmarkBtn) {
+                    bookmarkBtn.addEventListener('click', function(e) {
+                        e.stopPropagation(); 
+                        if (!currentUserData) {
+                            alert('請先登入才能收藏！');
+                            showLoginModal();
+                            return;
+                        }
+                        
+                        handleBookmarkClick(currentUserData.userID, property.id).then(success => {
+                            if (success) {
+                                this.innerHTML = '♥';
+                                this.style.color = '#ff4757';
+                            }
+                        });
+                    });
+                }
 
                 ul.appendChild(li);
             });
@@ -420,7 +406,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // --- 修改：函式重命名並擴充功能 ---
     function showProfilePanel() {
         if (!currentUserData) {
             alert('請先登入！');
@@ -429,25 +414,37 @@ document.addEventListener("DOMContentLoaded", function () {
         hidePropertiesPanel(); 
         profilePanel.classList.add('open');
         
-        // --- 新增：Debug 與資料處理 ---
         console.log('目前的 User Data:', currentUserData);
 
-        let emailDisplay = currentUserData.email;
-        
-        // 如果 email 是物件，嘗試轉成字串顯示，方便除錯
-        if (typeof emailDisplay === 'object' && emailDisplay !== null) {
-            emailDisplay = JSON.stringify(emailDisplay);
+        // --- 修改開始：處理 Email 顯示邏輯 ---
+        let emailDisplay = '未提供';
+        let rawEmail = '';
+
+        if (currentUserData.email) {
+            if (typeof currentUserData.email === 'object' && currentUserData.email.email) {
+                rawEmail = currentUserData.email.email;
+            } else if (typeof currentUserData.email === 'string') {
+                rawEmail = currentUserData.email;
+            }
         }
+
+        if (rawEmail) {
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (emailPattern.test(rawEmail)) {
+                emailDisplay = rawEmail;
+            } else {
+                emailDisplay = 'mail規則不符';
+            }
+        }
+        // --- 修改結束 ---
         
-        // --- 渲染個人資料 ---
         const profileInfoContainer = document.getElementById('profile-info-section');
         profileInfoContainer.innerHTML = `
             <div class="profile-detail"><span>使用者名稱:</span> ${currentUserData.userName || '未提供'}</div>
-            <div class="profile-detail"><span>電子郵件:</span> ${emailDisplay || '未提供'}</div>
+            <div class="profile-detail"><span>電子郵件:</span> ${emailDisplay}</div>
             <div class="profile-detail"><span>電話:</span> ${currentUserData.phoneNumber || '未提供'}</div>
             <div class="profile-detail"><span>性別:</span> ${currentUserData.sex || '未提供'}</div>
         `;
-        // --- 結束 ---
 
         bookmarksListContainer.innerHTML = '<p>載入收藏中...</p>';
         const defaultCoverImage = 'images/DefaultHotel.jpg';
@@ -602,8 +599,6 @@ document.addEventListener("DOMContentLoaded", function () {
              userBookmarkedRentIds.clear();
         });
     }
-    // --- 函式修改結束 ---
-
 
     function handleRemoveBookmark(userId, rentId) {
         console.log(`嘗試移除收藏: UserID: ${userId}, RentID: ${rentId}`);
@@ -620,7 +615,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             userBookmarkedRentIds.delete(rentId);
 
-            showProfilePanel(); // <-- 修改：刷新個人資料面板
+            showProfilePanel(); 
 
              if (currentPropertyData && currentPropertyData.id === rentId) {
                   const bookmarkButton = document.getElementById('bookmark-button');
@@ -671,9 +666,6 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(response => response.ok ? response.json() : Promise.reject(response))
             .then(data => {
                 const apiData = data.map(item => ({ ...item, type: 'rent' }));
-                
-                // --- 修改：只使用 API 回傳的資料，不合併測試資料 ---
-                // const combinedData = [...apiData, sunshineApartmentData, sunshineApartmentData2];
                 const combinedData = apiData; 
 
                 allMapProperties = combinedData; 
@@ -683,15 +675,6 @@ document.addEventListener("DOMContentLoaded", function () {
             })
             .catch(error => {
                 console.error('載入房源資料時發生錯誤:', error);
-                // --- 修改：錯誤時不載入測試資料，保持空白 ---
-                /*
-                console.log('API 請求失敗，顯示預設測試資料點...');
-                const staticData = [sunshineApartmentData, sunshineApartmentData2];
-                allMapProperties = staticData; 
-                displayMarkers(staticData);
-                return staticData;
-                */
-               
                 allMapProperties = [];
                 displayMarkers([]);
                 return [];
@@ -897,9 +880,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // --- 事件監聽與初始設定 ---
     
-    // --- 修改：初始不顯示測試資料，並設定 allMapProperties 為空 ---
-    // displayMarkers([sunshineApartmentData, sunshineApartmentData2]);
-    // allMapProperties = [sunshineApartmentData, sunshineApartmentData2];
     displayMarkers([]); 
     allMapProperties = [];
 

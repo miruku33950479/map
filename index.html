@@ -121,13 +121,13 @@
             box-sizing: border-box;
         }
 
-        /* --- 修改：Logo 樣式 (變大且無圓角) --- */
+        /* --- Logo 樣式 --- */
         .auth-logo {
             display: block;
-            margin: 0 auto 20px auto; /* 稍微增加下方間距 */
-            max-width: 200px;         /* 改為 200px (原本 120px) */
+            margin: 0 auto 20px auto; 
+            max-width: 200px;         
             height: auto;
-            border-radius: 0;         /* 移除圓角 */
+            border-radius: 0;         
         }
 
         #close-modal-btn {
@@ -180,8 +180,10 @@
             color: #555;
         }
 
+        /* --- 修改：將 select 也加入樣式設定 --- */
         #login-form input,
-        #register-form input {
+        #register-form input,
+        #register-form select {
             width: 100%;
             padding: 12px 15px;
             border: 1px solid #ddd;
@@ -189,10 +191,12 @@
             box-sizing: border-box;
             font-size: 16px;
             transition: all 0.2s ease;
+            background-color: white; /* 確保選單背景是白的 */
         }
 
         #login-form input:focus,
-        #register-form input:focus {
+        #register-form input:focus,
+        #register-form select:focus {
             outline: none;
             border-color: #007bff;
             box-shadow: 0 0 0 4px rgba(0,123,255,0.1);
@@ -1160,7 +1164,11 @@
                     </div>
                     <div>
                         <label for="register-sex">性別：</label>
-                        <input type="text" id="register-sex" name="register-sex" placeholder="男 / 女 / 其他" required>
+                        <select id="register-sex" name="register-sex" required>
+                             <option value="" disabled selected>請選擇性別</option>
+                             <option value="男">男</option>
+                             <option value="女">女</option>
+                        </select>
                     </div>
                     <div>
                         <label for="register-phoneNumber">電話號碼：</label>

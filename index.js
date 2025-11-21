@@ -414,22 +414,23 @@ document.addEventListener("DOMContentLoaded", function () {
         hidePropertiesPanel(); 
         profilePanel.classList.add('open');
         
-        // --- 加入除錯訊息：請按下F12看Console，確認 isVerify 的值 ---
+        // --- 除錯訊息：檢查資料結構 ---
         console.log('目前的 User Data:', currentUserData);
-        if(currentUserData) {
-            console.log('驗證狀態欄位值 (isVerify):', currentUserData.isVerify);
-        }
-        // -----------------------------------------------------
 
-        // --- 修改開始：驗證狀態顯示邏輯 (放寬判斷標準) ---
+        // --- 修改開始：修正驗證狀態讀取邏輯 (根據 JSON 截圖) ---
         let emailDisplay = '未提供';
         let rawEmail = '';
         let verifyButtonHtml = ''; 
+        let isVerified = false;
 
+        // 檢查 currentUserData.email 是否為物件，並讀取其中的 email 字串與 verify 狀態
         if (currentUserData.email) {
-            if (typeof currentUserData.email === 'object' && currentUserData.email.email) {
-                rawEmail = currentUserData.email.email;
+            if (typeof currentUserData.email === 'object') {
+                // 這是 API 回傳的結構: { email: "...", verify: true }
+                rawEmail = currentUserData.email.email || '';
+                isVerified = currentUserData.email.verify === true;
             } else if (typeof currentUserData.email === 'string') {
+                // 這是舊結構或異常情況
                 rawEmail = currentUserData.email;
             }
         }
@@ -439,11 +440,8 @@ document.addEventListener("DOMContentLoaded", function () {
             if (emailPattern.test(rawEmail)) {
                 emailDisplay = rawEmail;
 
-                // 判斷是否已驗證 (包含 boolean true, string "true", number 1, string "1")
-                const isVerified = String(currentUserData.isVerify) === "true" || String(currentUserData.isVerify) === "1";
-
                 if (isVerified) {
-                    // 狀態 A: 已驗證 (純文字顯示，帶勾勾，非按鈕樣式)
+                    // 狀態 A: 已驗證 (純文字顯示，帶勾勾)
                     verifyButtonHtml = `<span style="margin-left:10px; color:#28a745; font-weight:bold; font-size:13px;">✓ 已完成信箱驗證</span>`;
                 } else {
                     // 狀態 B: 未驗證 (顯示紅色可點擊按鈕)
@@ -1137,8 +1135,17 @@ document.addEventListener("DOMContentLoaded", function () {
                 
                 // --- 新增：即時更新本地的使用者狀態 (無需重新登入) ---
                 if (currentUserData) {
-                    // 這裡也一併更新成 "true" 或 true，視您的後端而定，這裡先設為 true
-                    currentUserData.isVerify = true; 
+                    // 更新嵌套的狀態 (如果結構是物件)
+                    if (currentUserData.email && typeof currentUserData.email === 'object') {
+                        currentUserData.email.verify = true;
+                    } else {
+                        // 如果原本不是物件，強制轉成符合後端的結構 (Edge case)
+                        const currentEmailStr = (typeof currentUserData.email === 'string') ? currentUserData.email : currentVerifyingEmail;
+                        currentUserData.email = {
+                            email: currentEmailStr,
+                            verify: true
+                        };
+                    }
                     localStorage.setItem('userData', JSON.stringify(currentUserData));
                 }
 

@@ -6,6 +6,21 @@
     <title>地圖範例</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
+        /* --- 全站圓角統一變數 --- */
+        :root {
+            /* 層級 1: 大型面板 (Sidebar, Profile, Properties) */
+            --radius-panel: 40px;
+            
+            /* 層級 2: 卡片與區塊 (Post items, Bookmark items, Sections, Modal) */
+            --radius-card: 16px; 
+            
+            /* 層級 3: 內部元件 (Inputs, Buttons, Images) */
+            --radius-elem: 12px;
+
+            /* 特殊: 膠囊狀/圓形 (Status tags, Pill buttons) */
+            --radius-pill: 50px; 
+        }
+
         html,
         body {
             margin: 0;
@@ -30,7 +45,7 @@
             padding: 20px;
             transition: right 0.3s ease;
             z-index: 1000;
-            border-radius: 40px;
+            border-radius: var(--radius-panel);
             overflow-y: auto;
             max-height: 80vh;
             scrollbar-width: none;
@@ -61,7 +76,7 @@
                 transition: right 0.3s ease;
                 height: auto;
                 max-height: 85vh;
-                border-radius: 0 0 20px 0; /* 右下角圓角 */
+                border-radius: 0 0 var(--radius-card) 0;
             }
 
             #sidebar.closed {
@@ -69,12 +84,11 @@
             }
 
             #sidebar:not(.closed) {
-                 /* 稍微調整手機版右側邊距 */
                 right: 2.5%;
             }
         }
         
-        /* --- 登入/註冊 Modal 樣式 (已更新) --- */
+        /* --- 登入/註冊 Modal 樣式 --- */
         #overlay {
             position: fixed;
             top: 0;
@@ -98,20 +112,29 @@
 
         #auth-modal {
             background-color: white;
-            padding: 35px 30px; /* 增加內邊距 */
-            border-radius: 16px; /* 更圓的邊角 */
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15); /* 更柔和的陰影 */
+            padding: 35px 30px;
+            border-radius: var(--radius-card);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
             width: 400px;
             max-width: 95%;
             position: relative;
             box-sizing: border-box;
         }
 
+        /* --- 修改：Logo 樣式 (變大且無圓角) --- */
+        .auth-logo {
+            display: block;
+            margin: 0 auto 20px auto; /* 稍微增加下方間距 */
+            max-width: 200px;         /* 改為 200px (原本 120px) */
+            height: auto;
+            border-radius: 0;         /* 移除圓角 */
+        }
+
         #close-modal-btn {
             position: absolute;
             top: 15px;
             right: 15px;
-            font-size: 26px; /* 加大 X */
+            font-size: 26px;
             color: #aaa;
             cursor: pointer;
             border: none;
@@ -125,7 +148,7 @@
 
         #login-form,
         #register-form {
-            margin: 0; /* 移除 margin-bottom */
+            margin: 0;
         }
 
         #login-form.hidden,
@@ -138,20 +161,20 @@
             text-align: center;
             margin-top: 0;
             margin-bottom: 25px;
-            font-size: 28px; /* 加大標題 */
+            font-size: 28px;
             font-weight: 700;
             color: #333;
         }
 
         #login-form div,
         #register-form div {
-            margin-bottom: 15px; /* 增加輸入框間距 */
+            margin-bottom: 15px;
         }
 
         #login-form label,
         #register-form label {
             display: block;
-            margin-bottom: 8px; /* 標籤與輸入框的距離 */
+            margin-bottom: 8px;
             font-size: 14px;
             font-weight: 600;
             color: #555;
@@ -160,9 +183,9 @@
         #login-form input,
         #register-form input {
             width: 100%;
-            padding: 12px 15px; /* 增加輸入框內部空間 */
-            border: 1px solid #ddd; /* 淺色邊框 */
-            border-radius: 8px; /* 圓角 */
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: var(--radius-elem);
             box-sizing: border-box;
             font-size: 16px;
             transition: all 0.2s ease;
@@ -171,22 +194,22 @@
         #login-form input:focus,
         #register-form input:focus {
             outline: none;
-            border-color: #007bff; /* Focus 時變色 */
-            box-shadow: 0 0 0 4px rgba(0,123,255,0.1); /* Focus 時的光暈 */
+            border-color: #007bff;
+            box-shadow: 0 0 0 4px rgba(0,123,255,0.1);
         }
 
         #login-form button,
         #register-form button {
             background-color: #007bff;
             color: white;
-            padding: 12px 15px; /* 增加按鈕大小 */
+            padding: 12px 15px;
             border: none;
-            border-radius: 8px; /* 圓角 */
+            border-radius: var(--radius-elem);
             cursor: pointer;
             width: 100%;
             font-size: 16px;
             font-weight: 700;
-            margin-top: 15px; /* 與上方元素的間距 */
+            margin-top: 15px;
             transition: background-color 0.2s ease;
         }
 
@@ -197,7 +220,7 @@
         
         #login-form button:active,
         #register-form button:active {
-            transform: scale(0.99); /* 點擊回饋 */
+            transform: scale(0.99);
         }
 
         #login-form p,
@@ -220,7 +243,6 @@
         #register-form a:hover {
             text-decoration: underline;
         }
-        /* --- Modal 樣式結束 --- */
 
         #refresh-button {
             position: absolute;
@@ -246,7 +268,7 @@
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
         }
 
-        /* --- 修改：個人資料面板 --- */
+        /* --- 個人資料面板 --- */
         #profile-panel {
             position: fixed;
             top: 60px;
@@ -260,7 +282,7 @@
             transition: left 0.3s ease;
             z-index: 1500;
             box-sizing: border-box;
-            border-radius: 40px;
+            border-radius: var(--radius-panel);
             margin-left: 20px;
             display: flex; 
             flex-direction: column; 
@@ -278,28 +300,25 @@
                 top: 0;
                 margin: 0;
                 max-height: 85vh;
-                 border-radius: 0 0 20px 0;
+                border-radius: 0 0 var(--radius-card) 0;
             }
              #profile-panel.open {
                  left: 2.5%;
              }
         }
-        /* --- 個人資料面板結束 --- */
 
-        /* --- 新增：面板標頭樣式 --- */
         .panel-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 20px 20px 15px 20px;
             border-bottom: 1px solid #dee2e6;
-            flex-shrink: 0; /* 確保標頭不會被壓縮 */
+            flex-shrink: 0;
         }
 
-        /* --- 新增：面板關閉按鈕樣式 --- */
         .panel-close-btn {
             position: relative;
-            flex-shrink: 0; /* 防止按鈕被壓縮 */
+            flex-shrink: 0;
             width: 32px;
             height: 32px;
             margin-left: 15px;
@@ -307,9 +326,9 @@
             background: none;
             cursor: pointer;
             border-radius: 50%;
-            font-size: 24px; /* 加大叉叉 */
+            font-size: 24px;
             color: #666;
-            line-height: 1; /* 輔助垂直置中 */
+            line-height: 1;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -317,13 +336,10 @@
         }
 
         .panel-close-btn:hover {
-            background-color: rgba(0, 0, 0, 0.08); /* 參考 .bookmark-action-btn */
+            background-color: rgba(0, 0, 0, 0.08);
             color: #000;
         }
-        /* --- 關閉按鈕樣式結束 --- */
 
-
-        /* --- 修改：個人資料面板 H2 --- */
         #profile-panel h2 {
             font-weight: 600;
             color: #333;
@@ -333,7 +349,6 @@
             margin-bottom: 0;
         }
         
-        /* --- 新增：個人資料面板的滾動容器 --- */
         #profile-content-container {
             overflow-y: auto;
             flex-grow: 1;
@@ -345,7 +360,6 @@
             display: none;
         }
         
-        /* --- 新增：個人資料區塊樣式 --- */
         #profile-info-section {
             padding-bottom: 15px;
             margin-bottom: 15px;
@@ -362,7 +376,6 @@
             margin-right: 8px;
         }
         
-        /* --- 新增：收藏清單子標題 --- */
         #profile-bookmarks-section h2 {
             font-size: 20px;
             margin-bottom: 15px;
@@ -377,7 +390,7 @@
         .bookmark-card-item {
             background-color: #f9f9f9;
             border: 1px solid #eee;
-            border-radius: 15px;
+            border-radius: var(--radius-card);
             padding: 20px 10px; 
             margin-bottom: 10px;
             display: flex;
@@ -395,7 +408,7 @@
             width: 80px;
             height: 60px;
             background-color: #e9ecef;
-            border-radius: 8px;
+            border-radius: var(--radius-elem);
             flex-shrink: 0;
             object-fit: cover;
             margin-left: 10px; 
@@ -500,7 +513,7 @@
             font-size: 11px;
             font-weight: bold;
             padding: 2px 8px;
-            border-radius: 10px;
+            border-radius: var(--radius-pill);
             white-space: nowrap;
             color: white;
             text-align: center;
@@ -544,7 +557,7 @@
         #sidebar .sidebar-section {
             background-color: #f9f9f9;
             border: 1px solid #eee;
-            border-radius: 15px;
+            border-radius: var(--radius-card);
             margin-top: 15px;
             padding: 15px;
             overflow: hidden;
@@ -578,7 +591,7 @@
             background-color: #007bff;
             color: white;
             border: none;
-            border-radius: 20px;
+            border-radius: var(--radius-pill);
             cursor: pointer;
             transition: all 0.2s ease;
             white-space: nowrap;
@@ -600,7 +613,7 @@
         }
 
         #sidebar-img-container {
-            border-radius: 10px;
+            border-radius: var(--radius-elem);
             margin-top: 12px;
             margin-bottom: 15px;
         }
@@ -624,7 +637,7 @@
         #sidebar-contact-card {
             background-color: #f9f9f9;
             border: 1px solid #eee;
-            border-radius: 15px;
+            border-radius: var(--radius-card);
             padding: 15px;
             margin: 0;
         }
@@ -659,7 +672,7 @@
         #sidebar-posts li {
             background-color: #f9f9f9;
             border: 1px solid #eee;
-            border-radius: 15px;
+            border-radius: var(--radius-card);
             padding: 12px;
             margin-bottom: 10px;
             display: flex;
@@ -683,30 +696,25 @@
             border-left: 5px solid #f39c12;
         }
 
-        /* --- 修改：公共空間卡片樣式 --- */
         #sidebar-posts li.status-public {
-            border-left: 5px solid #2ecc71; /* <-- 修改：顏色比照 available */
+            border-left: 5px solid #2ecc71; 
         }
         
-        /* 隱藏公共空間卡片的金額和狀態 */
         .status-public .room-money,
         .status-public .room-status {
             display: none;
         }
         
-        /* 讓公共空間卡片的 "room-meta" 不會佔據空間，但保持對齊 */
         .status-public .room-meta {
-            min-height: 20px; /* 估算一個狀態標籤的高度以保持對齊 */
+            min-height: 20px;
         }
-        /* --- 樣式結束 --- */
-
 
         .room-image,
         .room-image-placeholder {
             width: 80px;
             height: 60px;
             background-color: #e9ecef;
-            border-radius: 8px;
+            border-radius: var(--radius-elem);
             flex-shrink: 0;
             object-fit: cover;
         }
@@ -725,7 +733,7 @@
             flex-direction: column;
             flex-grow: 1;
             gap: 8px;
-             min-width: 0; /* 允許文字區塊縮小 */
+             min-width: 0;
         }
 
         .room-meta {
@@ -757,7 +765,7 @@
 
         .room-status {
             padding: 4px 12px;
-            border-radius: 20px;
+            border-radius: var(--radius-pill);
             font-size: 12px;
             color: white;
             font-weight: bold;
@@ -820,7 +828,7 @@
         #lightbox-image {
             max-width: 80vw;
             max-height: 70vh;
-            border-radius: 10px;
+            border-radius: var(--radius-elem);
         }
 
         .lightbox-nav-btn {
@@ -865,7 +873,7 @@
             background-color: black;
             color: white;
             padding: 20px;
-            border-radius: 10px;
+            border-radius: var(--radius-elem);
             font-size: 15px;
             line-height: 1.7;
             max-height: 100%;
@@ -899,7 +907,7 @@
             background-color: rgba(0, 0, 0, 0.6);
             color: white;
             padding: 5px 10px;
-            border-radius: 15px;
+            border-radius: var(--radius-pill);
             font-size: 14px;
         }
 
@@ -926,7 +934,7 @@
             border: 1px solid #ccc;
             color: #ccc;
             padding: 5px 15px;
-            border-radius: 20px;
+            border-radius: var(--radius-pill);
             cursor: pointer;
             transition: all 0.2s ease;
         }
@@ -940,9 +948,8 @@
             font-size: 14px;
         }
 
-        /* --- 按鈕樣式 (已修改) --- */
         #login-button, 
-        #profile-button, /* <-- 修改 */
+        #profile-button, 
         #properties-list-button {
             position: absolute;
             top: 20px;
@@ -950,17 +957,16 @@
             padding: 10px 15px;
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: var(--radius-elem);
             cursor: pointer;
             transition: background-color 0.2s ease, transform 0.1s ease;
         }
 
         #login-button {
             right: 20px;
-            background-color: #007bff; /* 預設 (登入) 藍色 */
+            background-color: #007bff; 
         }
 
-        /* --- 修改：個人資料按鈕 --- */
         #profile-button {
             right: 200px;
             background-color: #17a2b8;
@@ -975,8 +981,6 @@
             background-color: #117a8b;
             transform: scale(0.98);
         }
-        /* --- 個人資料按鈕結束 --- */
-        
         
         #properties-list-button {
             right: 100px;
@@ -992,10 +996,7 @@
             background-color: #117a8b;
             transform: scale(0.98);
         }
-        /* --- 房源清單按鈕樣式結束 --- */
 
-
-        /* --- 登入 (藍色) 按鈕的回饋 --- */
         #login-button:hover {
             background-color: #0056b3;
         }
@@ -1005,23 +1006,19 @@
             transform: scale(0.98);
         }
 
-        /* --- 登出 (紅色) 按鈕的樣式 --- */
         #login-button.logged-in {
-            background-color: #dc3545; /* 紅色 */
+            background-color: #dc3545; 
         }
 
         #login-button.logged-in:hover {
-            background-color: #c82333; /* 滑過時的深紅色 */
+            background-color: #c82333; 
         }
 
         #login-button.logged-in:active {
-            background-color: #bd2130; /* 點擊時的更深紅色 */
+            background-color: #bd2130; 
             transform: scale(0.98);
         }
-        /* --- 登出樣式結束 --- */
         
-        
-        /* --- 房源清單面板 --- */
         #properties-panel {
             position: fixed;
             top: 60px;
@@ -1035,7 +1032,7 @@
             transition: left 0.3s ease;
             z-index: 1500;
             box-sizing: border-box;
-            border-radius: 40px;
+            border-radius: var(--radius-panel);
             margin-left: 20px;
             display: flex;
             flex-direction: column;
@@ -1053,7 +1050,7 @@
                 top: 0;
                 margin: 0;
                 max-height: 85vh;
-                 border-radius: 0 0 20px 0;
+                border-radius: 0 0 var(--radius-card) 0;
             }
              #properties-panel.open {
                  left: 2.5%;
@@ -1085,8 +1082,6 @@
             padding: 0;
             margin-top: 0;
         }
-        /* --- 房源清單面板結束 --- */
-        
     </style>
 </head>
 
@@ -1129,6 +1124,7 @@
         <div id="auth-modal">
             <button id="close-modal-btn">&times;</button>
             <div id="login-form">
+                <img src="images/Plogo.png" class="auth-logo" alt="Logo">
                 <h2>登入</h2>
                 <form id="loginForm">
                     <div>

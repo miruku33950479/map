@@ -23,6 +23,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let allMapProperties = []; // 儲存所有地圖上的房源資料
     let userBookmarkedRentIds = new Set(); // 儲存已收藏的 Rent ID
 
+    /* --- 暫時隱藏測試資料 ---
     // 原始的靜態測試物件
     const sunshineApartmentData = {
         coverImage: "https://media.gq.com.tw/photos/61e134dac128c151658f7506/16:9/w_1920,c_limit/casas%20caras%20cover.jpeg",
@@ -63,6 +64,7 @@ document.addEventListener("DOMContentLoaded", function () {
         urlPhone: "tel:+886123456789", urlLine: "https://line.me/ti/p/testline", urlMail: "mailto:test@test.com",
         rentPriceRange: "10000~17532"
     };
+    */
 
     function formatNumberWithCommas(num) {
         if (num === undefined || num === null || isNaN(num)) return '';
@@ -427,11 +429,21 @@ document.addEventListener("DOMContentLoaded", function () {
         hidePropertiesPanel(); 
         profilePanel.classList.add('open');
         
-        // --- 新增：渲染個人資料 ---
+        // --- 新增：Debug 與資料處理 ---
+        console.log('目前的 User Data:', currentUserData);
+
+        let emailDisplay = currentUserData.email;
+        
+        // 如果 email 是物件，嘗試轉成字串顯示，方便除錯
+        if (typeof emailDisplay === 'object' && emailDisplay !== null) {
+            emailDisplay = JSON.stringify(emailDisplay);
+        }
+        
+        // --- 渲染個人資料 ---
         const profileInfoContainer = document.getElementById('profile-info-section');
         profileInfoContainer.innerHTML = `
             <div class="profile-detail"><span>使用者名稱:</span> ${currentUserData.userName || '未提供'}</div>
-            <div class="profile-detail"><span>電子郵件:</span> ${currentUserData.email || '未提供'}</div>
+            <div class="profile-detail"><span>電子郵件:</span> ${emailDisplay || '未提供'}</div>
             <div class="profile-detail"><span>電話:</span> ${currentUserData.phoneNumber || '未提供'}</div>
             <div class="profile-detail"><span>性別:</span> ${currentUserData.sex || '未提供'}</div>
         `;
@@ -659,12 +671,11 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(response => response.ok ? response.json() : Promise.reject(response))
             .then(data => {
                 const apiData = data.map(item => ({ ...item, type: 'rent' }));
-                if (sunshineApartmentData.vacantRooms === undefined) sunshineApartmentData.vacantRooms = 0;
-                if (sunshineApartmentData.upcomingVacancies === undefined) sunshineApartmentData.upcomingVacancies = 0;
-                if (sunshineApartmentData2.vacantRooms === undefined) sunshineApartmentData2.vacantRooms = 0;
-                if (sunshineApartmentData2.upcomingVacancies === undefined) sunshineApartmentData2.upcomingVacancies = 0;
+                
+                // --- 修改：只使用 API 回傳的資料，不合併測試資料 ---
+                // const combinedData = [...apiData, sunshineApartmentData, sunshineApartmentData2];
+                const combinedData = apiData; 
 
-                const combinedData = [...apiData, sunshineApartmentData, sunshineApartmentData2];
                 allMapProperties = combinedData; 
                 displayMarkers(combinedData);
                 
@@ -672,17 +683,18 @@ document.addEventListener("DOMContentLoaded", function () {
             })
             .catch(error => {
                 console.error('載入房源資料時發生錯誤:', error);
+                // --- 修改：錯誤時不載入測試資料，保持空白 ---
+                /*
                 console.log('API 請求失敗，顯示預設測試資料點...');
-                if (sunshineApartmentData.vacantRooms === undefined) sunshineApartmentData.vacantRooms = 0;
-                if (sunshineApartmentData.upcomingVacancies === undefined) sunshineApartmentData.upcomingVacancies = 0;
-                if (sunshineApartmentData2.vacantRooms === undefined) sunshineApartmentData2.vacantRooms = 0;
-                if (sunshineApartmentData2.upcomingVacancies === undefined) sunshineApartmentData2.upcomingVacancies = 0;
-
                 const staticData = [sunshineApartmentData, sunshineApartmentData2];
                 allMapProperties = staticData; 
                 displayMarkers(staticData);
-                
                 return staticData;
+                */
+               
+                allMapProperties = [];
+                displayMarkers([]);
+                return [];
             });
     }
 
@@ -884,8 +896,13 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // --- 事件監聽與初始設定 ---
-    displayMarkers([sunshineApartmentData, sunshineApartmentData2]);
-    allMapProperties = [sunshineApartmentData, sunshineApartmentData2];
+    
+    // --- 修改：初始不顯示測試資料，並設定 allMapProperties 為空 ---
+    // displayMarkers([sunshineApartmentData, sunshineApartmentData2]);
+    // allMapProperties = [sunshineApartmentData, sunshineApartmentData2];
+    displayMarkers([]); 
+    allMapProperties = [];
+
     loadRestaurantsInView();
 
     map.on('moveend', function() {

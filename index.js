@@ -416,7 +416,7 @@ document.addEventListener("DOMContentLoaded", function () {
         
         console.log('目前的 User Data:', currentUserData);
 
-        // --- 修改開始：驗證按鈕狀態判斷 ---
+        // --- 修改開始：驗證狀態顯示邏輯 ---
         let emailDisplay = '未提供';
         let rawEmail = '';
         let verifyButtonHtml = ''; 
@@ -434,10 +434,10 @@ document.addEventListener("DOMContentLoaded", function () {
             if (emailPattern.test(rawEmail)) {
                 emailDisplay = rawEmail;
 
-                // 判斷是否已驗證，如果是，顯示一個 disabled 的按鈕
+                // 判斷是否已驗證
                 if (currentUserData.isVerify === true || currentUserData.isVerify === "true") {
-                    // 狀態 A: 已驗證 (顯示灰色按鈕，不可點擊)
-                    verifyButtonHtml = `<button disabled style="margin-left:10px; padding:4px 8px; font-size:12px; border-radius:4px; border:none; background-color:#6c757d; color:white; cursor:not-allowed; opacity: 0.8;">已完成信箱驗證</button>`;
+                    // 狀態 A: 已驗證 (純文字顯示，帶勾勾)
+                    verifyButtonHtml = `<span style="margin-left:10px; color:#28a745; font-weight:bold; font-size:13px;">✓ 已完成信箱驗證</span>`;
                 } else {
                     // 狀態 B: 未驗證 (顯示紅色可點擊按鈕)
                     verifyButtonHtml = `<button id="trigger-verify-btn" style="margin-left:10px; padding:4px 8px; font-size:12px; cursor:pointer; border-radius:4px; border:none; background-color:#dc3545; color:white;">驗證信箱</button>`;

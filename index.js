@@ -416,10 +416,10 @@ document.addEventListener("DOMContentLoaded", function () {
         
         console.log('目前的 User Data:', currentUserData);
 
-        // --- 修改：加入驗證按鈕邏輯 ---
+        // --- 修改開始：驗證按鈕狀態判斷 ---
         let emailDisplay = '未提供';
         let rawEmail = '';
-        let verifyButtonHtml = ''; // 準備按鈕 HTML
+        let verifyButtonHtml = ''; 
 
         if (currentUserData.email) {
             if (typeof currentUserData.email === 'object' && currentUserData.email.email) {
@@ -433,8 +433,15 @@ document.addEventListener("DOMContentLoaded", function () {
             const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (emailPattern.test(rawEmail)) {
                 emailDisplay = rawEmail;
-                // 加入驗證按鈕 (這裡假設只要有 Email 就可以點擊驗證，不特別判斷是否已驗證過，因為API沒回傳狀態)
-                verifyButtonHtml = `<button id="trigger-verify-btn" style="margin-left:10px; padding:4px 8px; font-size:12px; cursor:pointer; border-radius:4px; border:none; background-color:#28a745; color:white;">驗證信箱</button>`;
+
+                // 判斷是否已驗證
+                if (currentUserData.isVerify === true || currentUserData.isVerify === "true") {
+                    // 狀態 A: 已驗證 (顯示綠色文字標籤，不可點擊)
+                    verifyButtonHtml = `<span style="margin-left:10px; padding:4px 8px; font-size:12px; border-radius:4px; background-color:#e9ecef; color:#28a745; font-weight:bold; cursor:default;">✓ 已完成信箱驗證</span>`;
+                } else {
+                    // 狀態 B: 未驗證 (顯示可點擊按鈕)
+                    verifyButtonHtml = `<button id="trigger-verify-btn" style="margin-left:10px; padding:4px 8px; font-size:12px; cursor:pointer; border-radius:4px; border:none; background-color:#dc3545; color:white;">驗證信箱</button>`;
+                }
             } else {
                 emailDisplay = 'mail規則不符';
             }
@@ -450,12 +457,11 @@ document.addEventListener("DOMContentLoaded", function () {
             <div class="profile-detail"><span>性別:</span> ${currentUserData.sex || '未提供'}</div>
         `;
 
-        // 為動態產生的驗證按鈕加入事件監聽
+        // 只在「未驗證」時，按鈕才存在，才需要加入監聽器
         const triggerVerifyBtn = document.getElementById('trigger-verify-btn');
         if (triggerVerifyBtn) {
             triggerVerifyBtn.addEventListener('click', function() {
                 hideProfilePanel();
-                // 呼叫驗證流程 (使用註冊成功後的相同邏輯，但不需要再註冊一次)
                 handleVerificationFlow(rawEmail); 
             });
         }
@@ -1119,9 +1125,23 @@ document.addEventListener("DOMContentLoaded", function () {
                      throw new Error('驗證失敗');
                  }
             }).then(data => {
-                alert('信箱驗證成功！請使用您的帳號密碼登入。');
-                // 驗證成功後，跳轉至登入
-                showLoginModal();
+                alert('信箱驗證成功！');
+                
+                // --- 新增：即時更新本地的使用者狀態 (無需重新登入) ---
+                if (currentUserData) {
+                    currentUserData.isVerify = true; 
+                    localStorage.setItem('userData', JSON.stringify(currentUserData));
+                }
+
+                if (currentUserData) {
+                     // 如果已經是登入狀態 (例如從個人資料面板觸發)
+                     verificationForm.classList.add('hidden');
+                     hideAuthModal();
+                     showProfilePanel(); 
+                } else {
+                    // 如果是註冊後觸發 (尚未登入)
+                    showLoginModal();
+                }
             }).catch(error => {
                 console.error('驗證失敗:', error);
                 alert('驗證碼錯誤或已過期，請重新輸入或重新傳送。');

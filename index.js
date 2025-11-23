@@ -22,6 +22,9 @@ document.addEventListener("DOMContentLoaded", function () {
     let currentPropertyData = null; // 儲存當前側邊欄顯示的物件資料
     let allMapProperties = []; // 儲存所有地圖上的房源資料
     let userBookmarkedRentIds = new Set(); // 儲存已收藏的 Rent ID
+    
+    // --- 新增：儲存自動偵測到的行政區 (背景運行，使用者不可見) ---
+    let detectedLocation = ""; 
 
     /* --- 暫時隱藏測試資料 ---
        (已略過測試資料定義)
@@ -414,23 +417,19 @@ document.addEventListener("DOMContentLoaded", function () {
         hidePropertiesPanel(); 
         profilePanel.classList.add('open');
         
-        // --- 除錯訊息：檢查資料結構 ---
         console.log('目前的 User Data:', currentUserData);
 
-        // --- 修改開始：修正驗證狀態讀取邏輯 (根據 JSON 截圖) ---
+        // --- 修改開始：驗證狀態顯示邏輯 ---
         let emailDisplay = '未提供';
         let rawEmail = '';
         let verifyButtonHtml = ''; 
         let isVerified = false;
 
-        // 檢查 currentUserData.email 是否為物件，並讀取其中的 email 字串與 verify 狀態
         if (currentUserData.email) {
             if (typeof currentUserData.email === 'object') {
-                // 這是 API 回傳的結構: { email: "...", verify: true }
                 rawEmail = currentUserData.email.email || '';
                 isVerified = currentUserData.email.verify === true;
             } else if (typeof currentUserData.email === 'string') {
-                // 這是舊結構或異常情況
                 rawEmail = currentUserData.email;
             }
         }
@@ -440,11 +439,12 @@ document.addEventListener("DOMContentLoaded", function () {
             if (emailPattern.test(rawEmail)) {
                 emailDisplay = rawEmail;
 
-                if (isVerified) {
-                    // 狀態 A: 已驗證 (純文字顯示，帶勾勾)
+                // 寬鬆判斷狀態
+                const isVerifiedLoose = String(currentUserData.isVerify) === "true" || String(currentUserData.isVerify) === "1" || isVerified;
+
+                if (isVerifiedLoose) {
                     verifyButtonHtml = `<span style="margin-left:10px; color:#28a745; font-weight:bold; font-size:13px;">✓ 已完成信箱驗證</span>`;
                 } else {
-                    // 狀態 B: 未驗證 (顯示紅色可點擊按鈕)
                     verifyButtonHtml = `<button id="trigger-verify-btn" style="margin-left:10px; padding:4px 8px; font-size:12px; cursor:pointer; border-radius:4px; border:none; background-color:#dc3545; color:white;">驗證信箱</button>`;
                 }
             } else {
@@ -881,16 +881,47 @@ document.addEventListener("DOMContentLoaded", function () {
         // loadRentalsInView();
     });
 
+    // --- 修改：整合地理位置抓取與反向地理編碼 ---
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             position => {
-                map.setView([position.coords.latitude, position.coords.longitude], 16);
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                
+                map.setView([lat, lng], 16);
                 loadRentalsInView();
+
+                // 呼叫反向地理編碼，將結果存入 detectedLocation
+                reverseGeocode(lat, lng);
             },
             error => {
                 console.error('獲取使用者位置失敗:', error.message);
             }
         );
+    } else {
+        console.error('瀏覽器不支援地理位置 API。');
+    }
+
+    // --- 新增：反向地理編碼函式 ---
+    function reverseGeocode(lat, lng) {
+        const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
+        
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.address) {
+                    const address = data.address;
+                    // 組合縣市 + 鄉鎮區
+                    const city = address.city || address.county || '';
+                    const district = address.town || address.district || address.suburb || '';
+                    
+                    if (city && district) {
+                        detectedLocation = `${city} ${district}`; // 例如 "雲林縣 虎尾鎮"
+                        console.log('自動偵測位置:', detectedLocation);
+                    }
+                }
+            })
+            .catch(err => console.error('反向地理編碼失敗:', err));
     }
 
     map.on('click', closeSidebar);
@@ -1036,7 +1067,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // --- 修改後的註冊邏輯 (整合驗證) ---
+    // --- 修改後的註冊邏輯 (整合驗證 + 自動填入地區) ---
     const registerSubmit = document.getElementById('registerForm');
     if (registerSubmit) {
         registerSubmit.addEventListener('submit', e => {
@@ -1054,8 +1085,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 password: password,
                 sex: document.getElementById('register-sex').value,
                 email: email,
-                phoneNumber: document.getElementById('register-phoneNumber').value
+                phoneNumber: document.getElementById('register-phoneNumber').value,
+                cityName: detectedLocation || "" // 自動填入偵測到的位置，若無則為空字串
             };
+
+            console.log("註冊資料 Payload:", registerData); // 除錯用
 
             fetch(`${baseUrl}/Users/Register`, {
                 method: 'POST',
